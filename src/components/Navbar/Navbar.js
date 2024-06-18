@@ -6,8 +6,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
-import logo from "../../assets/logo.png";
-import user from "../../assets/user.jpg";
+import logo from "../../assets/images/logo.png";
+import user from "../../assets/images/user.jpg";
 import "./Navbar.css";
 
 const Navbar = () => {
@@ -29,7 +29,7 @@ const Navbar = () => {
           <input type="text" placeholder="Search" />
         </div>
         <div className="nav-profile online">
-          <img src={user} alt="logo" />
+          <img src={user} alt="user" />
         </div>
       </div>
     </div>

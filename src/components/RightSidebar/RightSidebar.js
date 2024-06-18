@@ -1,7 +1,10 @@
 import { faLocationDot } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
-import Advertisement from "../../assets/advertisement.jpg";
+import Advertisement from "../../assets/images/advertisement.jpg";
+import user1 from "../../assets/images/user1.png";
+import user2 from "../../assets/images/user2.png";
+import user3 from "../../assets/images/user3.png";
 import "./RightSidebar.css";
 
 const RightSidebar = () => {
@@ -44,6 +47,28 @@ const RightSidebar = () => {
         <a href="/close">Close</a>
       </div>
       <img src={Advertisement} className="advertisement" alt="ads" />
+      <div className="right-sidebar-title">
+        <h4>Conversation</h4>
+        <a href="/close">Hide Chat</a>
+      </div>
+      <div className="online-user">
+        <div className="online">
+          <img src={user1} className="user" alt="user" />
+        </div>
+        <p>Alison Mina</p>
+      </div>
+      <div className="online-user">
+        <div className="online">
+          <img src={user2} className="user" alt="user" />
+        </div>
+        <p>Jackson Aston</p>
+      </div>
+      <div className="online-user">
+        <div className="online">
+          <img src={user3} className="user" alt="user" />
+        </div>
+        <p>Samona Rose</p>
+      </div>
     </div>
   );
 };
