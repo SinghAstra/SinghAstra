@@ -1,0 +1,56 @@
+.left-sidebar {
+  flex-basis: 25%;
+  height: 40vh;
+  position: sticky;
+  top: 70px;
+}
+.left-sidebar-top {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #ccc;
+}
+
+.left-sidebar-top a,
+.shortcuts a {
+  text-decoration: none;
+  color: rgb(83, 83, 121);
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  border-radius: 4px;
+}
+
+.left-sidebar-top a:last-child {
+  color: #1876f2;
+}
+
+.left-sidebar-top a:hover,
+.shortcuts a:hover {
+  background-color: #8ebaf5;
+  color: white;
+}
+
+.left-sidebar-top a:last-child:hover {
+  color: black;
+  background-color: transparent;
+}
+
+.left-sidebar-top a .icon,
+.shortcuts a .icon {
+  font-size: 22px;
+  margin-right: 25px;
+  width: 30px;
+  color: #1876f2;
+}
+
+.shortcuts {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.shortcuts p {
+  font-weight: 600;
+}

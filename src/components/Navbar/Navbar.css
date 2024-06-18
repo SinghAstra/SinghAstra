@@ -1,9 +1,12 @@
 .nav {
-  background-color: cornflowerblue;
+  background-color: #1876f2;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 5px 5%;
+  position: sticky;
+  top: 0px;
+  z-index: 100;
 }
 
 .nav-left,
@@ -20,16 +23,20 @@
 .nav-icons {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 15px;
 }
 
 .nav-icons .icons {
   color: white;
   font-size: 22px;
+  padding: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
 }
 
 .nav-icons .icons:hover {
-  color: #000000;
+  background-color: #8ebaf5;
   cursor: pointer;
 }
 

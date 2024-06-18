@@ -1,0 +1,7 @@
+.right-sidebar {
+  flex-basis: 25%;
+  background-color: cadetblue;
+  height: 40vh;
+  position: sticky;
+  top: 70px;
+}
