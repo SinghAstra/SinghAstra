@@ -1,6 +1,5 @@
 .main-content {
   flex-basis: 47%;
-  height: 200vh;
 }
 
 .story-gallery {
@@ -153,4 +152,74 @@
 
 .icon3 {
   color: tomato;
+}
+
+.post-container {
+  background-color: #fff;
+  margin: 20px 0px;
+  padding: 20px;
+  border-radius: 6px;
+  color: #626262;
+}
+
+.user-profile div span {
+  color: #9a9a9a;
+  font-size: 13px;
+}
+
+.post-container .post-text {
+  margin: 15px 0px;
+  color: #9a9a9a;
+  font-size: 13px;
+}
+
+.post-container .post-text span {
+  color: #626262;
+  font-weight: 500;
+}
+
+.post-container .post-text a {
+  text-decoration: none;
+  color: #1876f2;
+  margin: 0 2px;
+}
+
+.post-container .post-image {
+  width: 100%;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.post-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.post-row .icon {
+  cursor: pointer;
+}
+
+.activity-icons a {
+  text-decoration: none;
+  color: #626262;
+  margin-right: 30px;
+}
+
+.activity-icons a .icon {
+  width: 18px;
+  margin-right: 3px;
+}
+.user-activity {
+  display: flex;
+  align-items: center;
+}
+
+.user-activity .icon {
+  width: 20px;
+  border-radius: 50%;
+}
+
+.user-activity .arrow-down {
+  width: 10px;
 }
