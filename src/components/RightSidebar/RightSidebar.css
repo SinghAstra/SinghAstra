@@ -20,6 +20,13 @@
   text-decoration: none;
 }
 
+.right-sidebar-title button {
+  background: none;
+  color: #1876f2;
+  border: none;
+  cursor: pointer;
+}
+
 .event {
   display: flex;
   font-size: 14px;

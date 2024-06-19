@@ -1,5 +1,5 @@
 import React from "react";
-import user1 from "../../assets/images/user1.png";
+import user1 from "../../../assets/images/user1.png";
 
 const OnlineUser = ({ userName }) => (
   <div className="online-user">
