@@ -15,19 +15,19 @@ const Story = () => {
       </div>
       <div className="story story2">
         <img src={user2} alt="icon" className="icon" />
-        <p>Add Story</p>
+        <p>Alison</p>
       </div>
       <div className="story story3">
         <img src={user3} alt="icon" className="icon" />
-        <p>Add Story</p>
+        <p>Jackson</p>
       </div>
       <div className="story story4">
         <img src={user4} alt="icon" className="icon" />
-        <p>Add Story</p>
+        <p>Samoan</p>
       </div>
       <div className="story story5">
         <img src={user5} alt="icon" className="icon" />
-        <p>Add Story</p>
+        <p>John Doe</p>
       </div>
     </div>
   );

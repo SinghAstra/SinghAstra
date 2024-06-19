@@ -7,7 +7,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import logo from "../../assets/images/logo.png";
-import user from "../../assets/images/user.jpg";
+import user from "../../assets/images/profile-pic.png";
 import "./Navbar.css";
 
 const Navbar = () => {
