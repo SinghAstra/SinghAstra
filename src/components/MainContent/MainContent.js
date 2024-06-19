@@ -1,4 +1,5 @@
 import React from "react";
+import Load from "./Load";
 import "./MainContent.css";
 import Post from "./Post";
 import Story from "./Story";
@@ -14,6 +15,7 @@ const MainContent = () => {
       <Post number={3} />
       <Post number={4} />
       <Post number={5} />
+      <Load />
     </div>
   );
 };
