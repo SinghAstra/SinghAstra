@@ -1,5 +1,5 @@
 .nav {
-  background-color: #1876f2;
+  background-color: var(--primary-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -26,16 +26,18 @@
 }
 
 .nav-icons .icons {
-  color: white;
+  color: var(--sidebar-color);
   font-size: 22px;
   padding: 8px;
   width: 24px;
   height: 24px;
   border-radius: 50%;
+  transition: all 0.2s;
 }
 
 .nav-icons .icons:hover {
-  background-color: #8ebaf5;
+  background-color: var(--sidebar-color);
+  color: var(--primary-color);
   cursor: pointer;
 }
 
@@ -48,7 +50,7 @@
 .nav-search {
   display: flex;
   align-items: center;
-  background: white;
+  background: var(--sidebar-color);
   border-radius: 20px;
   padding: 8px;
   width: 300px;
@@ -56,7 +58,7 @@
 }
 
 .nav-search .icons {
-  color: #1876f2;
+  color: var(--primary-color);
   font-size: 22px;
 }
 
@@ -84,9 +86,9 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background-color: greenyellow;
+  background-color: var(--tertiary-color);
   position: absolute;
-  border: 2px solid white;
+  border: 2px solid var(--sidebar-color);
   top: 0;
   right: 0;
 }
@@ -97,9 +99,9 @@
   right: 5%;
   width: 90%;
   max-width: 350px;
-  background: #fff;
-  color: #626262;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+  background: var(--sidebar-color);
+  color: var(--quaternary-color);
+  box-shadow: 0 0 10px var(--boxShadow-color);
   border-radius: 4px;
   padding: 0px 15px;
 }
@@ -108,7 +110,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  border-bottom: 2px solid #ccc;
+  border-bottom: 2px solid var(--border-bottom-color);
   cursor: pointer;
   padding: 10px 0px;
 }
@@ -124,24 +126,24 @@
 }
 
 .feedback-icon {
-  background: #1876f2;
+  background: var(--primary-color);
   width: 30px;
   border-radius: 50%;
   height: 30px;
   padding: 8px;
-  color: white;
+  color: var(--sidebar-color);
 }
 
 .settings-menu-header p {
   font-size: 13px;
   margin-bottom: -10px;
-  color: #626262;
+  color: var(--quaternary-color);
   font-weight: 500;
 }
 
 .settings-menu-header a {
   font-size: 12px;
-  color: #1876f2;
+  color: var(--primary-color);
   text-decoration: none;
 }
 
@@ -157,9 +159,9 @@
 
 .settings-menu-links:hover {
   padding-right: 8px;
-  color: #1876f2;
+  color: var(--primary-color);
   .main-icon {
-    background-color: #1876f2;
+    background-color: var(--primary-color);
   }
 }
 
@@ -167,8 +169,8 @@
   width: 20px;
   height: 20px;
   padding: 8px;
-  color: white;
-  background-color: #626262;
+  color: var(--sidebar-color);
+  background-color: var(--quaternary-color);
   font-size: 32px;
   border-radius: 50%;
 }
@@ -186,7 +188,6 @@
 
 .switch {
   position: relative;
-  /* display: inline-block; */
   width: 34px;
   height: 20px;
 }
@@ -216,7 +217,7 @@
   width: 14px;
   left: 3px;
   bottom: 3px;
-  background-color: white;
+  background-color: var(--body-color);
   transition: 0.4s;
   border-radius: 50%;
 }

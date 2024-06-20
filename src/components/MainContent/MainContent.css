@@ -10,7 +10,6 @@
 
 .story {
   flex-basis: 18%;
-  background-color: yellow;
   padding-top: 32%;
   background-position: center;
   background-size: cover;
@@ -22,10 +21,10 @@
   position: absolute;
   top: 10px;
   left: 10px;
-  background-color: #1876f2;
-  color: white;
+  background-color: var(--primary-color);
+  color: var(--sidebar-color);
   border-radius: 50%;
-  border: 2px solid #1876f2;
+  border: 2px solid var(--primary-color);
   width: 45px;
   height: 45px;
 }
@@ -36,8 +35,8 @@
   bottom: 30px;
   left: 50%;
   transform: translateX(-50%);
-  background-color: #1876f2;
-  color: white;
+  background-color: var(--primary-color);
+  color: var(--sidebar-color);
   padding: 6px;
   border-radius: 50%;
   width: 20px;
@@ -45,7 +44,7 @@
 }
 
 .story p {
-  color: white;
+  color: var(--sidebar-color);
   position: absolute;
   bottom: 5px;
   width: 100%;
@@ -53,33 +52,33 @@
 }
 
 .story1 {
-  background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.5)),
+  background-image: linear-gradient(transparent, var(--boxShadow-color)),
     url(../../assets/images/status-1.png);
 }
 
 .story2 {
-  background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.5)),
+  background-image: linear-gradient(transparent, var(--boxShadow-color)),
     url(../../assets/images/status-2.png);
 }
 .story3 {
-  background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.5)),
+  background-image: linear-gradient(transparent, var(--boxShadow-color)),
     url(../../assets/images/status-3.png);
 }
 .story4 {
-  background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.5)),
+  background-image: linear-gradient(transparent, var(--boxShadow-color)),
     url(../../assets/images/status-5.png);
 }
 .story5 {
-  background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.5)),
+  background-image: linear-gradient(transparent, var(--boxShadow-color)),
     url(../../assets/images/status-4.png);
 }
 
 .write-post-container {
-  background: #fff;
+  background: var(--sidebar-color);
   width: 100%;
   border-radius: 6px;
   padding: 20px;
-  color: #626262;
+  color: var(--quaternary-color);
 }
 
 .user-profile {
@@ -119,7 +118,8 @@
   resize: none;
   border: none;
   outline: none;
-  border-bottom: 1px solid #ccc;
+  background: transparent;
+  border-bottom: 1px solid var(--border-bottom-color);
 }
 
 .add-post-links {
@@ -131,7 +131,7 @@
   text-decoration: none;
   display: flex;
   align-items: center;
-  color: #626262;
+  color: var(--quaternary-color);
   margin-right: 30px;
   font-size: 13px;
 }
@@ -155,32 +155,32 @@
 }
 
 .post-container {
-  background-color: #fff;
+  background-color: var(--sidebar-color);
   margin: 20px 0px;
   padding: 20px;
   border-radius: 6px;
-  color: #626262;
+  color: var(--quaternary-color);
 }
 
 .user-profile div span {
-  color: #9a9a9a;
+  color: var(--quinary-color);
   font-size: 13px;
 }
 
 .post-container .post-text {
   margin: 15px 0px;
-  color: #9a9a9a;
+  color: var(--quinary-color);
   font-size: 13px;
 }
 
 .post-container .post-text span {
-  color: #626262;
+  color: var(--quinary-color);
   font-weight: 500;
 }
 
 .post-container .post-text a {
   text-decoration: none;
-  color: #1876f2;
+  color: var(--primary-color);
   margin: 0 2px;
 }
 
@@ -202,7 +202,7 @@
 
 .activity-icons a {
   text-decoration: none;
-  color: #626262;
+  color: var(--quaternary-color);
   margin-right: 30px;
 }
 
@@ -229,9 +229,9 @@
   justify-content: center;
 }
 .load-more {
-  border: 2px solid #9a9a9a;
+  border: 2px solid var(--quinary-color);
   padding: 5px 10px;
-  color: #626262;
+  color: var(--quaternary-color);
   background: transparent;
   outline: none;
   border-radius: 6px;
@@ -240,5 +240,5 @@
 }
 
 .load-more:hover {
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 4px var(--boxShadow-color);
 }

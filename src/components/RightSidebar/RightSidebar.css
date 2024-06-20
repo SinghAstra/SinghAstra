@@ -1,6 +1,6 @@
 .right-sidebar {
   flex-basis: 25%;
-  background-color: white;
+  background-color: var(--sidebar-color);
   position: sticky;
   top: 70px;
   padding: 20px;
@@ -16,13 +16,13 @@
 }
 
 .right-sidebar-title a {
-  color: #1876f2;
+  color: var(--primary-color);
   text-decoration: none;
 }
 
 .right-sidebar-title button {
   background: none;
-  color: #1876f2;
+  color: var(--primary-color);
   border: none;
   cursor: pointer;
 }
@@ -42,27 +42,27 @@
   margin-right: 15px;
   padding-top: 10px;
   text-align: center;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 10px var(--boxShadow-color);
 }
 
 .event-left span {
   position: absolute;
   bottom: 0;
   left: 0;
-  background-color: #1876f2;
+  background-color: var(--primary-color);
   width: 100%;
   padding: 2px 0px;
   font-size: 12px;
 }
 
 .event-right a {
-  color: #1876f2;
+  color: var(--primary-color);
   text-decoration: none;
 }
 
 .event-right .icon {
   margin-right: 4px;
-  color: #1876f2;
+  color: var(--primary-color);
 }
 
 .advertisement {
@@ -76,7 +76,8 @@
   align-items: center;
   gap: 15px;
   margin-bottom: 10px;
-  color: #626262;
+  color: var(--quaternary-color);
+  cursor: pointer;
 }
 .online-user .online {
   display: flex;
@@ -93,9 +94,4 @@
 .online-user .online img {
   width: 40px;
   border-radius: 50%;
-}
-
-.online-user:hover {
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
 }
