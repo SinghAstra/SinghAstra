@@ -9,7 +9,7 @@ const Hero = () => {
       <Navbar />
       <div className="main-heading">
         <h1>Product</h1>
-        <div class="blockText">
+        <div className="blockText">
           <h1>Designer</h1>
           <h5>Based in toronto</h5>
         </div>
@@ -20,17 +20,17 @@ const Hero = () => {
       </div>
       <div className="hero-footer">
         <Link to="/">
-          Previously Worked at YML <i class="ri-arrow-right-up-line"></i>
+          Previously Worked at YML <i className="ri-arrow-right-up-line"></i>
         </Link>
         <Link to="/">
-          Figma Ambassador <i class="ri-arrow-right-up-line"></i>
+          Figma Ambassador <i className="ri-arrow-right-up-line"></i>
         </Link>
         <div className="hero-footer-nav">
-          <div class="circle">
-            <i class="ri-arrow-down-line"></i>
+          <div className="circle">
+            <i className="ri-arrow-down-line"></i>
           </div>
-          <div class="circle">
-            <i class="ri-arrow-down-line"></i>
+          <div className="circle">
+            <i className="ri-arrow-down-line"></i>
           </div>
         </div>
       </div>
