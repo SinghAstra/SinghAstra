@@ -8,15 +8,23 @@ const Hero = () => {
     <div className="hero">
       <Navbar />
       <div className="main-heading">
-        <h1>Product</h1>
+        <div className="bounding">
+          <h1 className="bounding-elem">Product</h1>
+        </div>
         <div className="blockText">
-          <h1>Designer</h1>
-          <h5>Based in toronto</h5>
+          <div className="bounding">
+            <h1 className="bounding-elem">Designer</h1>
+          </div>
+          <div className="bounding">
+            <h5 className="bounding-elem">Based in toronto</h5>
+          </div>
         </div>
       </div>
       <div className="sub-headings">
-        <h5>Available For Freelance</h5>
-        <h5>Work From May 23</h5>
+        <div className="bounding">
+          <h5 className="bounding-elem">Available For Freelance</h5>
+          <h5 className="bounding-elem">Work From May 23</h5>
+        </div>
       </div>
       <div className="hero-footer">
         <Link to="/">

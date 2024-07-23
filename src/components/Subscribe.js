@@ -6,7 +6,8 @@ const Subscribe = () => {
     <div className="subscribe">
       <h5>(forgot to mention)</h5>
       <h3>
-        Subscribe to my Youtube Channel <i class="ri-arrow-right-up-line"></i>
+        Subscribe to my Youtube Channel{" "}
+        <i className="ri-arrow-right-up-line"></i>
       </h3>
     </div>
   );
