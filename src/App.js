@@ -22,7 +22,6 @@ function App() {
   }, []);
   return (
     <div id="main">
-      <MouseFollower xScale={1} yScale={1} />
       <Hero />
       <Features />
       <About />

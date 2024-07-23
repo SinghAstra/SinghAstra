@@ -5,6 +5,7 @@
   width: 100%;
   padding: 20px 40px;
   color: #fff;
+  animation: slideDownFadeIn 1.5s forwards;
 }
 
 .nav a {
@@ -49,7 +50,7 @@
 }
 
 .blockText h1 {
-  background-color: #075985;
+  background-image: linear-gradient(black, #ff00f2);
   padding: 0.25vw 1vw;
 }
 
@@ -81,6 +82,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  animation: slideDownFadeIn 1.5s forwards;
 }
 
 .hero-footer a {
@@ -108,5 +110,16 @@
 @keyframes slideUp {
   to {
     transform: translateY(0);
+  }
+}
+
+@keyframes slideDownFadeIn {
+  0% {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
   }
 }

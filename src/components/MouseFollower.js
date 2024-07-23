@@ -1,26 +1,21 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import "../styles/MouseFollower.css";
 
-const MouseFollower = ({ xScale = 1, yScale = 1 }) => {
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-
+const MouseFollower = () => {
   useEffect(() => {
-    const handleMouseMove = (event) => {
-      setPosition({ x: event.clientX, y: event.clientY });
+    const cursor = document.querySelector(".blob");
+
+    const handleMouseMove = (e) => {
+      cursor.style.transform = `translate(calc(${e.clientX}px - 50%), calc(${e.clientY}px - 50%))`;
     };
 
-    window.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mousemove", handleMouseMove);
 
     return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mousemove", handleMouseMove);
     };
   }, []);
-
-  const style = {
-    transform: `translate(${position.x}px, ${position.y}px) scale(${xScale}, ${yScale})`,
-  };
-
-  return <div className="mouse-follower" style={style}></div>;
+  return <div className="blob"></div>;
 };
 
 export default MouseFollower;
