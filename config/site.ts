@@ -3,7 +3,7 @@ import { SiteConfig } from "@/interfaces/site";
 export const siteConfig: SiteConfig = {
   name: "SinghAstra",
   description:
-    "Portfolio showcasing projects and skills in JavaScript, TypeScript, React, Next.js, Node.js, and AI-powered GitHub tools.",
+    "Portfolio showcasing my AI-powered projects and skills in JavaScript, TypeScript, React, Next.js, Node.js.",
   url: "https://singhastra.vercel.app",
   links: {
     twitter: "https://x.com/XSinghAstra",
