@@ -9,7 +9,7 @@ import {
   SquareChevronRight,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { Fragment } from "react";
+import { Fragment, useEffect, useState } from "react";
 
 const navItems = [
   { icon: Home, label: "Home", href: "/" },
@@ -22,7 +22,7 @@ const navItems = [
 function NavbarContent() {
   const pathname = usePathname();
   return (
-    <div className="flex items-center gap-1 bg-muted/20 backdrop-blur-sm border rounded px-2 py-1 shadow-lg">
+    <div className="flex items-center gap-1 bg-muted/20 backdrop-blur-lg border rounded px-2 py-1 shadow-lg">
       {navItems.map((item, index) => (
         <Fragment key={item.label}>
           <Button
@@ -53,8 +53,30 @@ function NavbarContent() {
 }
 
 function Navbar() {
+  const [scrolled, setScrolled] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
+    // Handler for scroll event
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 40);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [isMounted]);
+
   return (
-    <nav className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50">
+    <nav
+      className={`fixed left-1/2 transform -translate-x-1/2 z-50  ${
+        scrolled ? "shadow-2xl sm:top-2" : "sm:top-6"
+      }`}
+    >
       <NavbarContent />
     </nav>
   );
