@@ -64,7 +64,7 @@ function Navbar() {
     if (!isMounted) return;
     // Handler for scroll event
     const handleScroll = () => {
-      setScrolled(window.scrollY > 40);
+      setScrolled(window.scrollY > 100);
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -73,8 +73,8 @@ function Navbar() {
 
   return (
     <nav
-      className={`fixed left-1/2 transform -translate-x-1/2 z-50  ${
-        scrolled ? "shadow-2xl sm:top-2" : "sm:top-6"
+      className={`left-1/2 transform -translate-x-1/2 z-50 shadow-2xl top-2  ${
+        scrolled ? "fixed" : "hidden"
       }`}
     >
       <NavbarContent />
