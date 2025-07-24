@@ -7,6 +7,6 @@ export const siteConfig: SiteConfig = {
   links: {
     twitter: "https://x.com/XSinghAstra",
     github: "https://github.com/SinghAstra",
-    cv: "https://drive.google.com/file/d/1QJkg_4y0JxVTOgU21mNsLmT0Ix8dV8F9/view",
+    cv: "https://drive.google.com/file/d/1qgr52Q4tjJYKoT_UsR6w_mldSDqL3bCC/view",
   },
 };
