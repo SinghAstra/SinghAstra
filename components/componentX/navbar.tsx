@@ -1,22 +1,15 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Briefcase,
-  Contact,
-  Home,
-  Info,
-  SquareChevronRight,
-} from "lucide-react";
+import { Briefcase, Contact, Home, Info } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { Fragment, useEffect, useState } from "react";
 
 const navItems = [
   { icon: Home, label: "Intro", href: "/" },
-  { icon: Info, label: "journey", href: "/#journey" },
-  { icon: SquareChevronRight, label: "Skills", href: "/#skills" },
   { icon: Briefcase, label: "Projects", href: "/#projects" },
   { icon: Contact, label: "Contact", href: "/#contact" },
+  { icon: Info, label: "Journey", href: "/journey" },
 ];
 
 function NavbarContent() {

@@ -1,3 +1,4 @@
+import Navbar from "@/components/componentX/navbar";
 import Providers from "@/components/provider/provider";
 import { Toaster } from "@/components/ui/sonner";
 import { siteConfig } from "@/config/site";
@@ -68,6 +69,8 @@ export default function RootLayout({
       <body className="antialiased min-h-screen ">
         <Providers>
           <NextTopLoader color="hsl(var(--primary))" showSpinner={false} />
+          <Navbar />
+
           {children}
           <Toaster
             theme="dark"
