@@ -12,8 +12,8 @@ import { usePathname } from "next/navigation";
 import { Fragment, useEffect, useState } from "react";
 
 const navItems = [
-  { icon: Home, label: "Home", href: "/" },
-  { icon: Info, label: "About", href: "/#about" },
+  { icon: Home, label: "Intro", href: "/" },
+  { icon: Info, label: "journey", href: "/#journey" },
   { icon: SquareChevronRight, label: "Skills", href: "/#skills" },
   { icon: Briefcase, label: "Projects", href: "/#projects" },
   { icon: Contact, label: "Contact", href: "/#contact" },
@@ -21,6 +21,7 @@ const navItems = [
 
 function NavbarContent() {
   const pathname = usePathname();
+  console.log("pathname is ", pathname);
   return (
     <div className="flex items-center gap-1 bg-muted/20 backdrop-blur-lg border rounded px-2 py-1 shadow-lg">
       {navItems.map((item, index) => (

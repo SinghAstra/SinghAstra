@@ -10,7 +10,10 @@ import { FaGithub, FaTwitter } from "react-icons/fa";
 
 const Introduction = () => {
   return (
-    <div className="min-h-screen flex flex-col gap-8 items-center justify-center  px-2 sm:px-4">
+    <div
+      className="min-h-screen flex flex-col gap-8 items-center justify-center  px-2 sm:px-4"
+      id="intro"
+    >
       <motion.div variants={scaleInVariant}>
         <a href={siteConfig.links.twitter} target="_blank">
           <div className="p-1 relative rounded">
@@ -28,7 +31,7 @@ const Introduction = () => {
         </a>
       </motion.div>
       <div className="max-w-3xl w-full flex flex-col gap-2">
-        <h1 className="text-6xl font-bold">
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold ">
           Hi, I&apos;m
           <br /> <span className="text-primary">Abhay Pratap Singh</span>
         </h1>
@@ -56,7 +59,7 @@ const Introduction = () => {
               <Button
                 variant={"outline"}
                 size="lg"
-                className="flex items-center text-md justify-center gap-2 rounded font-normal z-3 relative backdrop-blur-lg"
+                className="flex items-center text-md justify-center gap-2 rounded font-normal z-3 relative transition-all duration-200 hover:bg-muted/20"
               >
                 <FaGithub className=" h-4 w-4" />
                 GitHub

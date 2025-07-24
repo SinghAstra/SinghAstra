@@ -3,16 +3,14 @@
 import Navbar from "@/components/componentX/navbar";
 import React from "react";
 import Introduction from "./introduction";
+import WorkExperience from "./work-experience";
 
 const HomePage = () => {
   return (
     <div>
       <Navbar />
       <Introduction />
-      <section
-        className="w-full py-12 md:py-24 lg:py-32 bg-background"
-        id="about"
-      >
+      <div className="w-full py-12 md:py-24 lg:py-32 " id="journey">
         <div className="px-4 md:px-6 max-w-3xl mx-auto">
           <h2 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl text-center mb-12">
             My Journey in <span className="text-primary">Engineering</span> &{" "}
@@ -24,10 +22,8 @@ const HomePage = () => {
                 Curiosity as a Driving Force
               </h3>
               <p>
-                I am driven by a strong sense of curiosity and a desire to
-                create things that have a meaningful impact. For me, engineering
-                is the ideal path to pursue this passion, as it empowers me to
-                turn ideas into reality.
+                For me, engineering is the ideal path to pursue my curiosity, as
+                it empowers me to turn ideas into reality.
               </p>
             </div>
             <div>
@@ -36,7 +32,7 @@ const HomePage = () => {
               </h3>
               <p>
                 I chose programming as my starting point because of its
-                versatility—it transcends traditional branches and opens doors
+                versatility, it transcends traditional branches and opens doors
                 across diverse fields.
               </p>
             </div>
@@ -53,7 +49,9 @@ const HomePage = () => {
                   Native app development: Using Android Studio with Kotlin
                 </li>
                 <li>Web development: Leveraging the MERN stack and Next.js</li>
-                <li>Machine learning: Exploring data-driven solutions</li>
+                <li>
+                  Machine learning: Exploring data analysis with Panda & Numpy
+                </li>
               </ul>
             </div>
             <div>
@@ -71,10 +69,8 @@ const HomePage = () => {
             </div>
           </div>
         </div>
-      </section>
-      <div className="min-h-screen flex items-center justify-center">
-        HomePage - 2
       </div>
+      <WorkExperience />
     </div>
   );
 };
