@@ -59,7 +59,7 @@ const Introduction = () => {
               <Button
                 variant={"outline"}
                 size="lg"
-                className="flex items-center text-md justify-center gap-2 rounded font-normal z-3 relative transition-all duration-200 hover:bg-muted/20"
+                className="flex items-center text-md justify-center gap-2 rounded font-normal z-3 relative transition-all duration-200 hover:bg-background"
               >
                 <FaGithub className=" h-4 w-4" />
                 GitHub

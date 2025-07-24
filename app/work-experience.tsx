@@ -29,8 +29,8 @@ function WorkExperience() {
   };
 
   return (
-    <div className="w-full py-12 md:py-24 lg:py-32 ">
-      <div className="px-4 md:px-6 max-w-3xl mx-auto">
+    <div className="w-full">
+      <div className="p-4 max-w-3xl mx-auto">
         <h2 className="text-2xl md:text-3xl font-bold mb-6 text-foreground">
           Work Experience
         </h2>
