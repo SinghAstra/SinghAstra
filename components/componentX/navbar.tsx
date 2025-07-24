@@ -12,43 +12,25 @@ const navItems = [
   { icon: Info, label: "Journey", href: "/journey" },
 ];
 
-function NavbarContent() {
-  const pathname = usePathname();
-  console.log("pathname is ", pathname);
-  return (
-    <div className="flex items-center gap-1 bg-muted/20 backdrop-blur-lg border rounded px-2 py-1 shadow-lg">
-      {navItems.map((item, index) => (
-        <Fragment key={item.label}>
-          <Button
-            key={item.label}
-            variant="ghost"
-            className={`hover:bg-primary transition-all duration-200 rounded font-normal
-               ${
-                 pathname === item.href
-                   ? "bg-primary text-primary-foreground"
-                   : "text-muted-foreground"
-               }
-            `}
-            asChild
-          >
-            <a href={item.href}>
-              <item.icon className="h-4 w-4 mr-1" />
-              <span className="hidden sm:inline"> {item.label}</span>
-            </a>
-          </Button>
-          {/* Add divider except after the last button */}
-          {index !== navItems.length - 1 && (
-            <span className="h-5 w-px bg-muted/50 " aria-hidden="true"></span>
-          )}
-        </Fragment>
-      ))}
-    </div>
-  );
-}
-
 function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [hash, setHash] = useState("");
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (!isMounted) return;
+    setHash(window.location.hash);
+
+    const onHashChange = () => {
+      setHash(window.location.hash);
+    };
+
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, [isMounted]);
+
+  const currentFullPath = pathname + hash;
 
   useEffect(() => {
     setIsMounted(true);
@@ -71,7 +53,33 @@ function Navbar() {
         scrolled ? "fixed" : "hidden"
       }`}
     >
-      <NavbarContent />
+      <div className="flex items-center gap-1 bg-muted/20 backdrop-blur-lg border rounded px-2 py-1 shadow-lg">
+        {navItems.map((item, index) => (
+          <Fragment key={item.label}>
+            <Button
+              key={item.label}
+              variant="ghost"
+              className={`hover:bg-primary transition-all duration-200 rounded font-normal
+               ${
+                 currentFullPath === item.href
+                   ? "bg-primary text-primary-foreground"
+                   : "text-muted-foreground"
+               }
+            `}
+              asChild
+            >
+              <a href={item.href}>
+                <item.icon className="h-4 w-4 mr-1" />
+                <span className="hidden sm:inline"> {item.label}</span>
+              </a>
+            </Button>
+            {/* Add divider except after the last button */}
+            {index !== navItems.length - 1 && (
+              <span className="h-5 w-px bg-muted/50 " aria-hidden="true"></span>
+            )}
+          </Fragment>
+        ))}
+      </div>
     </nav>
   );
 }

@@ -14,7 +14,7 @@ import React from "react";
 import { FaGithub, FaTwitterSquare } from "react-icons/fa";
 
 const ReadmeXBackground = () => {
-  const url = "https://chatsdkx.vercel.app";
+  const url = "https://readmex.vercel.app";
 
   return (
     <motion.div
