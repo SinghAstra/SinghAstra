@@ -87,9 +87,7 @@ function WorkExperience() {
               </p>
             </div>
           </div>
-          <span className="text-sm text-muted-foreground">
-            June 2025 – Present
-          </span>
+         
         </button>
 
         {isOpen && (
@@ -102,7 +100,7 @@ function WorkExperience() {
             className="mt-4 pr-4"
           >
             <p className="text-base text-card-foreground">
-              I am serving as the project lead for Bloguite, a web application
+              I worked as the project lead for Bloguite, a web application
               designed to generate AI-powered blogs. The platform helps
               corporations attract a wider audience within their niche, retain
               that audience through engaging, personalized content, and
