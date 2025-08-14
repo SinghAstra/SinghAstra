@@ -1,3 +1,1 @@
-# SinghAstra
-
-Building this ...
+[singhastra](https://singhastra.vercel.app/)
