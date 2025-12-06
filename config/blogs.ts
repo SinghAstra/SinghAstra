@@ -14,6 +14,18 @@ export const blogsLink: BlogSectionLink[] = [
     title: "Javascript",
     links: [
       {
+        title: "Memory Architecture",
+        path: "/blogs/javascript/memory-architecture",
+      },
+      {
+        title: "Introduction",
+        path: "/blogs/javascript/introduction",
+      },
+      {
+        title: "Introduction",
+        path: "/blogs/javascript/introduction",
+      },
+      {
         title: "Introduction",
         path: "/blogs/javascript/introduction",
       },

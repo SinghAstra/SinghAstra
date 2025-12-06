@@ -18,13 +18,13 @@ function BlogsSidebar({
   return (
     <div
       className={cn(
-        "w-[256px] py-4 h-full overflow-y-auto flex-nowrap hidden md:block",
+        "w-[256px] py-4 h-full flex-col gap-4 overflow-y-auto flex-nowrap hidden md:flex",
         className
       )}
     >
       {blogsLink.map((item, index) => (
         <div key={index} className="flex flex-col gap-1">
-          <h4 className="py-1 pl-1 text-xs tracking-widest text-muted-foreground uppercase">
+          <h4 className="py-1 pl-1 text-xs tracking-widest text-muted-foreground">
             {item.title}
           </h4>
           <DocsNavItems
@@ -48,7 +48,7 @@ function DocsNavItems({
   onLinkClick?: () => void;
 }) {
   return (
-    <div className="space-y-1 text-sm pl-3">
+    <div className="flex flex-col text-sm pl-3">
       {items.map(
         (item, index) =>
           item.path && (

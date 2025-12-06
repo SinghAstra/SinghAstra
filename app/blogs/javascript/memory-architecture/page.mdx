@@ -1,0 +1,102 @@
+---
+title: "Memory Architecture"
+date: "2025-12-06"
+excerpt: "A deep dive into JavaScript's memory architecture: how the Stack and Heap manage data, and the role of the Garbage Collector."
+---
+
+## Unit 1: Memory Architecture 🧠
+
+### 1.0 The Physical Reality (RAM)
+
+Before code runs, it must have a physical place to live.
+
+- Hardware: RAM (Random Access Memory).
+  - Physically, it is a massive, linear grid of addressable Bytes (8-bit storage cells).
+- The Abstraction (The Slot):
+  - The JavaScript Engine (V8) doesn't manage single bytes; it groups them into larger, usable chunks called Memory Slots (typically 64-bits or 8 bytes on modern machines).
+  - Rule: Every variable you declare gets assigned to one of these Slots.
+- The Process: When a JavaScript program runs, the Operating System allocates a specific slice of RAM to it. The Engine divides this slice into two primary regions: The Stack and The Heap.
+
+---
+
+### 1.1 The Stack Memory (Static & Structured)
+
+#### A. Definition
+
+The Stack is a region of memory reserved for Static Allocation.
+
+- "Static" means the engine knows the size of the data at compile time (before execution).
+- Data Types: Stores Primitives (number, boolean, undefined, null) and References (Memory Addresses pointing to the Heap).
+
+#### B. Structure: LIFO
+
+It follows the Last In, First Out data structure.
+
+- Contiguous: The data blocks sit physically next to each other in RAM.
+
+#### C. The Hardware Mechanism: The Stack Pointer (SP)
+
+The Stack is managed by a CPU register called the Stack Pointer.
+
+- Definition: The SP is a pointer that tracks the exact memory address of the Top of the Stack.
+- The Boundary: Everything below the SP is "Live Data." Everything above it is "Empty/Garbage."
+- Allocation (Push): When a function is called, the CPU moves the SP UP (to reserved space) and writes the data.
+- De-allocation (Pop): When a function returns, the CPU simply moves the SP DOWN.
+- Crucial Note: The data is not erased. It is just abandoned. The computer considers that space free to be overwritten by the next function.
+
+#### D. Characteristics
+
+- Speed: Extremely Fast. Allocation is just one CPU instruction (moving the SP). Access is cache-friendly (contiguous).
+- Limit: Fixed Size. The OS limits the Stack size.
+- Failure State: Stack Overflow. If the SP moves past the limit, the program crashes.
+
+---
+
+### 1.2 The Heap Memory (Dynamic & Unstructured)
+
+#### A. Definition
+
+The Heap is a massive pool of memory reserved for Dynamic Allocation.
+
+- Dynamic means the size of the data can change at runtime (e.g., an Array growing from 1 item to 1000 items).
+- Data Types: Stores Objects, Arrays, and Functions.
+
+#### B. Structure
+
+- There is no order (unlike the Stack).
+- Fragmented: Data is scattered wherever the engine can find a free gap large enough to fit the object.
+
+#### C. Memory Management: Garbage Collection (GC)
+
+Because the Heap has no Stack Pointer to automatically clean up data, it requires a "Janitor."
+
+- The Problem: If you create an object and stop using it, it stays in RAM, clogging up memory (Memory Leak).
+- The Solution: The Garbage Collector (GC).
+- Mechanism (Mark and Sweep):
+  1.  Roots: The GC starts at the Roots (Global Variables + Active Stack Frames).
+  2.  Traverse: It follows all pointers (references) to the Heap.
+  3.  Mark: It marks every reachable object as "Alive."
+  4.  Sweep: Any object in the Heap not marked is deleted, and the memory is reclaimed.
+- Frequency & Triggers (Non-Deterministic): The GC does not run continuously (it would freeze the main thread). It is periodic.
+  1. Trigger 1 (Memory Pressure): It runs when the Heap is getting full and the engine needs space for a new allocation.
+  2. Trigger 2 (Idle Time): Modern engines try to run small cleanups when the CPU is idle (user is not interacting).
+
+#### D. Characteristics
+
+- Speed: Slower.
+- Allocation: The engine must search for a free gap.
+- Access: Requires Pointer Traversal (jumping from Stack Address to Heap Address).
+- Limit: Limited only by the Process Memory limit (can be Gigabytes).
+
+---
+
+### 📝 Summary Table
+
+| Feature    | Stack Memory                 | Heap Memory                |
+| :--------- | :--------------------------- | :------------------------- |
+| Data Types | Primitives & References      | Objects, Arrays, Functions |
+| Structure  | Linear, Contiguous (LIFO)    | Unstructured (Graph)       |
+| Allocation | Static (Known size)          | Dynamic (Variable size)    |
+| Management | Stack Pointer (CPU)          | Garbage Collector (Engine) |
+| Speed      | Very Fast (O(1))             | Slower (Pointer chasing)   |
+| Cleanup    | Instant (On function return) | Periodic (When GC runs)    |

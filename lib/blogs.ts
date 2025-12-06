@@ -31,9 +31,9 @@ export function getAllBlogsMeta(): BlogMeta[] {
       );
 
     // Map blog folders to BlogMeta
-    return blogDirs.map((slug) => {
+    return blogDirs.map((postSlug) => {
       // Structure: app/blogs/[category]/[slug]/page.mdx
-      const filePath = path.join(categoryPath, slug, "page.mdx");
+      const filePath = path.join(categoryPath, postSlug, "page.mdx");
 
       // Safety check: ensure page.mdx exists before reading
       if (!fs.existsSync(filePath)) {
@@ -43,9 +43,11 @@ export function getAllBlogsMeta(): BlogMeta[] {
       const source = fs.readFileSync(filePath, "utf-8");
       const { data } = matter(source);
 
+      const fullSlug = `/${category}/${postSlug}`;
+
       return {
         ...(data as Omit<BlogMeta, "slug">),
-        slug,
+        slug: fullSlug,
         category,
       };
     });

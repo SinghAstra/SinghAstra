@@ -3,7 +3,6 @@
 import { MenuToggle } from "@/components/component-x/menu-toggle";
 import BlogsSidebar from "@/components/layout/blogs-sidebar";
 import { BlogsPagination } from "@/components/mdx/blogs-pagination";
-import TableOfContents from "@/components/mdx/toc";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { siteConfig } from "@/config/site";
@@ -55,7 +54,6 @@ const BlogsLayout = ({ children }: { children: React.ReactNode }) => {
               {children}
               <BlogsPagination />
             </div>
-            <TableOfContents />
           </div>
         </div>
       </div>

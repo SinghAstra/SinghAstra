@@ -250,7 +250,6 @@ export default function ClientHomePage({ recentBlogs }: ClientHomePageProps) {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between text-xs text-muted-foreground font-mono">
                         <span>{post.date}</span>
-                        <span>{post.readTime}</span>
                       </div>
 
                       <h3 className="text-lg sm:text-xl font-medium group-hover:text-muted-foreground transition-colors duration-300">
