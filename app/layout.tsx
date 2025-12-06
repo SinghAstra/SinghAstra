@@ -1,7 +1,9 @@
 import { siteConfig } from "@/config/site";
+import { AlertCircle, CheckCircle, Loader } from "lucide-react";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import NextTopLoader from "nextjs-toploader";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const geist = Geist({
@@ -71,6 +73,31 @@ export default function RootLayout({
       >
         <NextTopLoader color="hsl(var(--primary))" showSpinner={false} />
         {children}
+        <Toaster
+          theme="dark"
+          icons={{
+            loading: (
+              <Loader className="h-4 w-4 animate-spin text-muted-foreground" />
+            ),
+            error: <AlertCircle className="h-4 w-4 text-destructive" />,
+            success: <CheckCircle className="h-4 w-4 text-primary" />,
+          }}
+          richColors={true}
+          toastOptions={{
+            style: {
+              fontFamily: "Space Grotesk, monospace",
+              color: "hsl(var(--foreground))",
+              letterSpacing: "0.05em",
+              fontSize: ".95rem",
+              borderRadius: "var(--radius)",
+              padding: "1.5em",
+            },
+            classNames: {
+              error: "border-destructive/50 text-destructive",
+              success: "border-primary/50 text-primary",
+            },
+          }}
+        />
       </body>
     </html>
   );
