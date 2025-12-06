@@ -1,20 +1,12 @@
-"use client";
+import { getAllBlogsMeta } from "@/lib/blogs";
+import ClientHomePage from "./client";
 
-import React from "react";
-import Contact from "./contact";
-import Introduction from "./introduction";
-import Work from "./work";
-import WorkExperience from "./work-experience";
+const MAX_RECENT_POSTS = 4;
 
-const HomePage = () => {
-  return (
-    <div>
-      <Introduction />
-      <WorkExperience />
-      <Work />
-      <Contact />
-    </div>
-  );
-};
+export default async function HomePage() {
+  const allPosts = getAllBlogsMeta();
 
-export default HomePage;
+  const recentPosts = allPosts.slice(0, MAX_RECENT_POSTS);
+
+  return <ClientHomePage recentBlogs={recentPosts} />;
+}
