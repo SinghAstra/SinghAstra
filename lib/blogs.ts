@@ -43,7 +43,7 @@ export function getAllBlogsMeta(): BlogMeta[] {
       const source = fs.readFileSync(filePath, "utf-8");
       const { data } = matter(source);
 
-      const fullSlug = `/${category}/${postSlug}`;
+      const fullSlug = `${category}/${postSlug}`;
 
       return {
         ...(data as Omit<BlogMeta, "slug">),
