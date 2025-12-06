@@ -1,30 +1,31 @@
-import Navbar from "@/components/componentX/navbar";
-import Providers from "@/components/provider/provider";
-import { Toaster } from "@/components/ui/sonner";
 import { siteConfig } from "@/config/site";
+import { AlertCircle, CheckCircle, Loader } from "lucide-react";
 import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import NextTopLoader from "nextjs-toploader";
+import { Toaster } from "sonner";
 import "./globals.css";
 
+const geist = Geist({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-geist",
+});
+
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-geist-mono",
+});
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteConfig.url),
   title: {
     default: siteConfig.name,
     template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,
-  keywords: [
-    "JavaScript",
-    "TypeScript",
-    "React JS",
-    "Express JS",
-    "Next JS",
-    "MongoDB",
-    "Mongoose",
-    "PostgreSQL",
-    "Prisma",
-    "Redis",
-    "Bull MQ",
-  ],
+  keywords: siteConfig.keywords,
   authors: [
     {
       name: "SinghAstra",
@@ -65,29 +66,38 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="antialiased min-h-screen ">
-        <Providers>
-          <NextTopLoader color="hsl(var(--primary))" showSpinner={false} />
-          <Navbar />
-
-          {children}
-          <Toaster
-            theme="dark"
-            toastOptions={{
-              style: {
-                fontFamily: "Space Grotesk, monospace",
-                background: "hsl(var(--muted) / 0.2)",
-                color: "hsl(var(--foreground))",
-                border: "1px solid hsl(var(--border))",
-                letterSpacing: "0.01em",
-                fontSize: ".95rem",
-                backdropFilter: "blur(20px)",
-                WebkitBackdropFilter: "blur(20px)",
-              },
-            }}
-          />
-        </Providers>
+    <html lang="en" className={`${geist.variable} ${geistMono.variable}`}>
+      <body
+        className="antialiased min-h-screen bg-background font-grotesk "
+        suppressHydrationWarning
+      >
+        <NextTopLoader color="hsl(var(--primary))" showSpinner={false} />
+        {children}
+        <Toaster
+          theme="dark"
+          icons={{
+            loading: (
+              <Loader className="h-4 w-4 animate-spin text-muted-foreground" />
+            ),
+            error: <AlertCircle className="h-4 w-4 text-destructive" />,
+            success: <CheckCircle className="h-4 w-4 text-primary" />,
+          }}
+          richColors={true}
+          toastOptions={{
+            style: {
+              fontFamily: "Space Grotesk, monospace",
+              color: "hsl(var(--foreground))",
+              letterSpacing: "0.05em",
+              fontSize: ".95rem",
+              borderRadius: "var(--radius)",
+              padding: "1.5em",
+            },
+            classNames: {
+              error: "border-destructive/50 text-destructive",
+              success: "border-primary/50 text-primary",
+            },
+          }}
+        />
       </body>
     </html>
   );
