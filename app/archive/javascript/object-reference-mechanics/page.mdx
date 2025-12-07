@@ -1,0 +1,133 @@
+---
+title: "Object Reference Mechanics"
+date: "12-12-2025"
+excerpt: "The physics of data sharing: Why Objects are aliased, the difference between mutation and reassignment, and strategies for deep copying."
+---
+
+## Object Reference Mechanics
+
+### The Assignment Rule
+
+To understand how data moves in your application, you must master the `Assignment Rule`. When you assign a variable to another variable (`let a = b`), the engine does not look inside the data. It blindly copies the Stack Slot.
+
+#### A. Primitives (Copy by Value)
+
+When you assign a Primitive, the engine copies the actual value.
+
+- Result: The two variables become completely independent. Changing one does not affect the other.
+
+```javascript
+let a = 10;
+let b = a; // Copy the value 10
+b = 20; // a is still 10
+```
+
+#### B. Objects (Copy by Reference)
+
+When you assign an Object, the engine copies the `Memory Address` (the pointer), not the Heap data.
+
+- Result: Both variables point to the same object in the Heap. This is called `Aliasing`.
+
+```javascript
+let user1 = { name: "Singh" }; // Address: 0x001
+let user2 = user1; // Copy the Address 0x001
+```
+
+---
+
+### Aliasing & Mutation
+
+Aliasing is dangerous because it might lead to unintended result.You can modify a variable in File A, and it accidentally updates a variable in File B because they share the same Heap Address.
+
+#### A. Mutation vs. Reassignment
+
+This distinction is critical for React and Functional Programming.
+
+1.  Mutation (Modifying the Heap):
+
+    - You follow the pointer to the Heap and change the data inside.
+    - Effect: All aliases see the change.
+
+    ```javascript
+    const user = { name: "Singh" };
+    user.name = "Astra"; // Allowed! The Stack pointer didn't change.
+    ```
+
+2.  **Reassignment (Modifying the Stack):**
+
+    - You change the value in the Stack Slot to point to a completely different object (or value).
+    - **Effect:** The link between the variables is broken.
+
+    ```javascript
+    let user = { name: "Singh" };
+    user = { name: "New" }; // The old link is gone.
+    ```
+
+#### B. The `const` Myth
+
+Many developers believe `const` makes an object immutable. It does not.
+
+- Reality: `const` creates an Immutable Binding. It locks the Stack Slot. You cannot Reassign the variable to a new address.
+- Loophole: It does not lock the Heap. You are free to Mutate the contents of the object referenced by that slot.
+
+---
+
+### Copying Strategies
+
+Since assignment (`=`) only creates an alias, how do we actually clone an object?
+
+#### A. Shallow Copy (The Spread Operator `...`)
+
+ES6 introduced the Spread syntax.
+
+- Mechanism: It creates a New Object in the Heap and iterates over the properties of the old object.
+- The `Assignment` Trap: For each property, it performs a standard Assignment.
+  - If the property is a Primitive, it copies the value.
+  - If the property is a Nested Object, it copies the Reference (Address).
+- The Limit: It only copies the First Layer. If the object contains nested objects (e.g., `user.address.city`), those nested objects are still copied by reference.
+
+```javascript
+let original = {
+  name: "Singh",
+  meta: { role: "Admin" },
+};
+
+let copy = { ...original };
+
+copy.name = "Clone"; // Safe (Original is still "Singh")
+copy.meta.role = "User"; // DANGER! Original.meta.role becomes "User"
+```
+
+#### B. Deep Copy (Breaking the Chain)
+
+To fully clone a nested tree, we need a Deep Copy.
+
+1.  The JSON Hack (Legacy):
+
+    - `JSON.parse(JSON.stringify(obj))`
+    - Mechanism: Serializes the Heap graph into a flat String, then parses it back into a brand new set of objects.
+    - Data Loss: It fails on "non-serializable" data. `Date` objects become Strings, `undefined` is removed, and `Functions`, `Maps`, and `Sets` are completely lost.
+
+2.  structuredClone() (Modern Standard):
+
+    - A built-in browser API available since 2022.
+    - Mechanism: It uses a Recursive Algorithm to walk the entire object tree, creating new copies of every node it encounters.
+    - Pros: It handles nested structures, Circular References, Dates, Maps, and Sets correctly.
+    - Cons: Slightly slower than shallow copying due to the cost of recursion.
+
+```javascript
+let deepCopy = structuredClone(original);
+// Completely safe. No shared references.
+```
+
+---
+
+### 📝 Summary Table
+
+| Operation    | Syntax            | Stack Action   | Heap Action    | Result                |
+| :----------- | :---------------- | :------------- | :------------- | :-------------------- |
+| Assignment   | `b = a`           | Copy Slot      | None           | Alias (Shared Ref)    |
+| Reassignment | `a = {}`          | Update Slot    | Create new Obj | Broken Link           |
+| Mutation     | `a.x = 1`         | None           | Update Obj     | Side Effect           |
+| Shallow Copy | `{...a}`          | Create new Ref | Copy Layer 1   | Mixed (Shared Nested) |
+| Deep Copy    | `structuredClone` | Create new Ref | Recursive Copy | True Clone            |

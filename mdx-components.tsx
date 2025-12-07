@@ -179,7 +179,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     code: ({ className, ...props }) => (
       <code
         className={cn(
-          "relative rounded-md px-2 py-1 text-sm font-mono bg-muted/50 text-foreground border border-muted font-medium",
+          "relative rounded-md px-2 py-0.5 text-sm font-mono bg-muted/50 text-foreground border border-muted font-medium",
           className
         )}
         {...props}
