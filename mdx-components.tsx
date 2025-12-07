@@ -38,7 +38,6 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
           className="scroll-m-20 text-3xl font-bold tracking-tight text-foreground mt-12 mb-6 pb-0 border-0 flex items-center gap-3"
           {...props}
         >
-          <span className="w-1 h-8 bg-accent rounded-full shrink-0" />
           {children}
         </h2>
       );
@@ -171,7 +170,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     blockquote: ({ className, ...props }) => (
       <blockquote
         className={cn(
-          "my-8 border-l-4 border-accent pl-6 pr-4 py-4 italic text-muted-foreground bg-accent/5 rounded-r-md",
+          "my-8 border-l-4 border-accent pl-6 pr-4 py-2 text-muted-foreground bg-muted/30 rounded-r-md flex items-center [&>p]:mb-0",
           className
         )}
         {...props}

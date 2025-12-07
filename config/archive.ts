@@ -21,6 +21,10 @@ export const archiveLinks: ArchiveSectionLink[] = [
         title: "Runtime Environment",
         path: "/archive/javascript/runtime-environment",
       },
+      {
+        title: "Data Mechanics",
+        path: "/archive/javascript/data-mechanics",
+      },
     ],
   },
 ];
