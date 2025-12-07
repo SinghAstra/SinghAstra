@@ -2,26 +2,24 @@ import fs from "fs";
 import matter from "gray-matter";
 import path from "path";
 
-export interface BlogMeta {
+export interface ArchiveMeta {
   slug: string;
   title: string;
   date: string;
   excerpt: string;
-  readTime: string;
-  category?: string;
 }
 
-const BLOGS_PATH = path.join(process.cwd(), "app", "blogs");
+const ARCHIVE_PATH = path.join(process.cwd(), "app", "archive");
 
-export function getAllBlogsMeta(): BlogMeta[] {
+export function getAllArchivesMeta(): ArchiveMeta[] {
   // 1. Get all Tech Categories (e.g., "javascript", "react")
   const categories = fs
-    .readdirSync(BLOGS_PATH)
-    .filter((file) => fs.statSync(path.join(BLOGS_PATH, file)).isDirectory());
+    .readdirSync(ARCHIVE_PATH)
+    .filter((file) => fs.statSync(path.join(ARCHIVE_PATH, file)).isDirectory());
 
   // 2. Loop through categories, then loop through blog slugs inside them
-  const blogs = categories.flatMap((category) => {
-    const categoryPath = path.join(BLOGS_PATH, category);
+  const archive = categories.flatMap((category) => {
+    const categoryPath = path.join(ARCHIVE_PATH, category);
 
     // Get blog folders inside the specific category
     const blogDirs = fs
@@ -32,7 +30,7 @@ export function getAllBlogsMeta(): BlogMeta[] {
 
     // Map blog folders to BlogMeta
     return blogDirs.map((postSlug) => {
-      // Structure: app/blogs/[category]/[slug]/page.mdx
+      // Structure: app/archive/[category]/[slug]/page.mdx
       const filePath = path.join(categoryPath, postSlug, "page.mdx");
 
       // Safety check: ensure page.mdx exists before reading
@@ -46,7 +44,7 @@ export function getAllBlogsMeta(): BlogMeta[] {
       const fullSlug = `${category}/${postSlug}`;
 
       return {
-        ...(data as Omit<BlogMeta, "slug">),
+        ...(data as Omit<ArchiveMeta, "slug">),
         slug: fullSlug,
         category,
       };
@@ -54,7 +52,7 @@ export function getAllBlogsMeta(): BlogMeta[] {
   });
 
   // 3. Filter out nulls (files not found) and sort by date
-  return blogs
-    .filter((blog) => blog !== null)
+  return archive
+    .filter((archive) => archive !== null)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }

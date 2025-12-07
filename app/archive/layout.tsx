@@ -1,15 +1,15 @@
 "use client";
 
 import { MenuToggle } from "@/components/component-x/menu-toggle";
-import BlogsSidebar from "@/components/layout/blogs-sidebar";
-import { BlogsPagination } from "@/components/mdx/blogs-pagination";
+import ArchiveSidebar from "@/components/layout/archive-sidebar";
+import { ArchivePagination } from "@/components/mdx/archive-pagination";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { siteConfig } from "@/config/site";
 import Link from "next/link";
 import React, { useState } from "react";
 
-const BlogsLayoutHeader = ({
+const ArchiveLayoutHeader = ({
   isOpen,
   setIsSheetOpen,
 }: {
@@ -45,14 +45,17 @@ const BlogsLayout = ({ children }: { children: React.ReactNode }) => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   return (
     <div className="h-screen flex flex-col overflow-hidden w-full">
-      <BlogsLayoutHeader setIsSheetOpen={setIsSheetOpen} isOpen={isSheetOpen} />
+      <ArchiveLayoutHeader
+        setIsSheetOpen={setIsSheetOpen}
+        isOpen={isSheetOpen}
+      />
       <div className="flex flex-1 overflow-hidden relative">
-        <BlogsSidebar />
+        <ArchiveSidebar />
         <div className="flex-1 flex overflow-hidden pb-2 pr-2 pl-2 lg:pl-0">
           <div className="flex-1 h-full flex overflow-hidden border rounded bg-muted/30">
             <div className="h-full p-1 sm:p-4 sm:px-8 flex-1 overflow-y-auto">
               {children}
-              <BlogsPagination />
+              <ArchivePagination />
             </div>
           </div>
         </div>
@@ -62,11 +65,11 @@ const BlogsLayout = ({ children }: { children: React.ReactNode }) => {
           side="right"
           className="h-dvh flex flex-col gap-0 overflow-hidden w-full p-0"
         >
-          <BlogsLayoutHeader
+          <ArchiveLayoutHeader
             setIsSheetOpen={setIsSheetOpen}
             isOpen={isSheetOpen}
           />
-          <BlogsSidebar
+          <ArchiveSidebar
             className="block w-full bg-transparent p-2"
             onLinkClick={() => setIsSheetOpen(false)}
           />

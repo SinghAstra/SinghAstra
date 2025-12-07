@@ -1,0 +1,117 @@
+---
+title: "The Runtime Environment"
+date: "07-12-2025"
+excerpt: "Understanding the machinery that runs JavaScript: The Call Stack, Execution Contexts, and the two-phase Lifecycle that creates Hoisting."
+---
+
+## The Runtime Environment ⚙️
+
+### 2.0 The Call Stack
+
+#### A. Definition
+
+The Call Stack is the Data Structure (LIFO) used to manage execution. It lives inside the Stack Memory (the physical RAM). While the Stack Memory (Unit 1) provides the physical storage space, the Call Stack tracks the logical order of execution.
+
+It answers two questions for the engine:
+
+It answers two fundamental questions for the engine:
+
+1. What code is currently being executed? (The Active Stack Frame).
+2. What to do after code execution finishes ? (The Return Address).
+
+#### B. Mechanics: Push and Pop
+
+It operates on a strictly LIFO (Last In, First Out) basis.
+
+- Push: When a function is invoked, the engine creates a new stack frame and places it on top of the pile. The Stack Pointer moves up.
+- Pop: When a function returns (finishes), the engine removes the top frame. The Stack Pointer moves down.
+
+#### C. Limits: Stack Overflow
+
+Since the Stack Memory has a fixed size (determined by the OS), there is a limit to how many stack frames can be pushed. If you create an infinite recursion (Function A calls Function A), the stack grows until it hits the physical ceiling, causing a RangeError: Maximum call stack size exceeded.
+
+---
+
+### 2.1 The Execution Context & Scoping Rules
+
+#### A. Logical vs. Physical
+
+- Execution Context (The Blueprint): The abstract specification defined by ECMAScript. It dictates what data is required to run code (variables, scope, this) but not how to store it.
+- Stack Frame (The Physical Container): The actual slice of physical memory allocated on the Call Stack. The Execution Context lives inside this frame.
+
+#### B. Internal Anatomy
+
+Every Stack Frame contains three specific components required to run the code:
+
+1. The Variable Environment: A logical map (lookup table) that binds Identifiers (both Variable names and Function names) to specific Memory Slots.
+2. The Memory Slots: The physical cells that hold the actual content.
+   - For Primitives: The slot holds the direct Value.
+   - For Reference Types (Objects & Functions): The slot holds the Memory Address (Pointer) linking to the Heap.
+3. The outer Pointer: A specific memory reference linking this frame to its Parent's Variable Environment. This is the physical mechanism behind the Scope Chain. This is the physical mechanism behind the Scope Chain.
+
+#### C. The Three Scope Levels
+
+The "Scope" defines the boundary in which a variable is accessible.
+
+1. Global Scope: Variables here are accessible everywhere. Created once when the script starts.
+2. Function Scope: Created when a function runs. Variables defined with var are trapped here.
+3. Block Scope (ES6): Created by curly braces {} (if statements, loops). Variables defined with let and const are trapped here.
+   - Note: var ignores block scope and "leaks" out to the nearest function or global scope.
+
+---
+
+### 2.2 The Lifecycle (The Two Phases)
+
+This is the most critical concept for understanding "Hoisting." An Execution Context is not created instantly; it is built in two distinct passes.
+
+#### Phase 1: The Creation Phase (Hoisting & Analysis)
+
+Before the code executes line-by-line, the engine scans the code to set up the environment.
+
+1. Variable Hoisting:
+
+   - var: The engine registers the identifier in the Variable Environment, reserves a physical slot in Stack Memory, and initializes it to undefined.
+   - let / const: The engine registers the identifier and reserves a physical slot in Stack Memory, but marks it as Uninitialized. Accessing it results in a Temporal Dead Zone (TDZ) error.
+
+2. Function Hoisting (The Two Types):
+
+   - Function Declaration (function name() {}): The engine creates the Function Object in the Heap immediately and assigns its address to the Stack Slot. It is fully usable before its definition line.
+   - Function Expression (var name = function() {}): The engine treats this as a variable. It hoists the identifier name but assigns it undefined. The function object is not created yet. Calling it causes a TypeError.
+   - Anonymous Function Expression (function() {}): Typically used in callbacks. Since it has no name, no identifier is hoisted; it is created only when the runtime reaches that line.
+
+3. Static Scope Analysis:
+   - The engine determines the value of the outer pointer based on where the function is written (Lexical Scoping).
+   - The engine creates the internal [[Environment]] pointer on any new Function Objects, recording their birth scope.
+   - Closure Scan (Heap Promotion): The engine scans for inner functions. If an inner function uses a variable from the current scope, the engine realizes variable cannot live on the temporary Stack.
+     - Action: The engine moves variable from the Stack to a persistent Context Object in the Heap.
+     - Result: The inner function's [[Environment]] pointer now links to this Heap Object, ensuring the variable survives even after the Stack Frame pops.
+
+#### Phase 2: The Execution Phase
+
+The engine runs through the code again, this time line-by-line.
+
+1. Inputs (Parameters vs. Arguments):
+
+   - Parameters: The variable labels defined in the function signature. These are initialized in the Creation Phase.
+   - Arguments: The actual values passed during invocation. These are assigned to the parameter slots at the start of the Execution Phase.
+
+2. Assignment:
+
+   - The engine performs the lookup using the Variable Environment map.
+   - It writes the actual values (or new Object addresses) into the Memory Slots, overwriting the undefined placeholders.
+
+3. Invocation:
+   - If the current line calls a function, the engine pauses the current context and pushes a new Execution Context onto the stack, restarting the cycle (Phase 1) for that new function.
+
+---
+
+### 📝 Summary Table: Creation vs. Execution
+
+| Feature          | Creation Phase             | Execution Phase             |
+| :--------------- | :------------------------- | :-------------------------- |
+| Action           | Scanning & Allocation      | Running & Assignment        |
+| var state        | undefined                  | Assigned Value              |
+| let state        | Uninitialized (TDZ)        | Assigned Value              |
+| Func Declaration | Address in Slot (Usable)   | Skipped (Already done)      |
+| Func Expression  | undefined                  | Object Created & Assigned   |
+| Scope Chain      | outer pointer set (Static) | outer pointer used (Lookup) |

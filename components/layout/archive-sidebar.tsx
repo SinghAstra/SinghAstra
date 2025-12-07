@@ -1,12 +1,12 @@
 "use client";
 
-import { blogsLink } from "@/config/blogs";
-import { BlogLink } from "@/interfaces/blogs-link";
+import { archiveLinks } from "@/config/archive";
+import { ArchiveLink } from "@/interfaces/archive-link";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-function BlogsSidebar({
+function ArchiveSidebar({
   onLinkClick,
   className,
 }: {
@@ -22,7 +22,7 @@ function BlogsSidebar({
         className
       )}
     >
-      {blogsLink.map((item, index) => (
+      {archiveLinks.map((item, index) => (
         <div key={index} className="flex flex-col gap-1">
           <h4 className="py-1 pl-1 text-xs tracking-widest text-muted-foreground">
             {item.title}
@@ -43,7 +43,7 @@ function DocsNavItems({
   pathname,
   onLinkClick,
 }: {
-  items: BlogLink[];
+  items: ArchiveLink[];
   pathname: string;
   onLinkClick?: () => void;
 }) {
@@ -74,4 +74,4 @@ function DocsNavItems({
   );
 }
 
-export default BlogsSidebar;
+export default ArchiveSidebar;

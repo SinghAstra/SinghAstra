@@ -1,27 +1,29 @@
 "use client";
 
-import { blogsLink } from "@/config/blogs";
-import { BlogLink } from "@/interfaces/blogs-link";
+import { archiveLinks } from "@/config/archive";
+import { ArchiveLink } from "@/interfaces/archive-link";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const allDocsLinks = blogsLink.flatMap((section) => section.links);
+const allArchiveLink = archiveLinks.flatMap((section) => section.links);
 
-export function BlogsPagination() {
+export function ArchivePagination() {
   const pathname = usePathname();
-  const currentIndex = allDocsLinks.findIndex((item) => item.path === pathname);
+  const currentIndex = allArchiveLink.findIndex(
+    (item) => item.path === pathname
+  );
 
-  let previousLink: BlogLink | undefined;
-  let nextLink: BlogLink | undefined;
+  let previousLink: ArchiveLink | undefined;
+  let nextLink: ArchiveLink | undefined;
 
   if (currentIndex > 0) {
-    previousLink = allDocsLinks[currentIndex - 1];
+    previousLink = allArchiveLink[currentIndex - 1];
   }
 
-  if (currentIndex !== -1 && currentIndex < allDocsLinks.length - 1) {
-    nextLink = allDocsLinks[currentIndex + 1];
+  if (currentIndex !== -1 && currentIndex < allArchiveLink.length - 1) {
+    nextLink = allArchiveLink[currentIndex + 1];
   }
 
   if (!previousLink && !nextLink) {

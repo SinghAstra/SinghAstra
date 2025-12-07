@@ -1,15 +1,15 @@
 "use client";
 
-import { BlogMeta } from "@/lib/blogs";
+import { ArchiveMeta } from "@/lib/archive";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 interface ClientHomePageProps {
-  recentBlogs: BlogMeta[];
+  recentArchive: ArchiveMeta[];
 }
 
-export default function ClientHomePage({ recentBlogs }: ClientHomePageProps) {
+export default function ClientHomePage({ recentArchive }: ClientHomePageProps) {
   const [activeSection, setActiveSection] = useState("");
   const sectionsRef = useRef<(HTMLElement | null)[]>([]);
 
@@ -239,9 +239,9 @@ export default function ClientHomePage({ recentBlogs }: ClientHomePageProps) {
             <h2 className="text-3xl sm:text-4xl font-light">Recent Thoughts</h2>
 
             <div className="grid gap-6 sm:gap-8 lg:grid-cols-2">
-              {recentBlogs.map((post, index) => (
+              {recentArchive.map((post, index) => (
                 <Link
-                  href={`/blogs/${post.slug}`}
+                  href={`/archive/${post.slug}`}
                   key={index}
                   passHref
                   className="group p-6 sm:p-8 border border-border rounded-lg hover:border-muted-foreground/50 transition-all duration-500 hover:shadow-lg cursor-pointer"
@@ -272,10 +272,10 @@ export default function ClientHomePage({ recentBlogs }: ClientHomePageProps) {
 
             <div className="text-center mt-10">
               <Link
-                href="/blogs"
+                href="/archive"
                 className="inline-flex items-center px-4 py-2 border border-border rounded hover:bg-muted/30 transition-all duration-300"
               >
-                View All Thoughts
+                View All Archive
               </Link>
             </div>
           </div>
