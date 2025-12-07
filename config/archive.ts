@@ -25,6 +25,10 @@ export const archiveLinks: ArchiveSectionLink[] = [
         title: "Data Mechanics",
         path: "/archive/javascript/data-mechanics",
       },
+      {
+        title: "Object Operations",
+        path: "/archive/javascript/object-operations",
+      },
     ],
   },
 ];

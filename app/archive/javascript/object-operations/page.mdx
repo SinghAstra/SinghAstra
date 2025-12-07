@@ -1,0 +1,116 @@
+---
+title: "Object Operations"
+date: "09-12-2025"
+excerpt: "Mastering Object interaction: Dot vs. Bracket notation, the architectural restriction of String Keys, and safe iteration strategies."
+---
+
+## Object Operations 🔧
+
+### 4.0 Access & Manipulation
+
+There are two distinct syntaxes, and they are not just stylistic choices—they behave differently at the architectural level.
+
+#### A. Dot Notation (The Static Interface)
+
+- Restriction: The key must be a valid Identifier (no spaces, can't start with a number, no special characters).
+- Limitation: It is Static. You cannot use a variable. The engine interprets the text after the dot literally.
+
+#### B. Bracket Notation (The Dynamic Interface)
+
+- Capability: It evaluates the expression inside the brackets before accessing the property.
+- Use Case: Accessing properties dynamically (e.g., from user input) or properties with "illegal" names (e.g., "Content-Type").
+- Computed Property Names (ES6): The ability to use brackets directly inside an object literal definition.
+
+Example:
+
+```javascript
+let key = "status";
+let data = {
+  [key]: "Active", // Creates { status: "Active" }
+  ["user_" + 101]: 123, // Creates { user_101: 123 }
+};
+```
+
+---
+
+### 4.1 The Key Mechanism (Implicit Conversion)
+
+This is the most fundamental architectural constraint of standard JavaScript Objects.
+
+#### A. The String Rule
+
+In a standard Object, all keys are Strings (or Symbols). If you try to use any other data type as a key, the engine will silently convert it to a string before storage.
+
+#### B. Implicit Coercion (The Trap)
+
+Consider this scenario where we try to use Objects as keys:
+
+```javascript
+let user = { id: 1 };
+let admin = { id: 2 };
+
+let dictionary = {};
+dictionary[user] = "User Data";
+dictionary[admin] = "Admin Data";
+
+console.log(dictionary[user]); // Output: "Admin Data"
+```
+
+- The Mechanism:
+
+  1.  The engine receives an Object (user) as a key.
+  2.  It calls .toString() on the object.
+  3.  The result is the generic string "[object Object]".
+  4.  It saves the value under that string key.
+  5.  It repeats the process for admin, which generates the exact same key "[object Object]", overwriting the first entry.
+
+- The Architectural Flaw: Standard Objects are not true Hash Maps because they cannot handle unique object references as keys. (This is why the Map data structure exists, which we cover in Unit 5).
+
+---
+
+### 4.2 Iteration Strategies
+
+Iterating over an Object is computationally more complex than iterating over an Array because Objects are unordered graphs, not linear lists.
+
+#### A. The Prototype Problem (for...in)
+
+The for...in loop is the legacy way to iterate keys.
+
+- Mechanism: It walks the chain. It iterates over all Enumerable properties on the object AND its Prototype Chain.
+- Risk: If a third-party library adds a method to Object.prototype, your loop will iterate over that method, potentially breaking your logic.
+- Defense: You historically had to use obj.hasOwnProperty(key) inside every loop.
+
+#### B. The Static Method Solution (Object.keys / .values / .entries)
+
+Modern JavaScript introduces static methods that fix the for...in issues.
+
+- Mechanism: These methods return an Array containing only the object's Own (non-inherited) properties.
+- Architecture Benefit: By converting the Object's data into an Array (Unit 3.1), you gain access to the powerful Array methods (Map, Filter, Reduce) defined in Unit 6.
+
+Example:
+
+```javascript
+const data = { a: 1, b: 2 };
+
+// Safe iteration (no prototype pollution)
+Object.keys(data).forEach((key) => {
+  console.log(key, data[key]);
+});
+```
+
+---
+
+### 📝 Summary Table
+
+| Feature   | Dot Notation       | Bracket Notation                 |
+| :-------- | :----------------- | :------------------------------- |
+| Syntax    | obj.key            | obj["key"]                       |
+| Key Type  | Literal Identifier | Expression (String/Symbol)       |
+| Variables | No                 | Yes                              |
+| Coercion  | None (Literal)     | Yes (Evaluates then Stringifies) |
+
+| Iteration Strategy | Scope           | Return Type            |
+| :----------------- | :-------------- | :--------------------- |
+| for...in           | Own + Inherited | Loop (Action)          |
+| Object.keys()      | Own Only        | Array (Data)           |
+| Object.entries()   | Own Only        | Array of Arrays [k, v] |

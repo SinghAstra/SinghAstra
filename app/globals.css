@@ -148,3 +148,11 @@
     }
   }
 }
+
+pre > code {
+  border: 0;
+  padding: 0 !important;
+  background: transparent !important;
+  line-height: 24px !important;
+  letter-spacing: 0.7px !important;
+}
