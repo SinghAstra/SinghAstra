@@ -1,0 +1,95 @@
+---
+title: "Advanced Data Structures (Maps & WeakMaps)"
+date: "10-12-2025"
+excerpt: "Beyond standard Objects: Understanding Maps for true Hash Mapping and WeakMaps for memory-safe metadata association."
+---
+
+## Advanced Data Structures 🗄️
+
+### 5.0 Maps & Sets (The "True" Collections)
+
+In previous archive, we learned that standard Objects have a fatal flaw: they implicitly convert all keys to Strings. ES6 introduced proper data structures to solve this architectural limitation.
+
+#### A. The Map (A True Hash Map)
+
+A Map is a collection of keyed data items, similar to an Object. However, the main difference is that `Map allows keys of any type`.
+
+- No Coercion: You can use an Object, a Function, or a Number as a key. The engine does not call `.toString()` on them.
+- Reference Equality: It uses the memory address of the key to identify it. Two different empty objects `{}` are two different keys in a Map.
+- Ordered: Unlike Objects (which are historically unordered), a Map iterates entries in the insertion order.
+
+Example:
+
+```javascript
+let map = new Map();
+let user = { name: "Singh" };
+
+// Using an Object as a key
+map.set(user, "Architect");
+
+console.log(map.get(user)); // "Architect"
+console.log(map.size); // 1
+```
+
+#### B. The Set (Unique List)
+
+A Set is a special collection type – `set of values` (without keys), where each value may occur only once.
+
+- Uniqueness: If you try to add the same value twice, the Set ignores it.
+- Architecture: It is optimized for checking presence. Checking `set.has(value)` is generally faster than searching an Array `arr.includes(value)` because Sets use Hash Table lookups (O(1)) versus Array linear search (O(N)).
+
+---
+
+### 5.1 Memory Management (WeakMap & WeakSet)
+
+While Maps are powerful, they have a memory downside: they hold `Strong References`.
+
+#### A. The Reference Problem
+
+In a standard `Map` (or Array/Object), if you store an object as a key or value, the Map holds onto it. Even if you delete all other references to that object in your application, the Garbage Collector cannot delete the object because the Map is still pointing to it. This can cause `Memory Leaks`.
+
+#### B. The "Weak" Solution
+
+A `WeakMap` is a special variant where the `keys are Weakly Referenced`.
+
+- Mechanism: A `Weak Reference` is a link that is not strong enough to prevent Garbage Collection.
+- The Behavior: If the key object is deleted from memory (no other variables point to it), the `WeakMap` automatically releases the entry. The key-value pair simply vanishes from the WeakMap.
+- Constraint: Keys must be Objects. You cannot use primitives (like strings) as keys because primitives are not garbage collected in the same way.
+
+#### C. Use Case: Metadata
+
+The primary use case for `WeakMap` is associating data with an object that belongs to someone else (like a DOM Node or a third-party library object).
+
+Example:
+
+```javascript
+let cache = new WeakMap();
+
+function process(obj) {
+  if (!cache.has(obj)) {
+    let result = heavyCalculation(obj);
+    cache.set(obj, result);
+  }
+  return cache.get(obj);
+}
+
+// Scenario:
+// 1. We pass a generic Object into process().
+// 2. WeakMap stores the result.
+// 3. Later, the generic Object is deleted (set to null).
+// 4. Result: The WeakMap automatically cleans up the cached result.
+//    No manual cleanup needed. No memory leak.
+```
+
+---
+
+### 📝 Summary Table
+
+| Feature                | Object          | Map                  | WeakMap          |
+| :--------------------- | :-------------- | :------------------- | :--------------- |
+| **Key Types**          | Strings/Symbols | Any Type             | **Objects Only** |
+| **Key Coercion**       | Yes (Implicit)  | No                   | No               |
+| **Reference Type**     | Strong          | Strong               | **Weak**         |
+| **Garbage Collection** | Prevents GC     | Prevents GC          | **Allows GC**    |
+| **Iteration**          | `Object.keys()` | `.keys()`, `for..of` | **Not Iterable** |
+| **Size Property**      | Manually Count  | `.size`              | No `.size`       |

@@ -29,6 +29,10 @@ export const archiveLinks: ArchiveSectionLink[] = [
         title: "Object Operations",
         path: "/archive/javascript/object-operations",
       },
+      {
+        title: "Maps & Sets",
+        path: "/archive/javascript/maps-and-sets",
+      },
     ],
   },
 ];
