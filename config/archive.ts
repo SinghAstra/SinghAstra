@@ -41,6 +41,10 @@ export const archiveLinks: ArchiveSectionLink[] = [
         title: "Object Reference Mechanics",
         path: "/archive/javascript/object-reference-mechanics",
       },
+      {
+        title: "Data Serialization",
+        path: "/archive/javascript/data-serialization",
+      },
     ],
   },
 ];
