@@ -54,5 +54,12 @@ export function getAllArchivesMeta(): ArchiveMeta[] {
   // 3. Filter out nulls (files not found) and sort by date
   return archive
     .filter((archive) => archive !== null)
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    .sort((a, b) => {
+      const parseDate = (dateStr: string) => {
+        const [day, month, year] = dateStr.split("-");
+        return new Date(`${year}-${month}-${day}`).getTime();
+      };
+
+      return parseDate(b.date) - parseDate(a.date);
+    });
 }

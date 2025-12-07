@@ -49,6 +49,10 @@ export const archiveLinks: ArchiveSectionLink[] = [
         title: "Scope Chain",
         path: "/archive/javascript/scope-chain",
       },
+      {
+        title: "Closures",
+        path: "/archive/javascript/closures",
+      },
     ],
   },
 ];

@@ -1,0 +1,105 @@
+---
+title: "Closures & IIFEs (Heap Promotion)"
+date: "15-12-2025"
+excerpt: "The architecture of persistence: How Closures force variables to move from the Stack to the Heap, and using IIFEs for scope privacy."
+---
+
+### The Mechanics of Closure
+
+A Closure is formed when a function remembers its lexical scope even when that function is executed outside that scope.
+
+#### B. The "Stack" Problem
+
+Normally, when a function finishes executing, its Stack Frame is Popped (deleted). All local variables should disappear.
+
+```javascript
+function outer() {
+  let count = 0;
+  function inner() {
+    count++;
+  } // inner uses count
+  return inner;
+}
+
+const myFunc = outer(); // outer() runs and POPS.
+// "count" should be gone.
+myFunc(); // But this works. How?
+```
+
+#### C. The "Heap" Solution (Heap Promotion)
+
+This is the architectural deep dive.
+
+1.  The Scan: During the Creation Phase of `outer()`, the engine sees that `inner` refers to `count`.
+2.  The Promotion: The engine realizes `count` cannot live in the temporary Stack Frame. It allocates a specific "Context Object" (Closure) in the Heap and stores `count` there.
+3.  The Link: The returned `inner` function has its `[[Environment]]` pointer linked to this Heap Object, not the dead Stack Frame.
+4.  Result: `myFunc` acts like a "Backpack." It carries the function logic plus a reference to the Heap data it needs.
+
+---
+
+### The Factory Pattern
+
+Closures are the primary mechanism for Data Privacy in JavaScript. Since JavaScript (traditionally) had no `private` keyword, we used Closures to hide data.
+
+#### A. The Mechanism
+
+By returning an object of functions (Setters/Getters) that reference a local variable, you create a "Interface" to that data.
+
+- The Data: Hidden in the Closure Scope (Heap).
+- The Access: Only possible through the returned functions.
+
+```javascript
+function createBank() {
+  let balance = 0; // Private (in Closure)
+
+  return {
+    deposit: (amount) => {
+      balance += amount;
+    },
+    getBalance: () => balance,
+  };
+}
+
+const myAccount = createBank();
+myAccount.deposit(100);
+console.log(myAccount.balance); // undefined (Cannot touch Closure directly)
+```
+
+---
+
+### The IIFE (Immediate Invocation)
+
+Before ES6 Modules, the Immediately Invoked Function Expression (IIFE) was the industry standard for architecture.
+
+#### A. The Syntax
+
+It is a function expression that is defined and run immediately.
+
+```javascript
+(function () {
+  // Logic here
+})();
+```
+
+#### B. The Architecture (Scope Privacy)
+
+An IIFE creates a temporary Function Scope.
+
+- Use Case: Callback Function, For Creating Variable in same scope.
+
+---
+
+### Summary Table
+
+| Feature           | Behavior          | Memory Location             |
+| :---------------- | :---------------- | :-------------------------- |
+| Standard Function | Runs and Ends     | Variables on Stack (Popped) |
+| Closure           | Remembers Scope   | Variables Promoted to Heap  |
+| Factory Pattern   | Encapsulates Data | Closure (Heap)              |
+| IIFE              | Runs Once         | Temporary Stack Frame       |
+
+| Concept        | The "Why"                                                     |
+| :------------- | :------------------------------------------------------------ |
+| Heap Promotion | To ensure variables survive after the Stack Frame dies.       |
+| Data Privacy   | To prevent external modification of internal state.           |
+| IIFE           | To avoid polluting the Global Scope with temporary variables. |
