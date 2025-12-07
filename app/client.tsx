@@ -120,7 +120,7 @@ export default function ClientHomePage({ recentArchive }: ClientHomePageProps) {
             </div>
 
             <div className="lg:col-span-2 flex flex-col justify-end space-y-6 sm:space-y-8 mt-8 lg:mt-0">
-              <div className="space-y-4">
+              {/* <div className="space-y-4">
                 <div className="text-sm text-muted-foreground font-mono">
                   CURRENTLY
                 </div>
@@ -128,7 +128,7 @@ export default function ClientHomePage({ recentArchive }: ClientHomePageProps) {
                   <div className="text-foreground">Full Stack Developer</div>
                   <div className="text-muted-foreground">@WebbyWolf</div>
                 </div>
-              </div>
+              </div> */}
 
               <div className="space-y-4">
                 <div className="text-sm text-muted-foreground font-mono">

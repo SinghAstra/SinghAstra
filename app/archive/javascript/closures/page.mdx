@@ -8,7 +8,7 @@ excerpt: "The architecture of persistence: How Closures force variables to move 
 
 A Closure is formed when a function remembers its lexical scope even when that function is executed outside that scope.
 
-#### B. The "Stack" Problem
+#### A. The "Stack" Problem
 
 Normally, when a function finishes executing, its Stack Frame is Popped (deleted). All local variables should disappear.
 
@@ -26,7 +26,7 @@ const myFunc = outer(); // outer() runs and POPS.
 myFunc(); // But this works. How?
 ```
 
-#### C. The "Heap" Solution (Heap Promotion)
+#### B. The "Heap" Solution (Heap Promotion)
 
 This is the architectural deep dive.
 
