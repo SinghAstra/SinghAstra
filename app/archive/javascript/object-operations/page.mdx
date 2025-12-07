@@ -4,9 +4,9 @@ date: "09-12-2025"
 excerpt: "Mastering Object interaction: Dot vs. Bracket notation, the architectural restriction of String Keys, and safe iteration strategies."
 ---
 
-## Object Operations 🔧
+## Object Operations
 
-### 4.0 Access & Manipulation
+### Access & Manipulation
 
 There are two distinct syntaxes, and they are not just stylistic choices—they behave differently at the architectural level.
 
@@ -33,7 +33,7 @@ let data = {
 
 ---
 
-### 4.1 The Key Mechanism (Implicit Conversion)
+### The Key Mechanism (Implicit Conversion)
 
 This is the most fundamental architectural constraint of standard JavaScript Objects.
 
@@ -68,7 +68,7 @@ console.log(dictionary[user]); // Output: "Admin Data"
 
 ---
 
-### 4.2 Iteration Strategies
+### Iteration Strategies
 
 Iterating over an Object is computationally more complex than iterating over an Array because Objects are unordered graphs, not linear lists.
 
@@ -100,7 +100,7 @@ Object.keys(data).forEach((key) => {
 
 ---
 
-### 📝 Summary Table
+### Summary Table
 
 | Feature   | Dot Notation       | Bracket Notation                 |
 | :-------- | :----------------- | :------------------------------- |

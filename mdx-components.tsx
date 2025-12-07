@@ -71,7 +71,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     p: ({ className, ...props }) => (
       <p
         className={cn(
-          "leading-8 text-foreground text-base mb-6 text-pretty",
+          "leading-10 text-foreground text-base mb-6 text-pretty",
           className
         )}
         {...props}

@@ -33,6 +33,10 @@ export const archiveLinks: ArchiveSectionLink[] = [
         title: "Maps & Sets",
         path: "/archive/javascript/maps-and-sets",
       },
+      {
+        title: "Functional Mechanics",
+        path: "/archive/javascript/functional-mechanics",
+      },
     ],
   },
 ];

@@ -4,13 +4,13 @@ date: "07-12-2025"
 excerpt: "Understanding the machinery that runs JavaScript: The Call Stack, Execution Contexts, and the two-phase Lifecycle that creates Hoisting."
 ---
 
-## The Runtime Environment ⚙️
+## The Runtime Environment
 
-### 2.0 The Call Stack
+### The Call Stack
 
 #### A. Definition
 
-The Call Stack is the Data Structure (LIFO) used to manage execution. It lives inside the Stack Memory (the physical RAM). While the Stack Memory (Unit 1) provides the physical storage space, the Call Stack tracks the logical order of execution.
+The Call Stack is the Data Structure (LIFO) used to manage execution. It lives inside the Stack Memory (the physical RAM). While the Stack Memory provides the physical storage space, the Call Stack tracks the logical order of execution.
 
 It answers two questions for the engine:
 
@@ -32,7 +32,7 @@ Since the Stack Memory has a fixed size (determined by the OS), there is a limit
 
 ---
 
-### 2.1 The Execution Context & Scoping Rules
+### The Execution Context & Scoping Rules
 
 #### A. Logical vs. Physical
 
@@ -60,7 +60,7 @@ The "Scope" defines the boundary in which a variable is accessible.
 
 ---
 
-### 2.2 The Lifecycle (The Two Phases)
+### The Lifecycle (The Two Phases)
 
 This is the most critical concept for understanding "Hoisting." An Execution Context is not created instantly; it is built in two distinct passes.
 
@@ -105,7 +105,7 @@ The engine runs through the code again, this time line-by-line.
 
 ---
 
-### 📝 Summary Table: Creation vs. Execution
+### Summary Table: Creation vs. Execution
 
 | Feature          | Creation Phase             | Execution Phase             |
 | :--------------- | :------------------------- | :-------------------------- |
