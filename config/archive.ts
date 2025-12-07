@@ -45,6 +45,10 @@ export const archiveLinks: ArchiveSectionLink[] = [
         title: "Data Serialization",
         path: "/archive/javascript/data-serialization",
       },
+      {
+        title: "Scope Chain",
+        path: "/archive/javascript/scope-chain",
+      },
     ],
   },
 ];

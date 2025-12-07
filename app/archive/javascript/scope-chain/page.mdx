@@ -1,0 +1,99 @@
+---
+title: "The Scope Chain"
+date: "14-12-2025"
+excerpt: "The physics of variable visibility: Lexical Scoping, the Outer Pointer, and the exact algorithm the engine uses to resolve variables."
+---
+
+### Lexical Scoping
+
+Before understanding the mechanics, we must understand the rule that governs them. JavaScript uses `Lexical Scoping` (also called Static Scoping).
+
+#### A. The Definition
+
+Lexical refers to the `Physical Location` of the code in the source file.
+
+- Rule: The scope of a variable is determined by where you Type the function, not where you Call the function.
+- Timing: Because it is based on the text structure, the engine determines the scope hierarchy during the `Creation Phase`, long before the code actually runs.
+
+#### B. Contrast with Dynamic Scoping
+
+Some older languages use Dynamic Scoping (where scope depends on who called the function). JavaScript does not.
+
+---
+
+### The Physical Mechanism (The Outer Pointer)
+
+How does the engine actually "see" variables outside the current function? It uses the `outer` Pointer.
+
+#### A. The Chain Links
+
+Every Execution Context (Stack Frame) has a reference to its parent.
+
+1.  Global Context: The `outer` pointer is `null`. (It is the root).
+2.  Function Context: The `outer` pointer points to the Variable Environment where the function was Defined (Lexical), not called.
+3.  Block Context: The `outer` pointer points to the enclosing Function or Block.
+
+#### B. The Hierarchy
+
+This creates a linked list of environments.
+
+- Local Scope (Bottom) to Parent Scope to Grandparent Scope to Global Scope (Top).
+
+---
+
+### Variable Resolution (The Lookup Algorithm)
+
+When you try to access a variable (e.g., `console.log(username)`), the JavaScript Engine follows a strict 3-step algorithm to find the value.
+
+#### Step 1: Local Lookup (Own Scope)
+
+The engine checks the Current Variable Environment (Active Stack Frame).
+
+- Question: "Do I have a variable named `username` here?"
+- If Yes: Use it. Stop searching. (This is called `Shadowing`).
+- If No: Proceed to Step 2.
+
+#### Step 2: The Chain Traversal (The Walk)
+
+The engine follows the `outer` pointer to the Parent Scope.
+
+- Question: "Do you have `username`?"
+- If Yes: Use it.
+- If No: Follow the next `outer` pointer. Repeat until the Global Scope is reached.
+
+#### Step 3: Global Check & Failure
+
+The engine reaches the Global Scope (Window/Node Global).
+
+- Question: "Do you have `username`?"
+- If Yes: Use it.
+- If No: Throw `ReferenceError: username is not defined`.
+
+---
+
+### Shadowing
+
+Shadowing occurs when a variable in a local scope has the same name as a variable in an outer scope.
+
+```javascript
+let user = "Global";
+
+function login() {
+  let user = "Local"; // Shadows the outer "user"
+  console.log(user); // Output: "Local"
+}
+```
+
+- Mechanism: The Resolution Algorithm finds `user` immediately in the Local Scope and stops. It never looks up the chain to see the Global version.
+
+---
+
+### 📝 Summary Table
+
+| Concept        | Definition                              | Determination Time     |
+| :------------- | :-------------------------------------- | :--------------------- |
+| Lexical Scope  | Access based on Source Code Position    | Compile/Creation Phase |
+| Scope Chain    | Linked List of Environments via `outer` | Runtime Traversal      |
+| Resolution     | Step-by-step lookup (Bottom $\to$ Top)  | Runtime Execution      |
+| Shadowing      | Local var hiding outer var              | Runtime Execution      |
+| ReferenceError | Variable found nowhere in chain         | Runtime Failure        |
