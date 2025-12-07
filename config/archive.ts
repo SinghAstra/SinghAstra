@@ -37,6 +37,10 @@ export const archiveLinks: ArchiveSectionLink[] = [
         title: "Functional Mechanics",
         path: "/archive/javascript/functional-mechanics",
       },
+      {
+        title: "Object Reference Mechanics",
+        path: "/archive/javascript/object-reference-mechanics",
+      },
     ],
   },
 ];
