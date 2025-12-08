@@ -33,7 +33,7 @@ let data = {
 
 ---
 
-### The Key Mechanism (Implicit Conversion)
+### Implicit Conversion
 
 This is the most fundamental architectural constraint of standard JavaScript Objects.
 
@@ -64,53 +64,68 @@ console.log(dictionary[user]); // Output: "Admin Data"
   4.  It saves the value under that string key.
   5.  It repeats the process for admin, which generates the exact same key "[object Object]", overwriting the first entry.
 
-- The Architectural Flaw: Standard Objects are not true Hash Maps because they cannot handle unique object references as keys. (This is why the Map data structure exists, which we cover in Unit 5).
+- The Constraint: Standard Objects cannot handle unique object references as keys. They only see the string representation. (To use actual objects as keys, we use the Map data structure, covered in Unit 5).
 
 ---
 
 ### Iteration Strategies
 
-Iterating over an Object is computationally more complex than iterating over an Array because Objects are unordered graphs, not linear lists.
+#### 1. `for...in` Loop
 
-#### A. The Prototype Problem (for...in)
-
-The for...in loop is the legacy way to iterate keys.
-
-- Mechanism: It walks the chain. It iterates over all Enumerable properties on the object AND its Prototype Chain.
-- Risk: If a third-party library adds a method to Object.prototype, your loop will iterate over that method, potentially breaking your logic.
-- Defense: You historically had to use obj.hasOwnProperty(key) inside every loop.
-
-#### B. The Static Method Solution (Object.keys / .values / .entries)
-
-Modern JavaScript introduces static methods that fix the for...in issues.
-
-- Mechanism: These methods return an Array containing only the object's Own (non-inherited) properties.
-- Architecture Benefit: By converting the Object's data into an Array (Unit 3.1), you gain access to the powerful Array methods (Map, Filter, Reduce) defined in Unit 6.
-
-Example:
+_Legacy method. Iterates over enumerable properties (including inherited ones)._
 
 ```javascript
-const data = { a: 1, b: 2 };
+const user = { name: "Alice", role: "Admin" };
 
-// Safe iteration (no prototype pollution)
-Object.keys(data).forEach((key) => {
-  console.log(key, data[key]);
+for (let key in user) {
+  console.log(key, user[key]);
+}
+// Output: "name" "Alice", "role" "Admin"
+```
+
+#### 2. `Object.keys()`
+
+_Returns an array of the object's own keys._
+
+```javascript
+const user = { name: "Alice", role: "Admin" };
+
+// Returns: ["name", "role"]
+Object.keys(user).forEach((key) => {
+  console.log(key);
 });
 ```
 
----
+#### 3. `Object.values()`
+
+_Returns an array of the object's own values._
+
+```javascript
+const user = { name: "Alice", role: "Admin" };
+
+// Returns: ["Alice", "Admin"]
+Object.values(user).forEach((value) => {
+  console.log(value);
+});
+```
+
+#### 4. `Object.entries()`
+
+_Returns an array of `[key, value]` pairs. Useful for destructuring._
+
+```javascript
+const user = { name: "Alice", role: "Admin" };
+
+// Returns: [ ["name", "Alice"], ["role", "Admin"] ]
+Object.entries(user).forEach(([key, value]) => {
+  console.log(`${key}: ${value}`);
+});
+```
 
 ### Summary Table
 
-| Feature   | Dot Notation       | Bracket Notation                 |
-| :-------- | :----------------- | :------------------------------- |
-| Syntax    | obj.key            | obj["key"]                       |
-| Key Type  | Literal Identifier | Expression (String/Symbol)       |
-| Variables | No                 | Yes                              |
-| Coercion  | None (Literal)     | Yes (Evaluates then Stringifies) |
-
-| Iteration Strategy | Scope           | Return Type            |
-| :----------------- | :-------------- | :--------------------- |
-| for...in           | Own + Inherited | Loop (Action)          |
-| Object.keys()      | Own Only        | Array (Data)           |
-| Object.entries()   | Own Only        | Array of Arrays [k, v] |
+| Feature   | Dot Notation       | Bracket Notation           |
+| :-------- | :----------------- | :------------------------- |
+| Syntax    | obj.key            | obj["key"]                 |
+| Key Type  | Literal Identifier | Expression (String/Symbol) |
+| Variables | No                 | Yes                        |

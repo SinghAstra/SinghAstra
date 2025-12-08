@@ -12,22 +12,25 @@ JavaScript data types are physically divided into two categories based on where 
 
 #### A. Primitives
 
-These are simple, immutable data types that fit directly inside a single Stack Memory Slot.
+These are immutable data types that fit directly inside a single Stack Memory Slot.
 
 - Storage: The value lives inside the Stack Frame.
 - Access: Direct. The variable name stored in the variable environment points to the slot, and the slot contains the actual bits.
-- Immutability: You cannot change a primitive value; you can only replace it. If `x = 10`, you can't make 10 become 11. You wipe the slot and write a new number.
+- Immutability (Value Trait): This is the defining trait of primitives. Because the value is tightly packed into a fixed-size slot, you cannot modify the bits in place.
 - Types: `number`, `string`, `boolean`, `undefined`, `null`, `symbol`, `bigint`.
 
 #### B. The Object Family (Reference Types)
 
-These are complex, mutable collections that live in the `Heap`.
+These are mutable collections that live in the `Heap`.
 
 - Storage Split:
   1.  The Stack: Holds a `Reference`.
   2.  The Heap: Holds the actual `Payload` (The key-value pairs).
 - Access: Indirect. The engine reads the address from the Stack, then jumps to that address in the Heap to find the data.
 - Types: `Object`, `Array`, `Function`, `Date`, `Map`, `Set`, `WeakMap`.
+- The Hash Map Architecture: Internally, almost all Heap data in JavaScript is structured as a Hash Map (or Hash Table).
+  - Definition: A Hash Map is a data structure that maps Keys (Labels) to Values (Data). Instead of searching through a list one-by-one, the engine takes the Key, runs a quick formula (hashing), and jumps directly to the memory address where that value is stored.
+  - Benefit: Fast lookups (O(1)) regardless of how big the object is.
 
 ---
 
@@ -37,10 +40,11 @@ In lower-level languages (C, Java), an Array is a contiguous block of reserved m
 
 #### A. Arrays are Objects
 
-Physically, a JavaScript Array is just a specialized Object (Hash Map) in the Heap.
+Physically, a JavaScript Array is just a specialized Object in the Heap.
 
-- The Keys: The indices `0`, `1`, `2` are actually Strings internally (`"0"`, `"1"`). The engine just hides this detail from you.
-- The Length: It maintains a special auto-updating `length` property.
+- Index as Key: It functions exactly like a standard object, where the Index is the Key and the Element is the Value.
+- Internal Storage: When you write `arr[0] = "A"`, the engine treats it almost exactly like `obj["0"] = "A"`. The indices are treated as string keys internally.
+- The Length: The main difference between an Array and a regular Object is that an Array maintains a special auto-updating `length` property.
 
 #### B. Sparse Arrays (The Hole Concept)
 
@@ -48,19 +52,9 @@ Because Arrays are just Objects (Key-Value maps), they don't need to allocate me
 
 Consider a scenario where you initialize an empty array and assign values only at index `0` and index `1000`:
 
-> Physical Reality: The Engine does NOT reserve 1001 memory slots. It creates a Hash Map with exactly two keys: `0` and `1000`.
+> Physical Reality: The Engine does NOT reserve 1001 memory slots. It creates an Object with exactly two keys: 0 and 1000.
 
 The Gap: Indices 1 through 999 simply do not exist in memory. They are `holes`. Accessing `arr[50]` returns `undefined` not because the slot is empty, but because the Key Lookup Failed (similar to accessing a missing property on an object).
-
-#### C. Performance Implications
-
-Because JS Arrays are Hash Maps (often implemented as Trees in V8) rather than contiguous memory blocks:
-
-- Random Access: Slower than C++ Arrays (requires hashing the key index to find the memory location).
-- Insertion/Deletion: Faster for certain operations (no need to shift all subsequent memory blocks, just update pointers).
-- Optimization Note: Modern engines (V8) try to optimize Packed Arrays (arrays with no holes and a single type, e.g., `[1, 2, 3]`) into contiguous memory for speed. However, they downgrade to Hash Maps the moment you add a hole or mix types (`[1, "2", 3]`).
-
----
 
 ### Summary Table
 
