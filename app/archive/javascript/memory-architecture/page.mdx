@@ -6,7 +6,7 @@ excerpt: "A deep dive into JavaScript's memory architecture: how the Stack and H
 
 ## Memory Architecture
 
-### 1.0 The Physical Reality (RAM)
+### The Physical Reality (RAM)
 
 Before code runs, it must have a physical place to live.
 
@@ -19,7 +19,7 @@ Before code runs, it must have a physical place to live.
 
 ---
 
-### 1.1 The Stack Memory (Static & Structured)
+### The Stack Memory (Static & Structured)
 
 #### A. Definition
 
@@ -36,7 +36,7 @@ It follows the Last In, First Out data structure.
 
 #### C. The Hardware Mechanism: The Stack Pointer (SP)
 
-The Stack is managed by a CPU register called the Stack Pointer.
+The Stack is managed by a CPU register (absolute fastest and smallest memory storage units in computer) called the Stack Pointer.
 
 - Definition: The SP is a pointer that tracks the exact memory address of the Top of the Stack.
 - The Boundary: Everything below the SP is "Live Data." Everything above it is "Empty/Garbage."
@@ -52,11 +52,11 @@ The Stack is managed by a CPU register called the Stack Pointer.
 
 ---
 
-### 1.2 The Heap Memory (Dynamic & Unstructured)
+### The Heap Memory (Dynamic & Unstructured)
 
 #### A. Definition
 
-The Heap is a massive pool of memory reserved for Dynamic Allocation.
+The Heap is a massive pool of memory reserved for Dynamic Allocation. It starts small and grows dynamically as our application needs more memory. When we create new objects, the engine asks the Operating System for more space.
 
 - Dynamic means the size of the data can change at runtime (e.g., an Array growing from 1 item to 1000 items).
 - Data Types: Stores Objects, Arrays, and Functions.

@@ -10,25 +10,31 @@ excerpt: "Understanding the machinery that runs JavaScript: The Call Stack, Exec
 
 #### A. Definition
 
-The Call Stack is the Data Structure (LIFO) used to manage execution. It lives inside the Stack Memory (the physical RAM). While the Stack Memory provides the physical storage space, the Call Stack tracks the logical order of execution.
+The Call Stack is the Data Structure (LIFO) used to manage execution of functions. It lives inside the Stack Memory (the physical RAM). While the Stack Memory provides the physical storage space, the Call Stack tracks the logical order of execution of functions.
 
 It answers two questions for the engine:
 
-It answers two fundamental questions for the engine:
+1. What function is currently being executed? (The Active Stack Frame). Whatever stack frame the Stack Pointer is pointing to right now is the active stack frame.
 
-1. What code is currently being executed? (The Active Stack Frame).
-2. What to do after code execution finishes ? (The Return Address).
+2. What to do after code execution finishes ? (The Return Address). Once Function is popped off Stack Pointer moves down thereby updating the active stack frame.
 
-#### B. Mechanics: Push and Pop
+#### B. Composition: Execution Contexts
+
+The items stacked in the Call Stack are called Execution Contexts.
+
+- Global Execution Context (GEC): The default context. It is created when the file first loads. It sits at the very bottom of the stack and is only popped off when the program terminates (e.g., closing the browser window).
+- Function Execution Context (FEC): Created whenever a function is invoked. Each function call gets its own unique context containing its arguments and local variables.
+
+#### C. Mechanics: Push and Pop
 
 It operates on a strictly LIFO (Last In, First Out) basis.
 
-- Push: When a function is invoked, the engine creates a new stack frame and places it on top of the pile. The Stack Pointer moves up.
-- Pop: When a function returns (finishes), the engine removes the top frame. The Stack Pointer moves down.
+- Push: When a function is invoked, the engine creates a new Function Execution Context and places it on top of the pile. The Stack Pointer moves up.
+- Pop: When a function returns (finishes), the engine removes the top context. The Stack Pointer moves down, and control returns to the context below it.
 
-#### C. Limits: Stack Overflow
+#### D. Limits: Stack Overflow
 
-Since the Stack Memory has a fixed size (determined by the OS), there is a limit to how many stack frames can be pushed. If you create an infinite recursion (Function A calls Function A), the stack grows until it hits the physical ceiling, causing a RangeError: Maximum call stack size exceeded.
+Since the Stack Memory has a fixed size (determined by the OS), there is a limit to how many contexts can be pushed. If you create an infinite recursion (Function A calls Function A forever), the stack grows until it hits the physical ceiling, causing a Stack Overflow (e.g., `RangeError: Maximum call stack size exceeded`).
 
 ---
 
@@ -36,33 +42,33 @@ Since the Stack Memory has a fixed size (determined by the OS), there is a limit
 
 #### A. Logical vs. Physical
 
-- Execution Context (The Blueprint): The abstract specification defined by ECMAScript. It dictates what data is required to run code (variables, scope, this) but not how to store it.
+- Execution Context (The Blueprint): The abstract specification defined by ECMAScript. The official rulebook (ECMAScript) says that every time a function runs, the computer must track its variables (Execution Context). It doesn't tell the computer exactly how to manage the memory chips to do that—that part is up to the engine developers.
 - Stack Frame (The Physical Container): The actual slice of physical memory allocated on the Call Stack. The Execution Context lives inside this frame.
 
 #### B. Internal Anatomy
 
 Every Stack Frame contains three specific components required to run the code:
 
-1. The Variable Environment: A logical map (lookup table) that binds Identifiers (both Variable names and Function names) to specific Memory Slots.
+1. The Variable Environment: A lookup table that binds Identifiers (both Variable names and Function names) to specific Memory Slots.
 2. The Memory Slots: The physical cells that hold the actual content.
    - For Primitives: The slot holds the direct Value.
-   - For Reference Types (Objects & Functions): The slot holds the Memory Address (Pointer) linking to the Heap.
-3. The outer Pointer: A specific memory reference linking this frame to its Parent's Variable Environment. This is the physical mechanism behind the Scope Chain. This is the physical mechanism behind the Scope Chain.
+   - For Reference Types (Objects & Functions): The slot holds the Memory Address linking to the Heap.
+3. The outer Pointer: A specific memory reference linking this frame to its Parent's Variable Environment. This is the physical mechanism behind the Scope Chain.
 
 #### C. The Three Scope Levels
 
-The "Scope" defines the boundary in which a variable is accessible.
+The Scope defines the boundary in which a variable is accessible.
 
 1. Global Scope: Variables here are accessible everywhere. Created once when the script starts.
 2. Function Scope: Created when a function runs. Variables defined with var are trapped here.
 3. Block Scope (ES6): Created by curly braces {} (if statements, loops). Variables defined with let and const are trapped here.
-   - Note: var ignores block scope and "leaks" out to the nearest function or global scope.
+   - Note: var ignores block scope and leaks out to the nearest function or global scope.
 
 ---
 
 ### The Lifecycle (The Two Phases)
 
-This is the most critical concept for understanding "Hoisting." An Execution Context is not created instantly; it is built in two distinct passes.
+This is the most critical concept for understanding Hoisting. An Execution Context is not created instantly; it is built in two distinct passes.
 
 #### Phase 1: The Creation Phase (Hoisting & Analysis)
 
@@ -90,17 +96,12 @@ Before the code executes line-by-line, the engine scans the code to set up the e
 
 The engine runs through the code again, this time line-by-line.
 
-1. Inputs (Parameters vs. Arguments):
-
-   - Parameters: The variable labels defined in the function signature. These are initialized in the Creation Phase.
-   - Arguments: The actual values passed during invocation. These are assigned to the parameter slots at the start of the Execution Phase.
-
-2. Assignment:
+1. Assignment:
 
    - The engine performs the lookup using the Variable Environment map.
    - It writes the actual values (or new Object addresses) into the Memory Slots, overwriting the undefined placeholders.
 
-3. Invocation:
+2. Invocation:
    - If the current line calls a function, the engine pauses the current context and pushes a new Execution Context onto the stack, restarting the cycle (Phase 1) for that new function.
 
 ---
