@@ -1,0 +1,161 @@
+---
+title: "The Context System"
+date: "12-12-2025"
+excerpt: "Demystifying the 'this' keyword: The 4 rules of invocation, the manual overrides (Explicit Binding), and the Arrow Function exception."
+---
+
+## The Context System (`this`)
+
+In JavaScript, functions are objects and are treated as `First Class Citizens`.
+
+Definition:
+`this` is a hidden parameter passed to every function that points to the `Execution Context's` current object.
+
+Unlike standard variables, which are determined by where you write the code (Lexical/ Static Scope), `this` has Dynamic Scoping. It is determined entirely by how the function is called (Invocation).
+
+---
+
+In case of defined with function declaration:
+
+### The 4 Rules of Invocation
+
+#### 1. New Binding (The Constructor)
+
+If the function is called with the `new` keyword, the engine creates a brand new object and binds `this` to it.
+
+```javascript
+function User(name) {
+  // 'this' = the new empty object created by the engine
+  this.name = name;
+}
+
+const alice = new User("Alice");
+console.log(alice.name); // "Alice"
+```
+
+#### 2. Implicit Binding (The Dot Rule)
+
+This is the most common rule. If the function is called as a method of an object (it has a dot `.` before it), `this` points to the object on the left side of the dot.
+
+```javascript
+const user = {
+  name: "Charlie",
+  sayHi: function () {
+    console.log(this.name);
+  },
+};
+
+// 'this' points to 'user' because it is to the left of the dot
+user.sayHi(); // Output: "Charlie"
+```
+
+#### 3. Default Binding (The Catch-All)
+
+If none of the other rules apply (a standalone function call), the engine defaults to the global scope.
+
+```javascript
+function showGlobal() {
+  console.log(this);
+}
+
+showGlobal();
+// Strict Mode: undefined
+// Non-Strict Mode: Window / Global Object
+```
+
+#### 4. Explicit Binding (The Overrides)
+
+This rule applies when you want to force a function to use a specific object as its context, overriding the Implicit or Default rules. We use three built-in methods which is inherited by all function objects.
+
+A. `.call()`
+
+- Mechanism: Invokes the function immediately.
+- Arguments: Passed individually (comma-separated).
+
+```javascript
+function greet(greeting) {
+  console.log(`${greeting}, ${this.name}`);
+}
+const user = { name: "Bob" };
+
+// Force 'greet' to use 'user' as 'this'
+greet.call(user, "Hello"); // Output: "Hello, Bob"
+```
+
+B. `.apply()`
+
+- Mechanism: Invokes the function immediately.
+- Arguments: Passed as a single Array. Useful when you have a list of data.
+
+```javascript
+const args = ["Hi", "!"];
+greet.apply(user, args); // Output: "Hi, Bob!"
+```
+
+C. `.bind()`
+
+- Mechanism: Does NOT invoke the function. Instead, it returns a new function with `this` permanently locked to the specified context.
+- Use Case: Partial Application: Pre-setting common arguments to create specific utility functions
+
+```javascript
+function greet(greeting, punctuation) {
+  console.log(`${greeting}, ${this.name}${punctuation}`);
+}
+
+const user = { name: "Bob" };
+
+// Lock 'this' to user AND lock the first argument to "Hello"
+const sayHelloToBob = greet.bind(user, "Hello");
+
+// Later, we only need to provide the remaining argument(s)
+sayHelloToBob("!"); // Output: "Hello, Bob!"
+sayHelloToBob("?"); // Output: "Hello, Bob?"
+```
+
+---
+
+### The Arrow Function Exception
+
+Arrow Functions (`=>`) do not follow the 4 Rules. They ignore `call`, `new`, and dots.
+
+The Lookup Logic:
+
+- If inside a function: It adopts the parent function's this.
+- If top-level (or inside an object literal): It adopts the Global Object (Window).
+
+```javascript
+const user = {
+  name: "Alice",
+  // Standard Function: "this" depends on caller
+  sayHi: function () {
+    console.log(this.name);
+  },
+
+  // Arrow Function: "this" looks OUTSIDE the object to Global Scope
+  sayBye: () => {
+    console.log(this.name);
+  },
+
+  // Nested Arrow: Inherits from 'sayHiDelayed' (the parent function)
+  sayHiDelayed: function () {
+    setTimeout(() => {
+      // Logic: Arrow function is inside 'sayHiDelayed', so it grabs 'user'
+      console.log(this.name);
+    }, 1000);
+  },
+};
+
+user.sayHi(); // "Alice" (Implicit Binding)
+user.sayBye(); // undefined (Lexical Binding to Global)
+user.sayHiDelayed(); // "Alice" (Works! Inherited from parent function)
+```
+
+---
+
+### 📝 Summary Table
+
+| Explicit Method | Behavior         | Arguments           |
+| :-------------- | :--------------- | :------------------ |
+| `.call()`       | Runs Immediately | Individual (`1, 2`) |
+| `.apply()`      | Runs Immediately | Array (`[1, 2]`)    |
+| `.bind()`       | Returns Function | Individual (`1, 2`) |

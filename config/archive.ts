@@ -38,6 +38,10 @@ export const archiveLinks: ArchiveSectionLink[] = [
         path: "/archive/javascript/functional-mechanics",
       },
       {
+        title: "Context",
+        path: "/archive/javascript/context",
+      },
+      {
         title: "Object Reference Mechanics",
         path: "/archive/javascript/object-reference-mechanics",
       },
