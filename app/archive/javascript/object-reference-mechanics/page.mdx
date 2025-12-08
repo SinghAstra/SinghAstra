@@ -8,11 +8,11 @@ excerpt: "The physics of data sharing: Why Objects are aliased, the difference b
 
 ### The Assignment Rule
 
-To understand how data moves in your application, you must master the `Assignment Rule`. When you assign a variable to another variable (`let a = b`), the engine does not look inside the data. It blindly copies the Stack Slot.
+When we assign a variable to another variable (`let a = b`), the engine does not look inside the data. It blindly copies the Stack Slot.
 
 #### A. Primitives (Copy by Value)
 
-When you assign a Primitive, the engine copies the actual value.
+When we assign a Primitive, the engine copies the actual value.
 
 - Result: The two variables become completely independent. Changing one does not affect the other.
 
@@ -24,7 +24,7 @@ b = 20; // a is still 10
 
 #### B. Objects (Copy by Reference)
 
-When you assign an Object, the engine copies the `Memory Address` (the pointer), not the Heap data.
+When we assign an Object, the engine copies the `Memory Address` (the pointer), not the Heap data.
 
 - Result: Both variables point to the same object in the Heap. This is called `Aliasing`.
 
@@ -37,11 +37,9 @@ let user2 = user1; // Copy the Address 0x001
 
 ### Aliasing & Mutation
 
-Aliasing is dangerous because it might lead to unintended result.You can modify a variable in File A, and it accidentally updates a variable in File B because they share the same Heap Address.
+Aliasing is dangerous because it might lead to unintended result.We can modify a variable in File A, and it accidentally updates a variable in File B because they share the same Heap Address.
 
 #### A. Mutation vs. Reassignment
-
-This distinction is critical for React and Functional Programming.
 
 1.  Mutation (Modifying the Heap):
 
@@ -53,10 +51,10 @@ This distinction is critical for React and Functional Programming.
     user.name = "Astra"; // Allowed! The Stack pointer didn't change.
     ```
 
-2.  **Reassignment (Modifying the Stack):**
+2.  Reassignment (Modifying the Stack):
 
     - You change the value in the Stack Slot to point to a completely different object (or value).
-    - **Effect:** The link between the variables is broken.
+    - Effect: The link between the variables is broken.
 
     ```javascript
     let user = { name: "Singh" };
@@ -67,8 +65,8 @@ This distinction is critical for React and Functional Programming.
 
 Many developers believe `const` makes an object immutable. It does not.
 
-- Reality: `const` creates an Immutable Binding. It locks the Stack Slot. You cannot Reassign the variable to a new address.
-- Loophole: It does not lock the Heap. You are free to Mutate the contents of the object referenced by that slot.
+- Reality: `const` creates an Immutable Binding. It locks the Stack Slot. We cannot Reassign the variable to a new address.
+- Loophole: It does not lock the Heap. We are free to Mutate the contents of the object referenced by that slot.
 
 ---
 
