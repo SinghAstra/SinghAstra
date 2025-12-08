@@ -1,14 +1,14 @@
 ---
-title: "Closures & IIFEs"
-date: "15-12-2025"
-excerpt: "The architecture of persistence: How Closures force variables to move from the Stack to the Heap, and using IIFEs for scope privacy."
+title: Closures & IIFEs
+date: 15-12-2025
+excerpt: The architecture of persistence: How Closures force variables to move from the Stack to the Heap, and using IIFEs for scope privacy.
 ---
 
 ### The Mechanics of Closure
 
-A Closure is formed when a function remembers its lexical scope even when that function is executed outside that scope.
+A Closure is formed when an inner function returned from outer function is able to access and modify the variable defined in outer function even after function is popped off Call Stack.
 
-#### A. The "Stack" Problem
+#### A. The Stack Problem
 
 Normally, when a function finishes executing, its Stack Frame is Popped (deleted). All local variables should disappear.
 
@@ -22,56 +22,64 @@ function outer() {
 }
 
 const myFunc = outer(); // outer() runs and POPS.
-// "count" should be gone.
+// count should be gone.
 myFunc(); // But this works. How?
 ```
 
-#### B. The "Heap" Solution (Heap Promotion)
+#### B. The Heap Solution
 
 This is the architectural deep dive.
 
-1.  The Scan: During the Creation Phase of `outer()`, the engine sees that `inner` refers to `count`.
-2.  The Promotion: The engine realizes `count` cannot live in the temporary Stack Frame. It allocates a specific "Context Object" (Closure) in the Heap and stores `count` there.
-3.  The Link: The returned `inner` function has its `[[Environment]]` pointer linked to this Heap Object, not the dead Stack Frame.
-4.  Result: `myFunc` acts like a "Backpack." It carries the function logic plus a reference to the Heap data it needs.
+1.  The Scan: During the Creation Phase of outer function Execution Context, the engine sees that inner function refers to variable in outer function.
+2.  The Promotion: The engine realizes variable accessed in inner function cannot live in the temporary Stack Frame. It allocates a specific Context Object (Closure) in the Heap and stores referenced variable there.
+3.  The Link: The returned inner function has its `[[Environment]]` pointer linked to this Heap Object, not the dead Stack Frame.
+4.  Result: inner function acts like a Backpack. It carries the function logic plus a reference to the Heap data it needs.
 
----
+### C. Practical Applications: Functional Patterns
 
-### The Factory Pattern
+Since Closures allow functions to remember arguments provided in the past (by storing them in the Heap), we can leverage two powerful functional programming patterns.
 
-Closures are the primary mechanism for Data Privacy in JavaScript. Since JavaScript (traditionally) had no `private` keyword, we used Closures to hide data.
+#### 1. Currying
 
-#### A. The Mechanism
+Currying is a function transformation where a function that takes multiple arguments is converted into a sequence of functions that each take a single argument.
+f(a, b, c) -> f(a)(b)(c)
 
-By returning an object of functions (Setters/Getters) that reference a local variable, you create a "Interface" to that data.
-
-- The Data: Hidden in the Closure Scope (Heap).
-- The Access: Only possible through the returned functions.
+The Mechanism: We manually nest functions so each level handles exactly one argument.
 
 ```javascript
-function createBank() {
-  let balance = 0; // Private (in Closure)
-
-  return {
-    deposit: (amount) => {
-      balance += amount;
-    },
-    getBalance: () => balance,
+// A manually 'curried' function structure
+function multiply(a) {
+  return function (b) {
+    return a * b; // 'a' is remembered from the Closure
   };
 }
 
-const myAccount = createBank();
-myAccount.deposit(100);
-console.log(myAccount.balance); // undefined (Cannot touch Closure directly)
+// Currying allows us to call the chain:
+console.log(multiply(2)(5)); // 10
+```
+
+#### 2. Partial Application
+
+Partial Application is the process of fixing a specific number of arguments to a function, producing a new function of fewer arguments.
+
+While we can use Currying to achieve this, Partial Application is distinct because it doesn't strictly require the f(a)(b) structure. We can use methods like `.bind()` on standard functions.
+
+```javascript
+// A standard (non-curried) function
+function add(a, b) {
+  return a + b;
+}
+
+// We use .bind() to partially apply '5' to the first argument 'a'
+// '5' is stored in the closure created by bind
+const addFive = add.bind(null, 5);
+
+console.log(addFive(10)); // 15
 ```
 
 ---
 
 ### The IIFE (Immediate Invocation)
-
-Before ES6 Modules, the Immediately Invoked Function Expression (IIFE) was the industry standard for architecture.
-
-#### A. The Syntax
 
 It is a function expression that is defined and run immediately.
 
@@ -81,8 +89,6 @@ It is a function expression that is defined and run immediately.
 })();
 ```
 
-#### B. The Architecture (Scope Privacy)
-
 An IIFE creates a temporary Function Scope.
 
 - Use Case: Callback Function, For Creating Variable in same scope.
@@ -91,15 +97,13 @@ An IIFE creates a temporary Function Scope.
 
 ### Summary Table
 
-| Feature           | Behavior          | Memory Location             |
-| :---------------- | :---------------- | :-------------------------- |
-| Standard Function | Runs and Ends     | Variables on Stack (Popped) |
-| Closure           | Remembers Scope   | Variables Promoted to Heap  |
-| Factory Pattern   | Encapsulates Data | Closure (Heap)              |
-| IIFE              | Runs Once         | Temporary Stack Frame       |
+| Feature           | Behavior        | Memory Location             |
+| :---------------- | :-------------- | :-------------------------- |
+| Standard Function | Runs and Ends   | Variables on Stack (Popped) |
+| Closure           | Remembers Scope | Variables Promoted to Heap  |
+| IIFE              | Runs Once       | Temporary Stack Frame       |
 
-| Concept        | The "Why"                                                     |
+| Concept        | The Why                                                       |
 | :------------- | :------------------------------------------------------------ |
 | Heap Promotion | To ensure variables survive after the Stack Frame dies.       |
-| Data Privacy   | To prevent external modification of internal state.           |
 | IIFE           | To avoid polluting the Global Scope with temporary variables. |
