@@ -6,23 +6,21 @@ excerpt: "The bridge between Memory and Disk: Transforming Heap Objects into str
 
 ## Data Serialization & Persistence
 
-### Serialization Architecture
-
 So far, we have discussed data living in the `RAM`. But RAM is volatile; when you close the browser, the Heap is erased. To save data (Persistence) or send it to a server (Network), we face a physical problem.
 
 #### A. The Problem: Heap Structure
 
-You cannot send a "Heap Object" over a network cable.
+We cannot send a Heap Object over a network cable.
 
 - An Object is a scattered collection of memory addresses and pointers.
-- A Network Cable (or Hard Disk) is a linear stream that only understands bits and strings. Pointers are meaningless outside the specific process that created them.
+- Pointers are meaningless outside the specific process that created them.
 
 #### B. The Solution: Serialization
 
 Serialization is the process of converting a complex `Tree/Graph Structure` (the Object) into a `Linear String` that can be stored or transmitted.
 
-- `Serialization (Marshaling):` Object to String.
-- `Deserialization (Unmarshaling):` String to Object.
+- `Serialization :` Object to String.
+- `Deserialization :` String to Object.
 
 ---
 
@@ -32,7 +30,7 @@ JSON is the universal standard for serialization in the web. It is language-inde
 
 #### A. The Syntax Rules
 
-JSON looks like a JS Object, but it has strict architectural constraints to ensure it is parseable by any language.
+JSON looks like a JS Object, but it has strict architectural constraints to ensure it is parsable by any language.
 
 1.  Keys must be Strings: Enclosed in double quotes `"key"`.
 2.  No Functions: Logic cannot be serialized, only data.
@@ -50,7 +48,7 @@ JSON looks like a JS Object, but it has strict architectural constraints to ensu
 2.  JSON.parse(string)
 
     - Action: Reads a string and allocates New Memory Slots in the Heap to reconstruct the object.
-    - Result: The new object is a Deep Copy of the original data (as discussed in Unit 7).
+    - Result: The new object is a Deep Copy of the original data.
 
 ---
 
@@ -85,22 +83,22 @@ const storedData = JSON.parse(localStorage.getItem("user"));
 
 LocalStorage is Synchronous.
 
-- When you read/write large chunks of JSON, the Main Thread (Unit 10) freezes until the disk operation is complete.
+- When you read/write large chunks of JSON, the Main Thread freezes until the disk operation is complete.
 - Best Practice: Only store small configuration data (auth tokens, theme preference). Never store massive datasets here; use IndexedDB for that.
 
 ---
 
 ### 📝 Summary Table
 
-| Feature           | JS Object                  | JSON String               |
-| :---------------- | :------------------------- | :------------------------ |
-| **Location**      | Heap Memory (RAM)          | Variable / Network / Disk |
-| **Type**          | Reference Type             | Primitive (String)        |
-| **Keys**          | Identifier / Symbol        | **Double Quoted String**  |
-| **Values**        | Any (Functions, undefined) | Data Only (No Functions)  |
-| **Circular Refs** | Allowed                    | **Throws Error**          |
+| Feature       | JS Object                  | JSON String               |
+| :------------ | :------------------------- | :------------------------ |
+| Location      | Heap Memory (RAM)          | Variable / Network / Disk |
+| Type          | Reference Type             | Primitive (String)        |
+| Keys          | Identifier / Symbol        | Double Quoted String      |
+| Values        | Any (Functions, undefined) | Data Only (No Functions)  |
+| Circular Refs | Allowed                    | Throws Error              |
 
-| API Method       | Direction           | Data Loss Risk                |
-| :--------------- | :------------------ | :---------------------------- |
-| `JSON.stringify` | Object $\to$ String | Yes (Funcs/undefined removed) |
-| `JSON.parse`     | String $\to$ Object | No (Strict parsing)           |
+| API Method       | Direction        | Data Loss Risk                |
+| :--------------- | :--------------- | :---------------------------- |
+| `JSON.stringify` | Object to String | Yes (Funcs/undefined removed) |
+| `JSON.parse`     | String to Object | No (Strict parsing)           |
