@@ -246,7 +246,7 @@ export default function ClientHomePage({ recentArchive }: ClientHomePageProps) {
                   passHref
                   className="group p-6 sm:p-8 border border-border rounded-lg hover:border-muted-foreground/50 transition-all duration-500 hover:shadow-lg cursor-pointer"
                 >
-                  <article>
+                  <div className="space-y-4 flex flex-col justify-between h-full">
                     <div className="space-y-4">
                       <div className="flex items-center justify-between text-xs text-muted-foreground font-mono">
                         <span>{post.date}</span>
@@ -259,13 +259,12 @@ export default function ClientHomePage({ recentArchive }: ClientHomePageProps) {
                       <p className="text-muted-foreground leading-relaxed">
                         {post.excerpt}
                       </p>
-
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground group-hover:text-foreground transition-colors duration-300">
-                        <span>Read more</span>
-                        <ArrowRight className="group-hover:ml-1 h-5 w-5 transition-all duration-300" />
-                      </div>
                     </div>
-                  </article>
+                    <div className="flex items-center gap-1 text-sm text-muted-foreground group-hover:text-foreground transition-colors duration-300">
+                      <span>Read more</span>
+                      <ArrowRight className="group-hover:ml-1 h-5 w-5 transition-all duration-300" />
+                    </div>
+                  </div>
                 </Link>
               ))}
             </div>

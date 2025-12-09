@@ -1,0 +1,112 @@
+---
+title: "The Runtime Architecture"
+date: "16-12-2025"
+excerpt: "JavaScript is single-threaded, meaning it can only do one thing at a time. Yet, it powers complex apps that fetch data, animate UIs, and listen for clicks simultaneously. This unit explains the architectural partnership that makes this possible."
+---
+
+## Runtime Architecture
+
+### 1. The Single-Threaded Core
+
+At its heart, the JavaScript engine is synchronous and single-threaded.
+
+- One Thread: It has exactly one Main Thread of execution.
+- One Call Stack: It has exactly one stack to track function calls.
+
+This means JavaScript, by itself, is linear. It executes code line-by-line, from top to bottom.
+
+---
+
+### 2. The Blocking Problem
+
+Because we only have one thread, we are vulnerable to Blocking.
+
+Blocking occurs when a slow operation sits on the Call Stack. While the Stack is busy executing that operation, the application is completely paralyzed.
+
+- The Freeze: The browser cannot repaint the screen, render animations, or handle clicks.
+
+```javascript
+// A Blocking Operation
+function heavyTask() {
+  console.log("Task Started");
+
+  // A loop that blocks the thread for 5 seconds
+  const end = Date.now() + 5000;
+  while (Date.now() < end) {
+    // CPU is stuck here. Do nothing.
+  }
+
+  console.log("Task Finished");
+}
+
+heavyTask(); // Freezes the browser for 5s
+console.log("This must wait...");
+```
+
+The Dilemma: Modern web apps need to fetch data (network requests) or wait for timers. If these were synchronous, our app would freeze every time we loaded a user profile.
+
+---
+
+### 3. The Asynchronous Solution
+
+How does JavaScript handle slow tasks without freezing? It outsources them.
+
+The JavaScript Runtime is actually a collaboration between the JS Engine and the Host Environment.
+
+#### A. The JS Engine
+
+The engine is strictly synchronous.
+
+- The Call Stack: Executes the actual JavaScript code line-by-line. It is single-threaded and blocking.
+- The Memory Heap: Where variables and objects live.
+
+#### B. The Web APIs (The Browser Environment)
+
+The engine effectively says, _"I don't know how to wait 5 seconds. You do it."_
+
+- Role: These are separate threads provided by the Browser (or C++ APIs in Node.js). They exist outside the JavaScript engine.
+- Capabilities: They handle the heavy lifting:
+  - `DOM` (rendering/clicks).
+  - `fetch` / `XHR` (network requests).
+  - `setTimeout` (timers).
+- Behavior: They run in parallel to the main stack. They do not block our code.
+
+#### C. The Glue (The Queue & Event Loop)
+
+These mechanisms manage the hand-off between the Browser and the Engine.
+
+- The Callback Queue: A waiting area where the Browser places finished tasks (callbacks).
+- The Event Loop: A continuously running process that pushes tasks from the Queue into the Engine's Call Stack when the Stack is empty.
+
+---
+
+### 4. The Event Loop (The Bridge)
+
+The Event Loop is a continuously running process that pushes tasks from the Queue into the Engine's Call Stack when the Stack is empty. It follows a simple algorithm:
+
+> If the Call Stack is empty, take the first callback from the Queue and push it onto the Stack.
+
+---
+
+### Trivia
+
+_Stop and Think:_
+If I write `setTimeout(fn, 1000)`, is the function guaranteed to execute in exactly 1000ms?
+
+Answer: No.
+It is guaranteed to be added to the _Queue_ after 1000ms.
+If the Call Stack is busy (e.g., executing a loop that takes 3 seconds), the Event Loop cannot push your callback onto the Stack. Your function will run at `1000ms + Wait Time`.
+Therefore, `setTimeout` indicates a minimum delay, not a guaranteed time.
+
+---
+
+### 5. Summary Table
+
+| Component      | Responsibility                | Threading                   |
+| :------------- | :---------------------------- | :-------------------------- |
+| Call Stack     | Executes JS logic             | Single Thread (Blocking)    |
+| Web APIs       | Handles I/O, Network, Time    | Multi-threaded (Background) |
+| Callback Queue | Holds ready-to-run functions  | Passive Queue               |
+| Event Loop     | Orchestrates Queue $to$ Stack | Continuous Monitor          |
+
+---

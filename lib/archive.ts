@@ -55,7 +55,11 @@ export function getAllArchivesMeta(): ArchiveMeta[] {
   return archive
     .filter((archive) => archive !== null)
     .sort((a, b) => {
-      const parseDate = (dateStr: string) => {
+      const parseDate = (dateStr: string|undefined) => {
+        if (!dateStr) {
+          console.warn("Found an item with a missing date!");
+          return 0;
+        }
         const [day, month, year] = dateStr.split("-");
         return new Date(`${year}-${month}-${day}`).getTime();
       };

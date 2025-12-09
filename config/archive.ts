@@ -57,6 +57,10 @@ export const archiveLinks: ArchiveSectionLink[] = [
         title: "Closures",
         path: "/archive/javascript/closures",
       },
+      {
+        title: "Runtime Architecture",
+        path: "/archive/javascript/runtime-architecture",
+      },
     ],
   },
 ];
