@@ -1,0 +1,128 @@
+---
+title: "React Architecture & The Why"
+date: "20-12-2025"
+excerpt: "Understanding the core philosophy behind React: SPAs, the Virtual DOM, and why we write HTML inside JavaScript."
+---
+
+# React Architecture & The Why
+
+## 1. SPA vs. MPA: The Big Shift
+
+Before React, most websites were Multi-Page Applications (MPAs). Every time we clicked a link, the browser sent a request to the server, and the server replied with a brand-new HTML file. The screen would flash white, and the entire page would reload.
+
+React popularized the Single Page Application (SPA).
+
+- How it works: We load the site once (one HTML file). When we click a link or interact with the app, JavaScript intercepts the action. It fetches only the data (JSON) it needs and updates just that specific chunk of the screen.
+- The Result: It feels like a native mobile app. No reloading, smooth transitions.
+
+| Feature         | MPA (Traditional)                           | SPA (React)                                     |
+| :-------------- | :------------------------------------------ | :---------------------------------------------- |
+| Page Load       | Reloads entire page on navigation.          | Initial load only; updates dynamically.         |
+| Speed           | Slower (renders HTML on server every time). | Faster interactions (renders in browser).       |
+| User Experience | Choppy (screen flash).                      | Smooth, app-like.                               |
+| SEO             | Easy (Google sees full HTML).               | Requires setup (SSR/Next.js) to be seen easily. |
+
+---
+
+## 2. The Virtual DOM
+
+The DOM (Document Object Model) is the browser's structure of the page. It is notoriously slow to manipulate. If we update the real DOM directly (like `document.getElementById('root').innerHTML = ...`), the browser has to recalculate the layout and repaint the screen, which is expensive.
+
+React solves this with the Virtual DOM.
+
+### How it works:
+
+1.  The Copy: React keeps a lightweight JavaScript copy of the real DOM in memory.
+2.  The Diff: When data changes, React creates a new Virtual DOM tree. It compares it to the previous Virtual DOM tree. This process is called Diffing.
+3.  Reconciliation: React calculates the minimal set of changes needed and updates only those specific parts of the real DOM.
+
+---
+
+## 3. JSX (JavaScript XML)
+
+Following React code looks like a weird mix of HTML and JavaScript. This is JSX.
+
+```javascript
+const element = <h1>Hello, world!</h1>;
+```
+
+Browsers cannot understand JSX. Under the hood, a tool called Babel converts that line into standard JavaScript:
+
+### A. The Translator: Babel
+
+- What it is : Transpiler (Source to Source Compiler)
+- The Job: It takes our modern JSX/React code and translates it into older, standard JavaScript that browsers can understand.
+- The Transformation:
+
+  ```javascript
+  // Input (JSX)
+  const element = <h1>Hello</h1>;
+
+  // Output (What Babel creates)
+  const element = React.createElement("h1", null, "Hello");
+  ```
+
+### B. The Packager: Webpack (or Vite/Turbopack)
+
+- What it is: A Bundler.
+- The Job: It takes our hundreds of JavaScript files, CSS files, and images, and stitches them together into one optimized file (usually `bundle.js`) so the browser doesn't have to make 500 requests.
+- Relationship with Babel: Webpack is the Boss. It manages the files. When it sees a file with React code, it asks Babel to translate it, then Webpack packages the translated code.
+
+---
+
+```javascript
+// What the browser actually sees:
+const element = React.createElement("h1", null, "Hello, world!");
+```
+
+### The Three Rules of JSX:
+
+1.  Return a Single Parent: We cannot return two sibling elements side-by-side. You must wrap them in a `div` or a Fragment (`<>...</>`).
+    - Why? Because a JavaScript function can only return one value.
+2.  CamelCase Attributes: Since `class` is a reserved keyword in JavaScript (for making classes), we use `className`. Similarly, `onclick` becomes `onClick`, and `tabindex` becomes `tabIndex`.
+3.  Close All Tags: In HTML, `<br>` is fine. In JSX, self-closing tags must end with a slash: `<br />` or `<img />`.
+
+---
+
+## Summary Table
+
+| Concept        | Definition                                                | Key Benefit                                    |
+| :------------- | :-------------------------------------------------------- | :--------------------------------------------- |
+| SPA            | Single Page Application. Loads once, updates via JS.      | Smooth, app-like UX.                           |
+| Virtual DOM    | A lightweight JS copy of the real DOM.                    | Performance (minimizes slow browser repaints). |
+| Reconciliation | The process of syncing the Virtual DOM with the Real DOM. | Efficiency (updates only what changed).        |
+| JSX            | Syntax extension for JavaScript that looks like HTML.     | Readability (describes UI structure clearly).  |
+| Babel          | A transpiler.                                             | Converts JSX into browser-readable JavaScript. |
+
+---
+
+## 🛑 Stop and Think
+
+### _1. If the Virtual DOM adds an extra step (comparing two trees), why is it considered faster than just manipulating the DOM directly?_
+
+Directly manipulating the real DOM is slow because every change can trigger a Reflow (calculating layout/position) and Repaint (drawing pixels).
+
+- Without Virtual DOM: If we update 10 different items on a list one by one, the browser might try to recalculate the layout 10 separate times. This is called Layout Thrashing.
+- With Virtual DOM: React works in memory (which is instant). It sees those 10 changes, compares the trees, and says, "Okay, I need to make these 10 changes." It then batches them together and updates the real DOM in one single go.
+
+---
+
+### _2. Why does a component return `React.createElement(...)` instead of just an HTML string?_
+
+If a component just returned a string like `"<div id='app'>Hello</div>"`, it would be "dead" text. React couldn't easily track changes within it without re-reading the entire string every time.
+
+- `React.createElement` returns a JavaScript Object.
+  ```javascript
+  // It looks roughly like this in memory:
+  {
+    type: 'div',
+    props: { id: 'app', children: 'Hello' },
+    key: null,
+    ref: null,
+    // ...internal React tracking flags
+  }
+  ```
+- Because it is an Object, React can keep a reference to it. It can check `oldObject.props.id !== newObject.props.id` very quickly.
+- It turns the UI into a data structure that can be traversed, diffed, and managed programmatically.
+
+---
