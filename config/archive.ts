@@ -73,6 +73,10 @@ export const archiveLinks: ArchiveSectionLink[] = [
         title: "Promises",
         path: "/archive/javascript/promises",
       },
+      {
+        title: "Async / Await",
+        path: "/archive/javascript/async-await",
+      },
     ],
   },
 ];

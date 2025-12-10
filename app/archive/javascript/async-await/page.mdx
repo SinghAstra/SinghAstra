@@ -1,0 +1,145 @@
+---
+title: "Async / Await"
+date: "15-12-2025"
+excerpt: "Introduced in ES2017, `async` and `await` are often called syntactic sugar. They don't add new functionality to the engine; they simply hide the complexity of `.then()` chains, allowing asynchronous code to look and behave like standard synchronous code."
+---
+
+# Async / Await
+
+### 1. The `async` Keyword
+
+The `async` keyword is placed before a function declaration.
+
+The Rule: An `async` function always returns a Promise.
+
+- If we return a Promise, it returns that Promise.
+- If we return a value (e.g., `return 5`), JavaScript automatically wraps it in a resolved Promise (`Promise.resolve(5)`).
+- If we throw an error, it returns a rejected Promise.
+
+```javascript
+// Standard Function
+function getNumber() {
+  return 5;
+}
+// returns: 5
+
+// Async Function
+async function getAsyncNumber() {
+  return 5;
+}
+// returns: Promise { <fulfilled>: 5 }
+```
+
+---
+
+### 2. The `await` Keyword
+
+The `await` keyword can only be used inside an `async` function.
+
+The Mechanism:
+When the engine encounters `await promise`:
+
+1.  It pauses the execution of the `async` function right there.
+2.  It creates a Microtask to handle the resumption of the function later.
+3.  It exits the function and returns execution to the main Call Stack (allowing the Event Loop to process other tasks, like rendering).
+4.  Once the awaited promise settles, the function wakes up and continues on the very next line.
+
+```javascript
+async function fetchData() {
+  console.log("1. Starting...");
+
+  // The function PAUSES here. The CPU goes to do other work.
+  const data = await fetch("/api/user");
+
+  // The function RESUMES here only after data arrives.
+  console.log("2. Data received:", data);
+}
+```
+
+#### Why is this better?
+
+It removes the callback structure entirely. We read the code top-to-bottom, just like we read synchronous code, even though time gaps exist between the lines.
+
+---
+
+### 3. Error Handling (`try / catch`)
+
+With Promises, we had to use `.catch()`. With `async/await`, we can return to the standard error handling mechanism of JavaScript: the `try / catch` block.
+
+This unifies error handling for both synchronous and asynchronous errors in a single block.
+
+```javascript
+async function getUser() {
+  try {
+    const user = await fetch("/api/user");
+    const posts = await fetch(`/api/posts/${user.id}`);
+    console.log(posts);
+  } catch (error) {
+    // Catches network errors, 404s, OR syntax errors in the code above
+    console.error("Something went wrong:", error);
+  }
+}
+```
+
+---
+
+### 4. The Serial Trap (Performance)
+
+This is the most common mistake senior developers look for in code reviews.
+
+Because `await` pauses execution, using it inside a loop or sequentially can accidentally kill performance by forcing tasks to run one by one (Serially) instead of at the same time (Parallel).
+
+#### The Mistake (Waterfalls)
+
+```javascript
+async function getDashboard() {
+  // Wait 2 seconds
+  const user = await fetchUser();
+  // Wait 2 seconds (Total: 4s)
+  const posts = await fetchPosts();
+
+  return { user, posts };
+}
+```
+
+> Why it's bad: `fetchPosts` doesn't need `fetchUser` to finish. They are independent. We just wasted 2 seconds.
+
+#### The Fix (Parallelism)
+
+We initiate both promises before awaiting them, or use `Promise.all`.
+
+```javascript
+async function getDashboard() {
+  // Start both requests concurrently (Total: 2s)
+  const userPromise = fetchUser();
+  const postsPromise = fetchPosts();
+
+  // Now we wait for both to finish
+  const user = await userPromise;
+  const posts = await postsPromise;
+
+  return { user, posts };
+}
+```
+
+---
+
+### 5. Summary Table
+
+| Feature         | Promises (`.then`)        | Async / Await            |
+| :-------------- | :------------------------ | :----------------------- |
+| Syntax          | Chained callbacks         | Top-down, imperative     |
+| Error Handling  | `.catch()`                | `try / catch`            |
+| Readability     | Good (flat chain)         | Excellent (looks sync)   |
+| Engine Behavior | Same (Microtasks)         | Same (Microtasks)        |
+| Pitfall         | Callback Hell (if nested) | Accidental Serialization |
+
+---
+
+### _Stop and Think: Is `await` blocking?_
+
+Answer:
+It is Non-Blocking for the Browser (Event Loop), but Blocking for the code inside the function.
+While the `async` function is paused at the `await` line, the Browser is free to handle clicks, scroll events, and other scripts. The function yields control back to the engine.
+
+---
