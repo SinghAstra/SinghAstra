@@ -61,6 +61,14 @@ export const archiveLinks: ArchiveSectionLink[] = [
         title: "Runtime Architecture",
         path: "/archive/javascript/runtime-architecture",
       },
+      {
+        title: "Event Loop & Queues",
+        path: "/archive/javascript/event-loop-and-queues",
+      },
+      {
+        title: "Callbacks & Callback Hell",
+        path: "/archive/javascript/callbacks-and-callback-hell",
+      },
     ],
   },
 ];

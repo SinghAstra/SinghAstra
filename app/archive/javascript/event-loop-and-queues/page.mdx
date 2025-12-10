@@ -1,0 +1,121 @@
+---
+title: "Event Loop & Queues"
+date: "15-12-2025"
+excerpt: "We previously learned that the Event Loop moves tasks from The Queue to the Stack. But modern JavaScript has *two* queues. This unit explores the priority war between Macrotasks (Timers) and Microtasks (Promises)."
+---
+
+## Event Loop & Queues
+
+### 1. The Two Queues
+
+In the early days of JavaScript, there was only one queue (the Callback Queue). With the introduction of Promises, the architecture changed. We now have two distinct waiting areas for asynchronous callbacks.
+
+#### A. The Macrotask Queue (Task Queue)
+
+This is the standard queue we discussed in previous unit.
+
+- Sources: `setTimeout`, `setInterval`, `setImmediate` (Node), I/O tasks, UI Rendering.
+- Behavior: Processed one at a time. After each macrotask, it is made sure that all task in microtask queue is executed until it becomes empty.
+
+#### B. The Microtask Queue (Job Queue)
+
+This is a high-priority queue introduced specifically for Promises.
+
+- Sources: `Promise.then`, `.catch`, `.finally`, `queueMicrotask`, `MutationObserver`.
+- Behavior: All microtasks are processed immediately after the current script finishes and call stack becomes empty, before moving to the next macrotask.
+
+---
+
+### 2. The Priority Rule
+
+The Golden Algorithm:
+
+1.  Execute Script: Run the synchronous code on the Call Stack.
+2.  Flush Microtasks: Once the Call Stack is empty, process All tasks in the Microtask Queue until it is empty.
+3.  Run One Macrotask: Pick one task from the Macrotask Queue and run it.
+4.  Repeat: Go back to Step 2.
+
+> Key Takeaway: The Microtask Queue must be completely empty before the Event Loop will even look at the Macrotask Queue.
+
+---
+
+### 3. Code Evidence
+
+Let's predict the output of mixed synchronous and asynchronous code.
+
+```javascript
+console.log("1. Script Start");
+
+// Macrotask
+setTimeout(() => {
+  console.log("2. setTimeout");
+}, 0);
+
+// Microtask
+Promise.resolve().then(() => {
+  console.log("3. Promise 1");
+});
+
+// Microtask
+Promise.resolve().then(() => {
+  console.log("4. Promise 2");
+});
+
+console.log("5. Script End");
+```
+
+```text
+1. Script Start
+5. Script End
+3. Promise 1
+4. Promise 2
+2. setTimeout
+```
+
+---
+
+### 4. The Starvation Problem
+
+Because the Event Loop flushes the entire Microtask Queue before moving on, it is possible to block the Macrotask Queue indefinitely.
+
+If a Microtask adds another Microtask, which adds another Microtask, the engine will be stuck in Microtask queue forever.
+
+```javascript
+function infiniteMicrotasks() {
+  Promise.resolve().then(() => {
+    console.log("I am blocking the macrotask queue!");
+    infiniteMicrotasks(); // Adds a new microtask immediately
+  });
+}
+infiniteMicrotasks();
+// Result: The page freezes. Click events (Macrotasks) never run.
+```
+
+---
+
+### 5. Summary Table
+
+| Feature          | Macrotask (Task Queue)                   | Microtask (Job Queue)                |
+| :--------------- | :--------------------------------------- | :----------------------------------- |
+| Examples         | `setTimeout`, `setInterval`, DOM Events  | `Promise.then`, `queueMicrotask`     |
+| Priority         | Low                                      | High                                 |
+| Execution Policy | Run ONE, then check Microtasks           | Run ALL until empty                  |
+| Danger           | Safe (allows UI rendering between tasks) | Can starve the Event Loop (block UI) |
+
+---
+
+### _Stop and Think : In what order will this run ?_
+
+```javascript
+setTimeout(() => console.log("Timeout"), 0);
+Promise.resolve().then(() => console.log("Promise"));
+console.log("Sync");
+```
+
+Answer:
+
+1.  `Sync` (Stack)
+2.  `Promise` (Microtask - Priority)
+3.  `Timeout` (Macrotask - Last)
+
+---

@@ -88,18 +88,6 @@ The Event Loop is a continuously running process that pushes tasks from the Queu
 
 ---
 
-### Trivia
-
-_Stop and Think:_
-If I write `setTimeout(fn, 1000)`, is the function guaranteed to execute in exactly 1000ms?
-
-Answer: No.
-It is guaranteed to be added to the _Queue_ after 1000ms.
-If the Call Stack is busy (e.g., executing a loop that takes 3 seconds), the Event Loop cannot push your callback onto the Stack. Your function will run at `1000ms + Wait Time`.
-Therefore, `setTimeout` indicates a minimum delay, not a guaranteed time.
-
----
-
 ### 5. Summary Table
 
 | Component      | Responsibility                | Threading                   |
@@ -108,5 +96,14 @@ Therefore, `setTimeout` indicates a minimum delay, not a guaranteed time.
 | Web APIs       | Handles I/O, Network, Time    | Multi-threaded (Background) |
 | Callback Queue | Holds ready-to-run functions  | Passive Queue               |
 | Event Loop     | Orchestrates Queue $to$ Stack | Continuous Monitor          |
+
+---
+
+### _Stop and Think: If I write `setTimeout(fn, 1000)`, is the function guaranteed to execute in exactly 1000ms ?_
+
+Answer: No.
+It is guaranteed to be added to the Queue after 1000ms.
+If the Call Stack is busy (e.g., executing a loop that takes 3 seconds), the Event Loop cannot push your callback onto the Stack. Your function will run at `1000ms + Wait Time`.
+Therefore, `setTimeout` indicates a minimum delay, not a guaranteed time.
 
 ---
