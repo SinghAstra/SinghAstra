@@ -77,6 +77,10 @@ export const archiveLinks: ArchiveSectionLink[] = [
         title: "Async / Await",
         path: "/archive/javascript/async-await",
       },
+      {
+        title: "Concurrency",
+        path: "/archive/javascript/concurrency",
+      },
     ],
   },
 ];
