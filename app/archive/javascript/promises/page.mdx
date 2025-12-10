@@ -1,0 +1,155 @@
+---
+title: "Promises"
+date: "18-12-2025"
+excerpt: "To solve the trust issues of Callbacks, JavaScript introduced Promises. A Promise is an object representing a value that may not be available yet. This unit explores how Promises restore control to your code and flatten the Pyramid of Doom."
+---
+
+# Promises
+
+### 1. The Concept: A Future Value
+
+Architecturally, a Promise is a container (an object) that acts as a placeholder for a future value.
+
+When we start an asynchronous task (like a network request), the engine immediately gives you this container. Initially, it is empty. Later, the engine will fill it with data or an error.
+
+#### The Three States
+
+A Promise can be in exactly one of three states. The state transition is irreversible.
+
+1.  Pending: The initial state. The operation is still in progress.
+2.  Fulfilled (Resolved): The operation completed successfully. The container holds the value.
+3.  Rejected: The operation failed. The container holds the error (reason).
+
+---
+
+### 2. The Constructor: Creating a Promise
+
+We create a Promise using the `new Promise()` constructor. This constructor takes a single function argument called the Executor Function.
+
+#### The Executor Function
+
+This is the most misunderstood part of Promises.
+
+> Crucial Rule: The Executor Function runs Synchronously and Immediately.
+
+When we write `new Promise(...)`, the JavaScript engine executes the code inside that function instantly, on the Call Stack. It does not wait.
+
+```javascript
+console.log("1. Start");
+
+const myPromise = new Promise((resolve, reject) => {
+  // This Executor runs IMMEDIATELY (Synchronously)
+  console.log("2. Inside Executor");
+
+  // This async part goes to the Web API
+  setTimeout(() => {
+    resolve("Data Loaded");
+  }, 1000);
+});
+
+console.log("3. End");
+```
+
+Output:
+
+```text
+1. Start
+2. Inside Executor  <-- Proves the executor is synchronous
+3. End
+```
+
+> Note: Only the `resolve()` or `reject()` calls inside the asynchronous callback happen later. The setup happens now.
+
+---
+
+### 3. Regaining Control (Solving Inversion of Control)
+
+In previous archive, we saw the danger of passing a callback into a third-party function (giving them control). Promises flip this model.
+
+Instead of passing our logic into `analytics.track()`, the function returns a Promise object to us.
+
+```javascript
+// Callback Approach (Risky)
+analytics.track(data, function () {
+  // We hope they call this...
+});
+
+// Promise Approach (Safe)
+const trackingTask = analytics.track(data);
+
+// WE decide when to listen. WE control the next step.
+trackingTask.then(() => {
+  chargeCreditCard();
+});
+```
+
+We trust the standard Promise API (the browser), not the third-party library, to handle the execution of our code.
+
+---
+
+### 4. Consuming a Promise (`.then` & `.catch`)
+
+Once we have a promise, we attach handlers to react when the state changes. These handlers are placed in the Microtask Queue.
+
+- `.then(onSuccess, onFailure)`: Runs if the promise is Fulfilled.
+- `.catch(onFailure)`: Runs if the promise is Rejected.
+- `.finally(onSettled)`: Runs when the promise is settled (either way).
+
+#### The Chaining Magic
+
+The true power of Promises is Chaining.
+Every call to `.then()` returns a brand new Promise.
+
+- If we return a value from `.then()`, the new promise fulfills with that value.
+- If we return a new Promise, the chain pauses and waits for that new Promise to settle.
+
+This allows us to flatten the Pyramid of Doom into a vertical, readable chain.
+
+```javascript
+// Flat, readable chain
+getUser(userId)
+  .then((user) => {
+    // Return a new Promise (async operation)
+    return getOrders(user.id);
+  })
+  .then((orders) => {
+    // We receive the result of getOrders here
+    return getPayment(orders[0].id);
+  })
+  .then((status) => {
+    console.log("Payment Status:", status);
+  })
+  .catch((err) => {
+    // Catches errors from ANY step above
+    console.error("Something went wrong:", err);
+  });
+```
+
+---
+
+### 5. Summary Table
+
+| Feature      | Description                                                |
+| :----------- | :--------------------------------------------------------- |
+| Executor     | `(resolve, reject) => ...` Runs Synchronously.             |
+| Immutability | Once settled (Resolved/Rejected), state cannot change.     |
+| Microtask    | `.then` callbacks go to the high-priority Microtask Queue. |
+| Chaining     | `.then` returns a new Promise, allowing linear sequencing. |
+
+---
+
+### _Stop and Think: What happens if we forget to return the promise inside a `.then()`?_
+
+```javascript
+taskA()
+  .then(() => {
+    taskB(); // Missing 'return'
+  })
+  .then(() => {
+    console.log("Done");
+  });
+```
+
+Answer: The chain is broken. The next `.then()` ("Done") will run immediately because the first `.then` implicitly returns `undefined` (which is a value) instead of waiting for `taskB` to finish. `taskB` becomes a "floating" promise running in the background, detached from the chain.
+
+---

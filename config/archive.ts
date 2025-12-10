@@ -69,6 +69,10 @@ export const archiveLinks: ArchiveSectionLink[] = [
         title: "Callbacks & Callback Hell",
         path: "/archive/javascript/callbacks-and-callback-hell",
       },
+      {
+        title: "Promises",
+        path: "/archive/javascript/promises",
+      },
     ],
   },
 ];
