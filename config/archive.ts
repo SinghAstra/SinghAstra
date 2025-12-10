@@ -89,6 +89,10 @@ export const archiveLinks: ArchiveSectionLink[] = [
         title: "DOM Events & Memory",
         path: "/archive/javascript/dom-events-and-memory",
       },
+      {
+        title: "Performance Patterns",
+        path: "/archive/javascript/performance-patterns",
+      },
     ],
   },
 ];

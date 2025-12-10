@@ -1,0 +1,138 @@
+---
+title: "Performance Patterns"
+date: "15-12-2025"
+excerpt: "Some events (scrolling, resizing, typing) fire hundreds of times per second. If you attach expensive logic to them, your app will freeze. This unit teaches the architectural patterns to limit the rate of execution using Time and Closures."
+---
+
+# Throttling & Debouncing
+
+### 1. The Problem: Event Floods
+
+Browsers are hyper-responsive. They fire events for every micro-interaction.
+
+- `window.onresize`: Fires constantly as you drag the window edge.
+- `document.onscroll`: Fires on every pixel of movement.
+- `input.onkeyup`: Fires on every single character typed.
+
+The Crash Scenario:
+If we attach an expensive operation (like an API call `fetch` or a DOM re-render) directly to these events, the Call Stack gets flooded. The browser cannot keep up, frames drop, and the UI lags.
+
+We need a way to control the flow.
+
+---
+
+### 2. Debouncing
+
+Goal: Wait until the user stops doing the action for X milliseconds.
+
+- Mechanism:
+  1.  Event triggers.
+  2.  Cancel any previous timer.
+  3.  Start a new timer.
+  4.  If the timer finishes without interruption, run the function.
+
+#### The Implementation
+
+This is a pure application of Closures. We need a private variable (`timer`) to persist between calls.
+
+```javascript
+// The Factory Function
+function debounce(func, delay) {
+  let timer; // Private variable in Closure
+
+  // The returned function
+  return function (...args) {
+    // 1. Clear the previous timer (Reset the clock)
+    clearTimeout(timer);
+
+    // 2. Set a new timer
+    timer = setTimeout(() => {
+      func.apply(this, args); // Run the actual logic
+    }, delay);
+  };
+}
+
+// Usage
+const searchAPI = (text) => console.log("Fetching data for:", text);
+
+const betterSearch = debounce(searchAPI, 500);
+
+// User types "Hello" quickly:
+betterSearch("H"); // Timer set... cleared immediately.
+betterSearch("He"); // Timer set... cleared immediately.
+betterSearch("Hel"); // ...
+betterSearch("Hello"); // Timer set. User stops.
+// 500ms later -> "Fetching data for: Hello" (Runs ONLY once)
+```
+
+- Best Use Case: Search bars (Typeahead), Auto-saving forms, Window resizing (re-calculating layout).
+
+---
+
+### 3. Throttling
+
+Goal: Run this function at most once every X milliseconds, no matter how often the user triggers it.
+
+- Mechanism:
+  1.  Event triggers.
+  2.  Check a permission flag (`shouldWait`).
+  3.  If `true` -> Ignore the event.
+  4.  If `false` -> Run function, set flag to `true`, and start a timer to reset the flag.
+
+#### The Implementation
+
+We use a Closure to hold the `shouldWait` boolean.
+
+```javascript
+// The Factory Function
+function throttle(func, interval) {
+  let shouldWait = false; // Private flag in Closure
+
+  return function (...args) {
+    // 1. If we are waiting, exit immediately (Drop the event)
+    if (shouldWait) return;
+
+    // 2. Execute the function immediately
+    func.apply(this, args);
+
+    // 3. Enable the waiting flag
+    shouldWait = true;
+
+    // 4. Set a timer to reset the flag later
+    setTimeout(() => {
+      shouldWait = false;
+    }, interval);
+  };
+}
+
+// Usage
+const logScroll = () => console.log("User is scrolling...");
+
+const betterScroll = throttle(logScroll, 1000);
+
+// User scrolls frantically for 5 seconds.
+// Output: "User is scrolling..." appears exactly 5 times (Once per second).
+```
+
+- Best Use Case: Infinite Scrolling (checking if near bottom), Game Loops (player firing), Tracking analytics (mouse movement).
+
+---
+
+### 4. Summary Table
+
+| Feature             | Debounce                         | Throttle                            |
+| :------------------ | :------------------------------- | :---------------------------------- |
+| Logic               | Delay execution until silence.   | Enforce a maximum frequency.        |
+| If user never stops | The function NEVER runs.         | The function runs periodically.     |
+| Execution Pattern   | Run once at the end.             | Run consistently at intervals.      |
+| Primary Use Case    | Input fields, Resize, Auto-save. | Scroll, Mouse move, Button mashing. |
+
+---
+
+### _Stop and Think: Why did we use `func.apply(this, args)` in the examples above instead of just `func(args)`? _
+
+Answer:
+To preserve the Context (`this`).
+If we attach the debounced function to an object method (e.g., `user.save()`), calling it normally might cause `this` to point to the `Window` or `undefined` (depending on strict mode). Using `.apply(this)` ensures that the `this` from the event handler is passed correctly to your original function.
+
+---
