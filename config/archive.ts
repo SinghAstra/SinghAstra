@@ -81,6 +81,14 @@ export const archiveLinks: ArchiveSectionLink[] = [
         title: "Concurrency",
         path: "/archive/javascript/concurrency",
       },
+      {
+        title: "Timers",
+        path: "/archive/javascript/timers",
+      },
+      {
+        title: "DOM Events & Memory",
+        path: "/archive/javascript/dom-events-and-memory",
+      },
     ],
   },
 ];

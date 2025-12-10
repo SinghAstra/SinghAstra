@@ -1,0 +1,150 @@
+---
+title: "DOM Events & Memory"
+date: "15-12-2025"
+excerpt: "When you click a button, you aren't just clicking one pixel; you are triggering a chain reaction that travels from the root of the document to the target and back. Understanding this flow allows us to save massive amounts of memory via Event Delegation."
+---
+
+# DOM Events & Memory
+
+### 1. The Propagation Cycle
+
+Events in the DOM do not just appear on the element user clicks. They travel through the document hierarchy in a specific lifecycle known as Propagation.
+
+There are three distinct phases to every event:
+
+1.  Capturing Phase : The event starts at the `window` and travels down the DOM tree until it reaches the parent of the target.
+    - Path: `Window` to `Document` to `Body` to ... to `Parent`.
+2.  Target Phase: The event reaches the actual element that was triggered (e.g., the button).
+3.  Bubbling Phase : The event floats up from the target back to the root.
+    - Path: `Target` to `Parent` to ... to `Body` to `Window`.
+
+#### Code Evidence
+
+By default, `addEventListener` listens to the Bubbling phase. We can force it to listen to the Capturing phase by passing `true` as the third argument.
+
+```javascript
+const parent = document.querySelector("#parent");
+const child = document.querySelector("#child");
+
+// Capturing Listener (Third arg is true)
+parent.addEventListener(
+  "click",
+  () => {
+    console.log("1. Parent Captured (Down)");
+  },
+  true
+);
+
+// Bubbling Listener (Default)
+child.addEventListener("click", () => {
+  console.log("2. Child Clicked (Target)");
+});
+
+// Bubbling Listener (Default)
+parent.addEventListener("click", () => {
+  console.log("3. Parent Bubbled (Up)");
+});
+
+// Output when clicking Child:
+// 1. Parent Captured (Down)
+// 2. Child Clicked (Target)
+// 3. Parent Bubbled (Up)
+```
+
+---
+
+### 2. Controlling the Flow
+
+Sometimes, we don't want an event to travel all the way up to the `Window`.
+
+#### A. `e.stopPropagation()`
+
+This method stops the event dead in its tracks. It prevents any further propagation (bubbling or capturing).
+
+```javascript
+button.addEventListener("click", (e) => {
+  e.stopPropagation();
+  console.log("Clicked!");
+});
+
+// If there is a listener on the Body, it will NEVER fire.
+document.body.addEventListener("click", () => console.log("Body clicked"));
+```
+
+#### B. `e.preventDefault()`
+
+This does not stop propagation. It only stops the browser's default behavior for that element.
+
+- _Links (`<a>`):_ Prevents navigating to the URL.
+- _Forms (`<form>`):_ Prevents the page reload on submit.
+
+```javascript
+link.addEventListener("click", (e) => {
+  e.preventDefault(); // Stay on this page
+  console.log("Link clicked, but navigation blocked.");
+});
+```
+
+---
+
+### 3. Event Delegation
+
+The Problem:
+Imagine we have a dynamic shopping list with 10,000 items (`<li>`).
+
+- Naive Approach: Loop through all 10,000 items and attach a `click` listener to each one.
+  - Memory Cost: 10,000 function objects in the Heap.
+  - Performance Cost: The browser must register 10,000 handlers.
+
+The Solution:
+Instead of listening to the children, we listen to the Parent (`<ul>`). Because of Bubbling, every click on an `<li>` will eventually reach the `<ul>`.
+
+We check `event.target` to see what was actually clicked.
+
+```javascript
+// 1. Select the parent
+const list = document.querySelector("#shopping-list");
+
+// 2. Attach ONE listener
+list.addEventListener("click", function (e) {
+  // 3. Identify the source
+  // e.target = The specific element clicked (e.g., the <span> text inside the li)
+  // e.currentTarget = The element listening (the <ul>)
+
+  // We use .closest() to handle clicks on nested elements (like an icon inside the li)
+  const item = e.target.closest("li");
+
+  // 4. Guard Clause: If they clicked the UL padding, ignore it
+  if (!item) return;
+
+  // 5. Execute Logic
+  console.log("You clicked item ID:", item.dataset.id);
+});
+```
+
+The Benefits:
+
+1.  Memory: Only 1 Event Listener in memory (vs 10,000).
+2.  Dynamic: New items added to the list work automatically. No extra setup required.
+
+---
+
+### 4. Summary Table
+
+| Concept    | Direction | Default? | Usage                                          |
+| :--------- | :-------- | :------- | :--------------------------------------------- |
+| Capturing  | Down      | No       | Analytics, intercepted events before target.   |
+| Bubbling   | Up        | Yes      | Event Delegation.                              |
+| Target     | Static    | N/A      | The source element.                            |
+| Delegation | N/A       | Pattern  | Handling dynamic or massive lists efficiently. |
+
+---
+
+### _Stop and Think: In the Delegation example, why did we use `e.target.closest("li")` instead of `e.target.tagName === "LI"`?_
+
+Answer:
+If our `<li>` contains other elements (like `<b>Bold Text</b>` or an `<icon>`), clicking that icon makes `e.target` the icon, not the `<li>`.
+Using `tagName === "LI"` would fail if the user clicks the text inside the item.
+`closest("li")` looks up the tree from the clicked element to find the nearest `<li>` ancestor, making the code robust against nested HTML.
+
+---

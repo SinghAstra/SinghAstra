@@ -1,0 +1,125 @@
+---
+title: "Timers"
+date: "15-12-2025"
+Excerpt: "Zero does not mean Now. This archive explores the specific mechanics of JavaScript timers, the danger of drift in `setInterval`, and the Node.js-specific battle between `setTimeout(fn, 0)` and `setImmediate`."
+---
+
+# Timers
+
+### 1. `setInterval` & The Drift Problem
+
+`setInterval` is used to run a function repeatedly at a set interval.
+
+```javascript
+setInterval(() => console.log("Tick"), 1000);
+```
+
+The Flaw: `setInterval` does not care if your function takes time to run. It schedules the next execution based on when the last one was scheduled, not when it finished.
+
+- Scenario: You want a task every 1000ms.
+- Reality: If the task takes 400ms to run, you only have 600ms of "rest" before the next one starts.
+- The Drift: If the main thread is blocked, intervals can bunch up and fire efficiently back-to-back, or drift significantly over time.
+
+The Fix: Recursive `setTimeout`.
+This ensures the next timer only starts after the current one finishes.
+
+```javascript
+function tick() {
+  console.log("Tick");
+  // Only schedule the next one when this one is done
+  setTimeout(tick, 1000);
+}
+setTimeout(tick, 1000);
+```
+
+---
+
+### 2. `setTimeout(fn, 0)`
+
+Many developers use `setTimeout(fn, 0)` to make code "async."
+
+Does 0 mean Immediate?
+No. It means The Minimum Possible Delay.
+
+1.  Clamping: The browser (and Node.js) enforces a minimum delay (usually 1ms to 4ms, depending on nesting). It is never truly 0ms.
+2.  Macrotask: It pushes the callback to the Macrotask Queue. The engine must still finish the current script, clear the Call Stack, and flush the Microtask Queue (Promises) before it touches this timer.
+
+---
+
+### 3. `setImmediate` (Node.js Exclusive)
+
+_Note: `setImmediate` is not a standard Web API (browsers don't support it). It is specific to the Node.js Event Loop._
+
+Purpose: To execute a script immediately after the current Poll Phase (I/O) completes.
+
+While `setTimeout` technically belongs to the Timers phase, `setImmediate` belongs to the Check phase of the Node.js Event Loop.
+
+---
+
+### 4. The Showdown: `setTimeout` vs `setImmediate`
+
+This is the critical architectural distinction in Node.js.
+
+#### Scenario A: The Main Module
+
+If we run them in the main script (top level), the order is Non-Deterministic. It depends on system performance (process startup time).
+
+```javascript
+// index.js
+setTimeout(() => console.log("Timeout"), 0);
+setImmediate(() => console.log("Immediate"));
+
+// Output: Could be "Timeout" -> "Immediate" OR "Immediate" -> "Timeout"
+```
+
+#### Scenario B: Inside I/O (The Guarantee)
+
+If we are inside an I/O callback (like reading a file), `setImmediate` is guaranteed to run first.
+
+```javascript
+const fs = require("fs");
+
+fs.readFile(__filename, () => {
+  // We are now in the I/O Phase
+  setTimeout(() => console.log("Timeout"), 0);
+  setImmediate(() => console.log("Immediate"));
+});
+```
+
+Why?
+
+1.  Node is in the I/O Phase.
+2.  The next phase in the loop is Check (where `setImmediate` lives).
+3.  The phase after that is Close, then it loops back to Timers (where `setTimeout` lives).
+
+Result:
+`setImmediate` runs in the current tick.
+`setTimeout` must wait for the next tick.
+
+Output (Always):
+
+```text
+Immediate
+Timeout
+```
+
+---
+
+### 6. Summary Table
+
+| Timer               | Environment    | Phase/Queue        | Execution Time               |
+| :------------------ | :------------- | :----------------- | :--------------------------- |
+| `setTimeout(fn, 0)` | Browser & Node | Macrotask (Timers) | Next Loop (min 1-4ms delay). |
+| `setImmediate`      | Node.js only   | Check Phase        | Immediately after I/O.       |
+| `setInterval`       | Browser & Node | Macrotask (Timers) | Repeats (Subject to drift).  |
+
+---
+
+### _Stop and Think: Why does `setTimeout(fn, 0)` help render the UI ?_
+
+Answer:
+The UI rendering happens in between Macrotasks.
+By using `setTimeout`, you yield control back to the Event Loop. The browser says, "Stack is empty? Okay, let me repaint the screen first, then I'll pick up your timeout callback."
+This prevents the "Frozen Screen" issue during heavy calculations.
+
+---
