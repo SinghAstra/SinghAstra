@@ -1,0 +1,144 @@
+---
+title: "Components & Composition"
+date: "21-12-2025"
+excerpt: "Mastering the fundamental building blocks of React: Functional vs. Class components and how to assemble them using Composition."
+---
+
+## 1. What is a Component?
+
+Component is a reusable JavaScript Function that accepts Props and returns React JSX elements describing what should appear on the screen.
+
+## 2. Functional Components
+
+They are just standard JavaScript functions describing UI.
+
+```javascript
+// 1. Define the component
+function Welcome(props) {
+  return <h1>Hello, {props.name}</h1>;
+}
+
+// OR using Arrow Functions (Preferred by many)
+const Welcome = (props) => {
+  return <h1>Hello, {props.name}</h1>;
+};
+
+// 2. Use it
+// <Welcome name="Sara" />
+```
+
+### Key Characteristics:
+
+- No `this` keyword: You don't need to worry about binding contexts.
+- Less Boilerplate: No classes, no `render()` method.
+- Hooks Support: They use `useState` and `useEffect` to handle data.
+
+---
+
+## 3. Class Components
+
+Before 2019, whenever we needed state, we had to use a Class Component.
+
+### Syntax
+
+They inherit from `React.Component` and must have a `render()` method.
+
+```javascript
+class Welcome extends React.Component {
+  render() {
+    // You access props via 'this.props'
+    return <h1>Hello, {this.props.name}</h1>;
+  }
+}
+```
+
+### Key Characteristics:
+
+- Verbosity: Requires extending a class and a render method.
+- `this` Confusion: You often have to bind methods manually (e.g., `this.handleClick.bind(this)`).
+- Lifecycle Methods: Uses `componentDidMount`, `componentWillUnmount`.
+
+---
+
+## 4. Functional vs. Class Components: The Breakdown
+
+| Feature          | Functional Components           | Class Components                        |
+| :--------------- | :------------------------------ | :-------------------------------------- |
+| Syntax           | Plain JS Function               | ES6 Class                               |
+| State Management | `useState` Hook                 | `this.state`                            |
+| Side Effects     | `useEffect` Hook                | Lifecycle Methods (`componentDidMount`) |
+| Boilerplate      | Low (Minimal code)              | High (Classes, `render`, `this`)        |
+| Performance      | Slightly faster (less overhead) | Slightly heavier                        |
+| Best Practice    | Yes (Default for new apps)      | No (Legacy/Maintenance only)            |
+
+---
+
+## 5. Component Composition
+
+In React, we don't use inheritance (like `class AdminUser extends User`). We use Composition.
+
+Composition means building complex components from simpler ones.
+
+### The `children` Prop
+
+This is a special prop that allows us to pass elements inside our component's opening and closing tags.
+
+The Container (Wrapper):
+
+```javascript
+const Card = (props) => {
+  return (
+    <div className="card-box">
+      {/* This renders whatever is put inside <Card>...</Card> */}
+      {props.children}
+    </div>
+  );
+};
+```
+
+The Usage:
+
+```javascript
+const App = () => {
+  return (
+    <Card>
+      {/* All of this is passed as 'props.children' to Card */}
+      <h2>User Profile</h2>
+      <p>Name: John Doe</p>
+    </Card>
+  );
+};
+```
+
+This pattern is critical for creating reusable layouts (like Modals, Cards, or Layout Wrappers) where the container doesn't care what is inside it.
+
+---
+
+## 📝 Summary Table
+
+| Concept              | Definition                        | Key Takeaway                                 |
+| :------------------- | :-------------------------------- | :------------------------------------------- |
+| Component            | A reusable piece of UI.           | Splits UI into independent, isolated pieces. |
+| Functional Component | A function returning JSX.         | The modern standard. Uses Hooks.             |
+| Class Component      | A class with a `render()` method. | Legacy. Uses `this` and lifecycle methods.   |
+| Composition          | Nesting components inside others. | Powerful pattern to reuse UI logic/layout.   |
+| `props.children`     | Special prop for nested content.  | Allows components to act as wrappers.        |
+
+---
+
+## 🛑 Stop and Think
+
+### _1. In a Class component, if you try to access `props.name` without `this`, what will happen?_
+
+We will get a ReferenceError: props is not defined.
+
+- Why: In a Class, `props` is not a variable passed into the `render()` function as an argument. It is a property stored on the instance of the class itself.
+- Therefore, we must strictly access it via `this.props`.
+- Note: This is one of the main reasons people disliked classes forgetting `this` caused constant bugs. Functional components fix this because `props` is just a standard function argument.
+
+### _2. Can a component return `undefined` or `null`? If so, what does React render?_
+
+Answer:
+
+- `null`: Yes! This is the standard way to tell React to render nothing (hide the component). It is valid and common.
+- `undefined`: In older React versions, returning `undefined` was considered an error (often meaning dev forgot the `return` statement). In modern React, it acts like `null` (renders nothing), but relies on implicit behavior. It is best practice to explicitly return `null` if we want to render nothing.

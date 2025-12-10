@@ -97,6 +97,15 @@ export const archiveLinks: ArchiveSectionLink[] = [
   },
   {
     title: "React JS",
-    links: [{ title: "Architecture", path: "/react/architecture" }],
+    links: [
+      {
+        title: "Architecture & Why",
+        path: "/archive/react/architecture-and-why",
+      },
+      {
+        title: "Components Composition",
+        path: "/archive/react/components-composition",
+      },
+    ],
   },
 ];
