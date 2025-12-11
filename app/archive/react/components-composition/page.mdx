@@ -150,6 +150,26 @@ class CounterComponent extends Component<CounterProps, CounterState> {
     };
   }
 
+  // Runs ONCE after the component renders for the first time.
+  // We use this for API calls, timers, or subscriptions.
+  componentDidMount() {
+    console.log("Mounted! (Equivalent to useEffect with [])");
+  }
+
+  // Runs whenever State or Props change.
+  // We often check prevProps vs this.props here to avoid infinite loops.
+  componentDidUpdate(prevProps: CounterProps, prevState: CounterState) {
+    if (prevState.count !== this.state.count) {
+      console.log(`Count changed: ${prevState.count} -> ${this.state.count}`);
+      console.log("Updated! (Equivalent to useEffect with [count])");
+    }
+  }
+
+  // Runs just before the component is removed from the DOM.
+  componentWillUnmount() {
+    console.log("Cleanup! (Equivalent to useEffect return function)");
+  }
+
   // 3. Methods: Defined as Arrow Functions to auto-bind 'this'
   increment = () => {
     this.setState({ count: this.state.count + 1 });

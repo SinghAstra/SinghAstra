@@ -12,8 +12,8 @@ We use javascript for conditional rendering
 
 ### A. The Ternary Operator (`? :`)
 
-Used for "If this, then that, else the other."
-This is the most common way to switch between two components.
+- Used for "If this, then that, else the other."
+- This is the most common way to switch between two components.
 
 ```javascript
 function Greeting({ isLoggedIn }) {
@@ -23,8 +23,8 @@ function Greeting({ isLoggedIn }) {
 
 ### B. Short-Circuit Evaluation (`&&`)
 
-Used for "If this is true, show it. If false, show nothing."
-This exploits the way JavaScript evaluates `AND` logic.
+- Used for "If this is true, show it. If false, show nothing."
+- This exploits the way JavaScript evaluates `AND` logic.
 
 ```javascript
 function Mailbox({ unreadMessages }) {
@@ -38,9 +38,6 @@ function Mailbox({ unreadMessages }) {
   );
 }
 ```
-
-- Warning: Be careful with numbers. If `unreadMessages.length` is `0`, JavaScript considers `0` as "falsy" but still renders the number `0`.
-- Fix: Ensure the left side is a boolean: `unreadMessages.length > 0 && ...`
 
 ### C. Returning `null`
 
@@ -84,7 +81,7 @@ function UserList() {
 
 ---
 
-## 3. The `key` Prop - Why do we need keys?
+## 3. The key Prop - Why do we need keys?
 
 When we render a list, React needs to know which items changed, were added, or were removed.
 
@@ -118,8 +115,12 @@ Avoid doing this: `users.map((user, index) => <li key={index}>...</li>)`
 
 The number 0 will appear on the screen.
 
-- Why: This is a classic JavaScript "gotcha." The `&&` operator returns the value of the first falsy operand it finds. Since `0` is falsy, the expression short-circuits and returns `0`. React renders numbers, so you see a "0" printed on your UI.
-- The Fix: Always coerce the condition to a true boolean.
+- Why: This is a classic JavaScript "gotcha." The && operator returns the value of the first falsy operand it finds. Since 0 is falsy, the expression short-circuits and returns 0.
+
+- React's Behavior: React ignores false, null, and undefined (renders nothing), but it renders numbers. Since the expression returned 0, React prints "0" on the UI.
+
+- The Fix: Always force the condition to be a real boolean.
+
   - `count > 0 && <h1>Messages</h1>` (Recommended)
 
 ### _2. What happens if two items in the same list have the exact same `key`?_
