@@ -8,7 +8,7 @@ excerpt: "Solving the pain of passing data through 10 layers of components by us
 
 ## 1. The Problem: Prop Drilling
 
-previously, we learned that data flows down via Props.
+Previously, we learned that data flows down via Props.
 But what if we have a `user` object in our top-level `<App />` and we need it in a `<Avatar />` component deeply nested inside the Navbar?
 
 The Drilling approach:
@@ -31,125 +31,135 @@ Context provides a way to pass data through the component tree without having to
 
 We create a store for our data outside of any component.
 
-```javascript
+```typescript
+// AppProvider.tsx
 import { createContext } from "react";
 
-// Create the context. (Default value is optional)
-export const UserContext = createContext(null);
+// Define the shape of our context
+interface AppContextValue {
+  user: { name: string };
+  theme: "light" | "dark";
+  toggleTheme: () => void;
+}
+
+// Create the context with null as default
+const AppContext = createContext<AppContextValue | null>(null);
 ```
 
-#### Step 2: Provide the Data (The Provider)
+#### Step 2: The Custom Provider Pattern
 
-Wrap the part of app that needs the data with the Provider. Everything inside this wrapper can access the data.
+In production, we wrap the raw provider in a custom component to manage the state logic.
 
-```javascript
-import { UserContext } from "./UserContext";
-import { useState } from "react";
-
-function App() {
+```typescript
+// AppProvider.tsx (Continued)
+export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState({ name: "Alice" });
-
-  return (
-    // The 'value' prop is what will be teleported
-    <UserContext.Provider value={user}>
-      <Layout />
-      {/* Layout contains Header -> UserMenu -> Avatar */}
-    </UserContext.Provider>
-  );
-}
-```
-
-#### Step 3: Consume the Data (The Hook)
-
-In the deeply nested component, we just hook into the context. We skip the middle layers entirely.
-
-```javascript
-import { useContext } from "react";
-import { UserContext } from "./UserContext";
-
-function Avatar() {
-  // Grab the value directly!
-  const user = useContext(UserContext);
-
-  return <div>{user.name}</div>;
-}
-```
-
----
-
-## 3. When NOT to use Context
-
-Context is powerful, but it comes with a cost.
-
-- The Re-render Hammer: If the `value` passed to the Provider changes, EVERY component consuming that context will re-render.
-- Reduced Reusability: If `Avatar` depends on `UserContext`, you can't easily reuse `Avatar` in another project that doesn't have that context.
-
-Rule of Thumb: Use Context for Global data (User Auth, Theme: Light/Dark, Language). Do not use it for local state (like form inputs) just to avoid passing one prop.
-
----
-
-## 4. Pattern: The Custom Provider
-
-In production code, we rarely expose the raw `Context.Provider` directly in `App.js`. We wrap it in a custom component to keep things clean.
-
-```javascript
-// ThemeContext.js
-
-// 1. Create Context
-const ThemeContext = createContext();
-
-// 2. Create a Custom Provider Component
-export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState("light");
+  const [theme, setTheme] = useState<"light" | "dark">("light");
 
   const toggleTheme = () => {
     setTheme((prev) => (prev === "light" ? "dark" : "light"));
   };
 
+  // ⚠️ CRITICAL: We are bundling unrelated state (User + Theme)
+  const contextValue = { user, theme, toggleTheme };
+
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
-      {children}
-    </ThemeContext.Provider>
+    <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>
   );
-}
-
-// 3. Custom Hook for easy access (Best Practice)
-export function useTheme() {
-  return useContext(ThemeContext);
-}
+};
 ```
 
-Usage in App:
+#### Step 3: Consume the Data (The Hook)
 
-```javascript
-<ThemeProvider>
-  <AppContent />
-</ThemeProvider>
-```
+We create a custom hook to access the context easily and safely.
 
-Usage in Component:
+```typescript
+// AppProvider.tsx (Continued)
+import { useContext } from "react";
 
-```javascript
-const { theme, toggleTheme } = useTheme();
+export const useApp = () => {
+  const context = useContext(AppContext);
+  if (!context) throw new Error("useApp must be used within AppProvider");
+  return context;
+};
 ```
 
 ---
 
+## 3. The Limitation: Unnecessary Re-renders
+
+This is the biggest pitfall of Context. If we bundle unrelated state (like `User` and `Theme`) into a single Context, we force all consumers to re-render when any part of that data changes.
+
+### The Scenario: Two Separate Components
+
+We have two components that consume our `useApp` hook.
+
+1. UserInfo (Only cares about User)
+
+```typescript
+// components/user-info.tsx
+const UserInfo = () => {
+  const { user } = useApp();
+
+  // This log helps us track renders
+  console.log("UserInfo is rendered.");
+
+  return <div>Welcome, {user.name}</div>;
+};
+```
+
+2. ToggleTheme (Only cares about Theme)
+
+```typescript
+// components/toggle-theme.tsx
+const ToggleTheme = () => {
+  const { theme, toggleTheme } = useApp();
+
+  console.log("ToggleTheme is rendered.");
+
+  return <Button onClick={toggleTheme}>Current mode: {theme}</Button>;
+};
+```
+
+### The "Click" Experiment
+
+What happens when you click the button in `<ToggleTheme />`?
+
+1.  Action: We click "Switch to Dark Mode".
+2.  State Update: `toggleTheme` runs in `AppProvider`. `theme` changes to "dark".
+3.  Provider Re-runs: The `AppProvider` component re-renders.
+4.  Object Recreation: The `contextValue` object is recreated:
+    ```javascript
+    // A BRAND NEW object is created in memory
+    const contextValue = { user, theme, toggleTheme };
+    ```
+5.  Notification: React sees the `value` prop changed (Old Object !== New Object). It notifies ALL consumers.
+
+### The Result in Console:
+
+```text
+> ToggleTheme is rendered.
+> UserInfo is rendered.   <-- WHY? The user didn't change!
+```
+
+Explanation:
+Even though `UserInfo` only destructures `{ user }`, it subscribes to the entire `AppContext`. Because the `AppProvider` created a new object for `value`, `UserInfo` thinks the data changed and re-renders to stay safe.
+
+In large apps, this causes major performance issues.
+
 ## 📝 Summary Table
 
-| Concept         | Definition                                          | Key Role                        |
-| :-------------- | :-------------------------------------------------- | :------------------------------ |
-| Prop Drilling   | Passing props through layers that don't need them.  | The problem Context solves.     |
-| `createContext` | Creates a context object.                           | The tunnel for data.            |
-| `<Provider>`    | Wraps components to give them access.               | The broadcaster of data.        |
-| `useContext`    | Hook to access data.                                | The receiver of data.           |
-| Global State    | Data needed by many parts of the app (User, Theme). | The ideal use case for Context. |
+| Concept         | Definition                                         | Key Role                    |
+| :-------------- | :------------------------------------------------- | :-------------------------- |
+| Prop Drilling   | Passing props through layers that don't need them. | The problem Context solves. |
+| `createContext` | Creates a context object.                          | The tunnel for data.        |
+| `<Provider>`    | Wraps components to give them access.              | The broadcaster of data.    |
+| `useContext`    | Hook to access data.                               | The receiver of data.       |
+| Split Context   | Creating separate Contexts for separate data.      | Fixes performance issues.   |
 
 ---
 
 ## 🛑 Stop and Think
-
-Here are the answers to the "Stop and Think" questions from Unit 6.
 
 ### _1. If we wrap our entire application in a provider with a huge object, and change one tiny property, what happens?_
 
@@ -158,26 +168,31 @@ Every single component that consumes (`useContext`) that specific context will r
 - The Detail: Even if Component A only uses `hugeObject.name` and you only changed `hugeObject.age`, Component A will still re-render because the entire `value` object reference changed.
 - The Fix: This is why we often split context (e.g., `UserContext` separate from `ThemeContext`) or use state management libraries (Redux/Zustand) that allow components to select only the specific data they need.
 
-### _2.What happens if we call `useContext(UserContext)` outside of a Provider?_
+### _2. What happens if we call `useContext(UserContext)` outside of a Provider?_
 
 It does not crash. It returns the Default Value you passed to `createContext(defaultValue)`.
 
-- Example:
+- Example: `const UserContext = createContext("Guest");`
+- Result: `useContext(UserContext)` returns `"Guest"`.
+- Gotcha: If initialized as `createContext(null)`, your code might crash when you try to access `user.name` (reading property of null).
 
-  ```javascript
-  const UserContext = createContext("Guest"); // "Guest" is default
-
-  // ... somewhere else without a Provider ...
-  const user = useContext(UserContext); // returns "Guest"
-  ```
-
-- Gotcha: If we initialized it as `createContext(null)`, our code might crash after the hook when we try to do `user.name` (because `user` is null).
-
-### _3.Why use Redux if Context is built-in ?_
+### _3. Why use Redux if Context is built-in?_
 
 Context is primarily for Prop Drilling (passing data), while Redux is for State Management.
 
 1.  Performance: Context triggers re-renders for all consumers when the value changes. Redux allows components to subscribe to slices of the state, so they only update when their specific slice changes.
-2.  Debugging: Redux has the Redux DevTools, which let us Time Travel (undo/redo actions), inspect every state change, and see a log of exactly what happened and when. Context lacks these built-in debugging superpowers.
+2.  Debugging: Redux has the Redux DevTools, which let us "Time Travel" (undo/redo actions), inspect every state change, and see a log of exactly what happened. Context lacks these built-in debugging superpowers.
+
+### _4. If `UserInfo` is wrapped in `React.memo`, will it still re-render?_
+
+Yes. `React.memo` only checks if Props change. It does not stop re-renders caused by Context changes. If the context value updates, the component re-renders regardless of `memo`.
+
+### _5. How do we fix this?_
+
+We need to Split the Context. instead of one giant `AppProvider`, we should have:
+
+1.  `UserProvider` (Holds user state)
+2.  `ThemeProvider` (Holds theme state)
+    By separating them, updating the Theme will only trigger the `ThemeProvider`, leaving `UserInfo` (which listens to `UserProvider`) completely alone.
 
 ---

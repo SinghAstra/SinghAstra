@@ -8,28 +8,78 @@ excerpt: "Moving beyond basic state. How to access the DOM directly, and how to 
 
 ## 1. useRef
 
-So far, we've learned that if we want to change something on screen, you use `useState`.
-But sometimes you need to step outside React's data flow.
+While useState is for data that drives the UI, useRef is for data that needs to survive renders without triggering them.
+
+Technically, useRef returns a mutable object that looks like this: `{ current: initialValue }`. Crucially, React guarantees that this exact same object instance is returned on every single render.
 
 ### Use Case A: Accessing the DOM
 
-React is declarative (we tell it what we want), but sometimes we need imperative control (focusing an input, scrolling to a div).
+React is declarative (we tell it what we want), but sometimes we need imperative control (focusing an input, scrollIntoView for div for Chat Application).
 
-```javascript
+```typescript
+"use client";
+import { Button } from "@/components/ui/button";
+import { useRef } from "react";
+
 function SearchBar() {
-  const inputRef = useRef(null); // 1. Create the ref
+  // TS Generic: <HTMLInputElement> defines what kind of element this ref holds
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFocus = () => {
-    // 3. Access the DOM node directly
-    inputRef.current.focus();
+    // Optional chaining (?) is needed because .current starts as null
+    inputRef.current?.focus();
   };
 
   return (
-    <>
-      {/* 2. Attach ref to element */}
-      <input ref={inputRef} type="text" />
-      <button onClick={handleFocus}>Focus Input</button>
-    </>
+    <div className="h-screen flex items-center justify-center">
+      <div className="flex">
+        <input
+          className="border px-2 rounded"
+          ref={inputRef}
+          type="text"
+          placeholder="Search..."
+        />
+        <Button
+          variant={"outline"}
+          className="bg-transparent hover:bg-muted/20"
+          onClick={handleFocus}
+        >
+          Focus Input
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+export default SearchBar;
+```
+
+```typescript
+import { useRef } from "react";
+
+function ChatBox() {
+  // 1. Create a ref for the div we want to scroll to
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    // 3. Use the DOM API 'scrollIntoView'
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  return (
+    <div className="chat-container">
+      <div className="messages">
+        <p>Message 1</p>
+        <p>Message 2</p>
+        <p>Message 3</p>
+        {/* ... potentially long list ... */}
+
+        {/* 2. Attach ref to a dummy div at the end of the list */}
+        <div ref={bottomRef} />
+      </div>
+
+      <button onClick={scrollToBottom}>Go to Bottom</button>
+    </div>
   );
 }
 ```
@@ -37,9 +87,8 @@ function SearchBar() {
 ### Use Case B: Mutable Variables (No Re-renders)
 
 `useState` triggers a re-render when changed. `useRef` does not.
-It's like a secret pocket where we can store data that persists between renders but doesn't affect the UI (e.g., storing a timer ID).
 
-- Rule: If changing the value should update the screen, use `State`. If it shouldn't, use `Ref`.
+> Rule: If changing the value should update the screen, use `State`. If it shouldn't, use `Ref`.
 
 ---
 
