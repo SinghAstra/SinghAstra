@@ -34,7 +34,7 @@ React solves this with the Virtual DOM.
 
 1.  The Copy: React keeps a lightweight JavaScript copy of the real DOM in memory.
 2.  The Diff: When data changes, React creates a new Virtual DOM tree. It compares it to the previous Virtual DOM tree. This process is called Diffing.
-3.  Reconciliation: React calculates the minimal set of changes needed and updates only those specific parts of the real DOM.
+3.  Reconciliation: React calculates the minimal list of changes needed. Instead of applying them one by one, it groups them together and updates the real DOM in one single, synchronous operation.
 
 ---
 
@@ -77,7 +77,7 @@ const element = React.createElement("h1", null, "Hello, world!");
 
 ### The Three Rules of JSX:
 
-1.  Return a Single Parent: We cannot return two sibling elements side-by-side. You must wrap them in a `div` or a Fragment (`<>...</>`).
+1.  Return a Single Parent: We cannot return two sibling elements side-by-side. We must wrap them in a `div` or a Fragment (`<>...</>`).
     - Why? Because a JavaScript function can only return one value.
 2.  CamelCase Attributes: Since `class` is a reserved keyword in JavaScript (for making classes), we use `className`. Similarly, `onclick` becomes `onClick`, and `tabindex` becomes `tabIndex`.
 3.  Close All Tags: In HTML, `<br>` is fine. In JSX, self-closing tags must end with a slash: `<br />` or `<img />`.

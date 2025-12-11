@@ -4,6 +4,8 @@ date: "21-12-2025"
 excerpt: "Mastering the fundamental building blocks of React: Functional vs. Class components and how to assemble them using Composition."
 ---
 
+# Components & Composition
+
 ## 1. What is a Component?
 
 Component is a reusable JavaScript Function that accepts Props and returns React JSX elements describing what should appear on the screen.
@@ -29,7 +31,6 @@ const Welcome = (props) => {
 
 ### Key Characteristics:
 
-- No `this` keyword: You don't need to worry about binding contexts.
 - Less Boilerplate: No classes, no `render()` method.
 - Hooks Support: They use `useState` and `useEffect` to handle data.
 
@@ -39,14 +40,16 @@ const Welcome = (props) => {
 
 Before 2019, whenever we needed state, we had to use a Class Component.
 
-### Syntax
-
-They inherit from `React.Component` and must have a `render()` method.
+- Inheritance: They inherit from React.Component and must have a render() method.
+- UI Logic: Inside render(), we return JSX describing the UI.
+- Super: super() is called inside the constructor to initialize the parent class so this can be used.
+- Data: Both state and props are attached to the class instance, so we access them via this.state and this.props.
+- Methods: Arrow Functions live directly on the instance and are accessed via this.
 
 ```javascript
 class Welcome extends React.Component {
   render() {
-    // You access props via 'this.props'
+    // We access props via 'this.props'
     return <h1>Hello, {this.props.name}</h1>;
   }
 }
@@ -55,7 +58,7 @@ class Welcome extends React.Component {
 ### Key Characteristics:
 
 - Verbosity: Requires extending a class and a render method.
-- `this` Confusion: You often have to bind methods manually (e.g., `this.handleClick.bind(this)`).
+- `this` Confusion: We often have to bind methods manually (e.g., `this.handleClick.bind(this)`).
 - Lifecycle Methods: Uses `componentDidMount`, `componentWillUnmount`.
 
 ---
@@ -114,6 +117,76 @@ This pattern is critical for creating reusable layouts (like Modals, Cards, or L
 
 ---
 
+## 6. Practical Example: Counter Component
+
+Here is a full example of a React Class Component written in TypeScript. It uses `interface` for typing Props and State.
+
+### The Standard Implementation
+
+This version uses a Constructor to initialize state, which was the standard pattern for many years.
+
+```tsx
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { Component, ReactNode } from "react";
+
+// 1. Define Types for Props and State
+interface CounterProps {
+  initialCount?: number;
+}
+
+interface CounterState {
+  count: number;
+}
+
+class CounterComponent extends Component<CounterProps, CounterState> {
+  // 2. Constructor: Used to initialize state and bind methods (if not using arrows)
+  constructor(props: CounterProps) {
+    super(props); // Must call super to access 'this'
+
+    this.state = {
+      count: 0,
+    };
+  }
+
+  // 3. Methods: Defined as Arrow Functions to auto-bind 'this'
+  increment = () => {
+    this.setState({ count: this.state.count + 1 });
+  };
+
+  decrement = () => {
+    this.setState({ count: this.state.count - 1 });
+  };
+
+  render(): ReactNode {
+    return (
+      <div className="p-4 border rounded flex flex-col gap-1 justify-center">
+        <h1 className="text-4xl text-center">{this.state.count}</h1>
+        <div className="flex gap-1">
+          <Button
+            onClick={this.increment}
+            variant="outline"
+            className="rounded bg-muted/5 hover:bg-muted/30 transition-all duration-300"
+          >
+            +
+          </Button>
+          <Button
+            onClick={this.decrement}
+            variant="outline"
+            className="rounded bg-muted/5 hover:bg-muted/30 transition-all duration-300"
+          >
+            -
+          </Button>
+        </div>
+      </div>
+    );
+  }
+}
+
+export default CounterComponent;
+```
+
 ## 📝 Summary Table
 
 | Concept              | Definition                        | Key Takeaway                                 |
@@ -128,7 +201,7 @@ This pattern is critical for creating reusable layouts (like Modals, Cards, or L
 
 ## 🛑 Stop and Think
 
-### _1. In a Class component, if you try to access `props.name` without `this`, what will happen?_
+### _1. In a Class component, if we try to access `props.name` without `this`, what will happen?_
 
 We will get a ReferenceError: props is not defined.
 
