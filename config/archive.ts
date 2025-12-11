@@ -106,6 +106,18 @@ export const archiveLinks: ArchiveSectionLink[] = [
         title: "Components Composition",
         path: "/archive/react/components-composition",
       },
+      {
+        title: "State & Data Flow",
+        path: "/archive/react/state-and-data-flow",
+      },
+      {
+        title: "Side Effects & LifeCycle",
+        path: "/archive/react/side-effects-and-lifecycle",
+      },
+      {
+        title: "Rendering Logic",
+        path: "/archive/react/rendering-logic",
+      },
     ],
   },
 ];

@@ -1,0 +1,169 @@
+---
+title: "State & Data Flow"
+date: "22-12-2025"
+excerpt: "The heart of React. Understanding the difference between Props and State, and how data flows in one direction."
+---
+
+# State & Data Flow
+
+## 1. Props
+
+Components are functions, Props are the arguments passed into them. They allow a parent component to pass data down to a child component.
+
+### The Golden Rule of Props
+
+Props are Read-Only (Immutable).
+A child component receives props, but it cannot change them. If a child tries to modify `props.name = "New Name"`, React will throw an error (or fail silently). This strict rule ensures that data changes are predictable.
+
+```javascript
+// Parent
+<Welcome name="Sara" />;
+
+// Child
+function Welcome(props) {
+  // ✅ GOOD: Reading
+  return <h1>Hello, {props.name}</h1>;
+
+  // ❌ BAD: Writing (This will break)
+  // props.name = "John";
+}
+```
+
+---
+
+## 2. State
+
+Props are arguments, State is the component's internal variable. It is private memory that allows a component to change what it displays.
+
+### The `useState` Hook
+
+In functional components, we use the `useState` hook to add memory.
+
+```javascript
+import { useState } from "react";
+
+function Counter() {
+  // Syntax: const [currentValue, updateFunction] = useState(initialValue);
+  const [count, setCount] = useState(0);
+
+  return (
+    <div>
+      <p>Count: {count}</p>
+      {/* ❌ NEVER do this: count = count + 1 */}
+      {/* ✅ ALWAYS do this: */}
+      <button onClick={() => setCount(count + 1)}>Increment</button>
+    </div>
+  );
+}
+```
+
+### Why use `setCount`?
+
+Why can't we just say `count = 5`?
+Because React needs to know that data changed so it can trigger a re-render (update the screen).
+
+1.  We call `setCount(5)`.
+2.  React updates the internal state.
+3.  React re-runs the `Counter` function component.
+4.  The function returns new JSX with the updated number.
+5.  React updates the DOM.
+
+---
+
+## 3. Props vs. State: The Comparison
+
+| Feature    | Props                         | State                                        |
+| :--------- | :---------------------------- | :------------------------------------------- |
+| Origin     | Passed from Parent component. | Created inside the component.                |
+| Mutability | Read-Only (Immutable).        | Mutable (via setter function).               |
+| Scope      | Can be accessed by child.     | Local to the component (unless passed down). |
+| Role       | Configuration / Data passing. | Interactivity / Memory.                      |
+
+---
+
+## 4. Unidirectional Data Flow (One-Way Binding)
+
+This is a defining characteristic of React architecture.
+
+- Data Flows Down: Parents pass data to children via Props.
+- Events Flow Up: Children talk to parents via callback functions.
+
+### Example: Child Updating Parent
+
+Since a child cannot change its own props, how does it update data stored in the parent?
+Answer: The parent passes a function down as a prop.
+
+```javascript
+// 1. Parent
+function Parent() {
+  const [message, setMessage] = useState("Hello");
+
+  // Define a function to change state
+  const handleUpdate = () => setMessage("Updated by Child!");
+
+  return (
+    <div>
+      <h1>{message}</h1>
+      {/* Pass the function down */}
+      <Child onButtonClick={handleUpdate} />
+    </div>
+  );
+}
+
+// 2. Child
+function Child(props) {
+  return (
+    // Call the function passed via props
+    <button onClick={props.onButtonClick}>Click Me</button>
+  );
+}
+```
+
+---
+
+## 📝 Summary Table
+
+| Concept             | Definition                       | Key Takeaway                                   |
+| :------------------ | :------------------------------- | :--------------------------------------------- |
+| Props               | Inputs passed to a component.    | Read-Only. Do not modify them.                 |
+| State               | Internal data of a component.    | Mutable. Triggers re-render when changed.      |
+| `useState`          | Hook to manage state.            | Returns `[value, setter]`.                     |
+| Unidirectional Flow | Data moves Parent → Child.       | Keeps the app predictable and easy to debug.   |
+| Lifting State Up    | Moving state to a common parent. | Required when two siblings need to share data. |
+
+---
+
+## 🛑 Stop and Think
+
+### _1. If we have a Great-Grandparent component that holds `User` data, and a Great-Grandchild that needs to display the `User Name`, how do you get the data there using only Props?_
+
+We must pass the data down through every single layer, even if the intermediate components (Grandparent, Parent, Child) do not need the data themselves.
+
+- The Flow: Great-Grandparent → Grandparent → Parent → Child → Great-Grandchild.
+- The Pain Point: This is called Prop Drilling. It makes our code messy because the middlemen components are cluttered with props they don't use just to pass them along.
+
+### _2. `setCount` is often asynchronous. If we run `setCount(count + 1); console.log(count);` immediately after, will the console log the old number or the new number?_
+
+It will log the OLD number.
+
+- Why: `setCount` does not update the `count` variable immediately in the current running function. It schedules an update for the next render.
+- Example:
+
+  ```javascript
+  const [count, setCount] = useState(0);
+
+  function handleClick() {
+    setCount(count + 1); // Schedules update to 1
+    console.log(count); // Still prints 0!
+  }
+  ```
+
+- The Mental Model: The variable `count` is a constant snapshot of the state for this specific render. It cannot change while the function is running.
+
+### _3. Why does React enforce that Props are read-only? What kind of chaos would happen if a Child could change the props sent by a Parent?_
+
+If children could modify props, we would lose the Single Source of Truth.
+
+- The Benefit: By making props read-only, we ensure that if the data looks wrong, we know exactly where to look: the Parent who owns the state. Data flows one way, making debugging predictable.
+
+---

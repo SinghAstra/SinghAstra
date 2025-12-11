@@ -1,0 +1,156 @@
+---
+title: "Side Effects & Lifecycle"
+date: "20-12-2025"
+excerpt: "Handling impure operations like API calls and subscriptions using the useEffect hook, and understanding the component lifecycle."
+---
+
+# Side Effects and Lifecycle
+
+## 1. What are Side Effects?
+
+React components are intended to be pure. This means if we give a function the same Props, it should return the exact same JSX, and it shouldn't change anything outside itself.
+
+However, real apps need to talk to the outside world. These actions are called Side Effects:
+
+- Fetching data from an API.
+- Setting up a subscription (e.g., chat socket).
+- Manually changing the DOM (e.g., `document.title = ...`).
+- Setting timers (`setTimeout`).
+
+Rule: Never perform side effects directly inside the main component body (during render). Use `useEffect`.
+
+---
+
+## 2. The `useEffect` Hook
+
+`useEffect` tells React that our component needs to do something after the render is committed to the screen.
+
+### Syntax
+
+```javascript
+import { useEffect } from "react";
+
+function UserProfile({ userId }) {
+  useEffect(() => {
+    // This code runs AFTER the component renders/updates
+    console.log("Component rendered!");
+
+    // Example: Fetch data
+    fetchData(userId);
+  });
+
+  return <div>User Profile</div>;
+}
+```
+
+---
+
+## 3. The Dependency Array
+
+The most important part of `useEffect` is the second argument: the Dependency Array `[]`. It controls when the effect runs.
+
+| Array Content      | Behavior                                     | Lifecycle Equivalent               |
+| :----------------- | :------------------------------------------- | :--------------------------------- |
+| No Array           | Runs on every render. (Dangerous loop risk!) | `componentDidUpdate` (always)      |
+| Empty Array `[]`   | Runs only once on mount.                     | `componentDidMount`                |
+| Variables `[data]` | Runs on mount + whenever `data` changes.     | `componentDidUpdate` (conditional) |
+
+### Examples:
+
+Case A: Run Once (Mount)
+
+```javascript
+useEffect(() => {
+  console.log("I run only when the component first appears.");
+}, []); // Empty array
+```
+
+Case B: Run on Change
+
+```javascript
+useEffect(() => {
+  console.log("I run when 'count' changes.");
+}, [count]); // Dependency array contains 'count'
+```
+
+---
+
+## 4. The Cleanup Function
+
+Sometimes an effect creates a mess that needs cleaning up when the component is removed.
+
+- Examples: Clearing a timer, closing a WebSocket connection, removing an event listener.
+
+To do this, we return a function from our effect.
+
+```javascript
+useEffect(() => {
+  // 1. Setup
+  const timer = setInterval(() => {
+    console.log("Tick...");
+  }, 1000);
+
+  // 2. Cleanup (Runs when component unmounts OR before re-running effect)
+  return () => {
+    clearInterval(timer);
+    console.log("Timer cleared!");
+  };
+}, []);
+```
+
+If we forget this, our app will have memory leaks (ghost timers running in the background).
+
+---
+
+## 5. Lifecycle Comparison: Class vs. Hooks
+
+| Class Method           | Functional Hook Equivalent                      |
+| :--------------------- | :---------------------------------------------- |
+| `componentDidMount`    | `useEffect(() => { ... }, [])`                  |
+| `componentDidUpdate`   | `useEffect(() => { ... }, [prop, state])`       |
+| `componentWillUnmount` | `useEffect(() => { return () => { ... } }, [])` |
+
+---
+
+## 📝 Summary Table
+
+| Concept          | Definition                                      | Key Rule                                |
+| :--------------- | :---------------------------------------------- | :-------------------------------------- |
+| Side Effect      | Interactions with the outside world (API, DOM). | Never do this in the render body.       |
+| `useEffect`      | Hook to handle side effects.                    | Runs after the browser paints.          |
+| Dependency Array | Controls when the effect runs.                  | Always include variables we use inside. |
+| Cleanup Function | Return function from `useEffect`.               | Prevents memory leaks on unmount.       |
+
+---
+
+## 🛑 Stop and Think
+
+### _1. What happens if we modify a state variable inside a `useEffect` (e.g., `setCount(count + 1)`) but forget to add the dependency array `[]`?_
+
+We create an Infinite Loop that will crash our browser tab.
+
+- The Cycle:
+  1.  Component Renders.
+  2.  `useEffect` runs (because there is no dependency array, it runs after every render).
+  3.  `setCount` updates the state.
+  4.  State change triggers a Re-render.
+  5.  Go back to Step 1.
+- The Fix: Always use a dependency array or check a condition before setting state.
+
+### _2. If we have `useEffect(() => { console.log(count) }, [])` (empty array), and `count` changes from 0 to 5, what will the console log? 0 or 5?_
+
+It will log 0.
+
+- Why: The effect ran only once when the component mounted. At that exact moment in time, `count` was `0`.
+- The Closure: The function inside `useEffect` closed over the variable `count` from the first render. It never ran again, so it never saw the updated value. It is holding onto a stale version of the variable.
+- The Fix: If we want to see the live value, `count` must be in the dependency array: `[count]`.
+
+### _3. In React 18 Strict Mode (development), `useEffect` runs twice on mount. Why does React do this intentionally?_
+
+React is stress-testing our Cleanup Function.
+
+- The Sequence: React does: `Mount` → `Unmount` → `Mount`.
+- The Goal: If our effect creates a subscription (like a chat connection) but forgets the cleanup function, we will end up with two connections open. By forcibly running this cycle, React makes the bug obvious (e.g., we see "Connected" printed twice in the console) so we fix it before production.
+- Note: This only happens in Development, not Production.
+
+---
