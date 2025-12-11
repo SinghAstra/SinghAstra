@@ -118,6 +118,14 @@ export const archiveLinks: ArchiveSectionLink[] = [
         title: "Rendering Logic",
         path: "/archive/react/rendering-logic",
       },
+      {
+        title: "Context API & Props Drilling",
+        path: "/archive/react/context-api-and-props-drilling",
+      },
+      {
+        title: "Advanced Hooks & Performance",
+        path: "/archive/react/advanced-hooks-and-performance",
+      },
     ],
   },
 ];

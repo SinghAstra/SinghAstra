@@ -1,0 +1,183 @@
+---
+title: "Context API & Prop Drilling"
+date: "20-12-2025"
+excerpt: "Solving the pain of passing data through 10 layers of components by using Global State."
+---
+
+# Context API & Props Drilling
+
+## 1. The Problem: Prop Drilling
+
+previously, we learned that data flows down via Props.
+But what if we have a `user` object in our top-level `<App />` and we need it in a `<Avatar />` component deeply nested inside the Navbar?
+
+The Drilling approach:
+`App` → `Layout` → `Header` → `UserMenu` → `Avatar`
+
+Why is this bad?
+
+1.  Clutter: `Layout` and `Header` don't need user data, but they must accept it as props just to pass it down.
+2.  Maintenance: If we rename the prop, you have to update 5 files.
+
+---
+
+## 2. The Solution: The Context API
+
+Context provides a way to pass data through the component tree without having to pass props down manually at every level. Think of it as Data Teleportation.
+
+### The 3-Step Process
+
+#### Step 1: Create the Context
+
+We create a store for our data outside of any component.
+
+```javascript
+import { createContext } from "react";
+
+// Create the context. (Default value is optional)
+export const UserContext = createContext(null);
+```
+
+#### Step 2: Provide the Data (The Provider)
+
+Wrap the part of app that needs the data with the Provider. Everything inside this wrapper can access the data.
+
+```javascript
+import { UserContext } from "./UserContext";
+import { useState } from "react";
+
+function App() {
+  const [user, setUser] = useState({ name: "Alice" });
+
+  return (
+    // The 'value' prop is what will be teleported
+    <UserContext.Provider value={user}>
+      <Layout />
+      {/* Layout contains Header -> UserMenu -> Avatar */}
+    </UserContext.Provider>
+  );
+}
+```
+
+#### Step 3: Consume the Data (The Hook)
+
+In the deeply nested component, we just hook into the context. We skip the middle layers entirely.
+
+```javascript
+import { useContext } from "react";
+import { UserContext } from "./UserContext";
+
+function Avatar() {
+  // Grab the value directly!
+  const user = useContext(UserContext);
+
+  return <div>{user.name}</div>;
+}
+```
+
+---
+
+## 3. When NOT to use Context
+
+Context is powerful, but it comes with a cost.
+
+- The Re-render Hammer: If the `value` passed to the Provider changes, EVERY component consuming that context will re-render.
+- Reduced Reusability: If `Avatar` depends on `UserContext`, you can't easily reuse `Avatar` in another project that doesn't have that context.
+
+Rule of Thumb: Use Context for Global data (User Auth, Theme: Light/Dark, Language). Do not use it for local state (like form inputs) just to avoid passing one prop.
+
+---
+
+## 4. Pattern: The Custom Provider
+
+In production code, we rarely expose the raw `Context.Provider` directly in `App.js`. We wrap it in a custom component to keep things clean.
+
+```javascript
+// ThemeContext.js
+
+// 1. Create Context
+const ThemeContext = createContext();
+
+// 2. Create a Custom Provider Component
+export function ThemeProvider({ children }) {
+  const [theme, setTheme] = useState("light");
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "light" ? "dark" : "light"));
+  };
+
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+}
+
+// 3. Custom Hook for easy access (Best Practice)
+export function useTheme() {
+  return useContext(ThemeContext);
+}
+```
+
+Usage in App:
+
+```javascript
+<ThemeProvider>
+  <AppContent />
+</ThemeProvider>
+```
+
+Usage in Component:
+
+```javascript
+const { theme, toggleTheme } = useTheme();
+```
+
+---
+
+## 📝 Summary Table
+
+| Concept         | Definition                                          | Key Role                        |
+| :-------------- | :-------------------------------------------------- | :------------------------------ |
+| Prop Drilling   | Passing props through layers that don't need them.  | The problem Context solves.     |
+| `createContext` | Creates a context object.                           | The tunnel for data.            |
+| `<Provider>`    | Wraps components to give them access.               | The broadcaster of data.        |
+| `useContext`    | Hook to access data.                                | The receiver of data.           |
+| Global State    | Data needed by many parts of the app (User, Theme). | The ideal use case for Context. |
+
+---
+
+## 🛑 Stop and Think
+
+Here are the answers to the "Stop and Think" questions from Unit 6.
+
+### _1. If we wrap our entire application in a provider with a huge object, and change one tiny property, what happens?_
+
+Every single component that consumes (`useContext`) that specific context will re-render.
+
+- The Detail: Even if Component A only uses `hugeObject.name` and you only changed `hugeObject.age`, Component A will still re-render because the entire `value` object reference changed.
+- The Fix: This is why we often split context (e.g., `UserContext` separate from `ThemeContext`) or use state management libraries (Redux/Zustand) that allow components to select only the specific data they need.
+
+### _2.What happens if we call `useContext(UserContext)` outside of a Provider?_
+
+It does not crash. It returns the Default Value you passed to `createContext(defaultValue)`.
+
+- Example:
+
+  ```javascript
+  const UserContext = createContext("Guest"); // "Guest" is default
+
+  // ... somewhere else without a Provider ...
+  const user = useContext(UserContext); // returns "Guest"
+  ```
+
+- Gotcha: If we initialized it as `createContext(null)`, our code might crash after the hook when we try to do `user.name` (because `user` is null).
+
+### _3.Why use Redux if Context is built-in ?_
+
+Context is primarily for Prop Drilling (passing data), while Redux is for State Management.
+
+1.  Performance: Context triggers re-renders for all consumers when the value changes. Redux allows components to subscribe to slices of the state, so they only update when their specific slice changes.
+2.  Debugging: Redux has the Redux DevTools, which let us Time Travel (undo/redo actions), inspect every state change, and see a log of exactly what happened and when. Context lacks these built-in debugging superpowers.
+
+---
