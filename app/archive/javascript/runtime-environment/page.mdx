@@ -34,7 +34,7 @@ It operates on a strictly LIFO (Last In, First Out) basis.
 
 #### D. Limits: Stack Overflow
 
-Since the Stack Memory has a fixed size (determined by the OS), there is a limit to how many contexts can be pushed. If you create an infinite recursion (Function A calls Function A forever), the stack grows until it hits the physical ceiling, causing a Stack Overflow (e.g., `RangeError: Maximum call stack size exceeded`).
+Since the Stack Memory has a fixed size (determined by the OS), there is a limit to how many contexts can be pushed. If we create an infinite recursion (Function A calls Function A forever), the stack grows until it hits the physical ceiling, causing a Stack Overflow (e.g., `RangeError: Maximum call stack size exceeded`).
 
 ---
 
@@ -42,7 +42,7 @@ Since the Stack Memory has a fixed size (determined by the OS), there is a limit
 
 #### A. Logical vs. Physical
 
-- Execution Context (The Blueprint): The abstract specification defined by ECMAScript. The official rulebook (ECMAScript) says that every time a function runs, the computer must track its variables (Execution Context). It doesn't tell the computer exactly how to manage the memory chips to do that—that part is up to the engine developers.
+- Execution Context: The abstract specification defined by ECMAScript. The official rulebook (ECMAScript) says that every time a function runs, the computer must track its variables (Execution Context). It doesn't tell the computer exactly how to manage the memory chips to do that—that part is up to the engine developers.
 - Stack Frame (The Physical Container): The actual slice of physical memory allocated on the Call Stack. The Execution Context lives inside this frame.
 
 #### B. Internal Anatomy
@@ -66,7 +66,7 @@ The Scope defines the boundary in which a variable is accessible.
 
 ---
 
-### The Lifecycle (The Two Phases)
+### Lifecycle of Execution Context
 
 This is the most critical concept for understanding Hoisting. An Execution Context is not created instantly; it is built in two distinct passes.
 
@@ -77,17 +77,37 @@ Before the code executes line-by-line, the engine scans the code to set up the e
 1. Variable Hoisting:
 
    - var: The engine registers the identifier in the Variable Environment, reserves a physical slot in Stack Memory, and initializes it to undefined.
-   - let / const: The engine registers the identifier and reserves a physical slot in Stack Memory, but marks it as Uninitialized. Accessing it results in a Temporal Dead Zone (TDZ) error.
+   - let / const: The engine registers the identifier and reserves a physical slot in Stack Memory, but marks it as `Uninitialized`. Accessing it before initialization results in a `Temporal Dead Zone` (TDZ) error.
 
 2. Function Hoisting (The Two Types):
 
    - Function Declaration (function name() {}): The engine creates the Function Object in the Heap immediately and assigns its address to the Stack Slot. It is fully usable before its definition line.
-   - Function Expression (var name = function() {}): The engine treats this as a variable. It hoists the identifier name but assigns it undefined. The function object is not created yet. Calling it causes a TypeError.
-   - Anonymous Function Expression (function() {}): Typically used in callbacks. Since it has no name, no identifier is hoisted; it is created only when the runtime reaches that line.
+   - Function Expression (var name = function() {}): The engine treats this as a variable. It hoists the identifier name but assigns it undefined. The function object is not created yet. Calling it before definition causes a TypeError.
 
 3. Static Scope Analysis:
-   - The engine determines the value of the outer pointer based on where the function is written (Lexical Scoping).
-   - The engine creates the internal [[Environment]] pointer on any new Function Objects, recording their birth scope.
+
+   - This is where the Scope Chain is physically constructed using pointers.
+   - The `Dual-Pointer` Setup : When an Execution Context is created, the engine determines the value of the outer pointer for both environment records.
+
+     - Variable Environment :
+       - Capacity: A Function Execution Context has only one Variable Environment.
+       - Outer Pointer: Links directly to the outer scope. It ignores blocks ({}) and is lookup table for var and function declarations for the entire function.
+     - Lexical Environment :
+       - Capacity: A Function Execution Context can have multiple Lexical Environments.
+       - Dynamic Nature: While the Execution Context has a base Lexical Environment, every time the engine enters a block (like if, for, or {}), it creates a new, nested Lexical Environment for that block to store let and const.
+       - Outer Pointer: Each new block-level Lexical Environment has an outer pointer that points to the previous LE (forming a mini-chain within the function).
+
+   - `Environment Pointer ([[Environment]])`:
+
+     - Location: Function Object (Heap Memory).
+     - Role: It records the Lexical Environment where the function was physically defined.
+
+   - `Outer Pointer (outer)`:
+
+     - Location: Stack Frame (Execution Context).
+     - Role: When a function runs, the engine copies the [[Environment]] value into the Execution Context outer pointer.
+     - Both the Variable Environment and the Base Lexical Environment share the same value in their outer pointers, ensuring they both look up to the same parent.
+
    - Closure Scan (Heap Promotion): The engine scans for inner functions. If an inner function uses a variable from the current scope, the engine realizes variable cannot live on the temporary Stack.
      - Action: The engine moves variable from the Stack to a persistent Context Object in the Heap.
      - Result: The inner function's [[Environment]] pointer now links to this Heap Object, ensuring the variable survives even after the Stack Frame pops.
@@ -98,7 +118,7 @@ The engine runs through the code again, this time line-by-line.
 
 1. Assignment:
 
-   - The engine performs the lookup using the Variable Environment map.
+   - The engine performs the lookup using the Variable Environment and Lexical Environment .
    - It writes the actual values (or new Object addresses) into the Memory Slots, overwriting the undefined placeholders.
 
 2. Invocation:
