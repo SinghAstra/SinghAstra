@@ -4,9 +4,7 @@ date: "08-12-2025"
 excerpt: "The architecture of JavaScript data: Value Types vs. Reference Types, and the physical reality of Arrays as Hash Maps."
 ---
 
-## Data Mechanics
-
-### The Data Spectrum
+# Data Mechanics
 
 JavaScript data types are physically divided into two categories based on where they are stored in the architecture.
 
@@ -15,11 +13,11 @@ JavaScript data types are physically divided into two categories based on where 
 These are immutable data types that fit directly inside a single Stack Memory Slot.
 
 - Storage: The value lives inside the Stack Frame.
-- Access: Direct. The variable name stored in the variable environment points to the slot, and the slot contains the actual bits.
-- Immutability (Value Trait): This is the defining trait of primitives. Because the value is tightly packed into a fixed-size slot, you cannot modify the bits in place.
+- Access: Direct. The variable name stored in the variable environment or lexical environment points to the slot, and the slot contains the actual bits.
+- Immutability : Primitives are immutable because their memory slot is a fixed-size container for a specific bit pattern. We cannot modify individual bits within that slot; to change the value, the engine must overwrite the entire slot with a completely new set of bytes.
 - Types: `number`, `string`, `boolean`, `undefined`, `null`, `symbol`, `bigint`.
 
-#### B. The Object Family (Reference Types)
+#### B. The Object Family
 
 These are mutable collections that live in the `Heap`.
 
@@ -28,9 +26,6 @@ These are mutable collections that live in the `Heap`.
   2.  The Heap: Holds the actual `Payload` (The key-value pairs).
 - Access: Indirect. The engine reads the address from the Stack, then jumps to that address in the Heap to find the data.
 - Types: `Object`, `Array`, `Function`, `Date`, `Map`, `Set`, `WeakMap`.
-- The Hash Map Architecture: Internally, almost all Heap data in JavaScript is structured as a Hash Map (or Hash Table).
-  - Definition: A Hash Map is a data structure that maps Keys (Labels) to Values (Data). Instead of searching through a list one-by-one, the engine takes the Key, runs a quick formula (hashing), and jumps directly to the memory address where that value is stored.
-  - Benefit: Fast lookups (O(1)) regardless of how big the object is.
 
 ---
 
@@ -43,14 +38,14 @@ In lower-level languages (C, Java), an Array is a contiguous block of reserved m
 Physically, a JavaScript Array is just a specialized Object in the Heap.
 
 - Index as Key: It functions exactly like a standard object, where the Index is the Key and the Element is the Value.
-- Internal Storage: When you write `arr[0] = "A"`, the engine treats it almost exactly like `obj["0"] = "A"`. The indices are treated as string keys internally.
+- Internal Storage: When we write `arr[0] = "A"`, the engine treats it almost exactly like `obj["0"] = "A"`. The indices are treated as string keys internally.
 - The Length: The main difference between an Array and a regular Object is that an Array maintains a special auto-updating `length` property.
 
-#### B. Sparse Arrays (The Hole Concept)
+#### B. Sparse Arrays
 
 Because Arrays are just Objects (Key-Value maps), they don't need to allocate memory for empty slots.
 
-Consider a scenario where you initialize an empty array and assign values only at index `0` and index `1000`:
+Consider a scenario where we initialize an empty array and assign values only at index `0` and index `1000`:
 
 > Physical Reality: The Engine does NOT reserve 1001 memory slots. It creates an Object with exactly two keys: 0 and 1000.
 
@@ -58,10 +53,10 @@ The Gap: Indices 1 through 999 simply do not exist in memory. They are `holes`. 
 
 ### Summary Table
 
-| Feature          | Primitives | Objects (Reference Types) | Arrays (JS Specific)       |
-| :--------------- | :--------- | :------------------------ | :------------------------- |
-| Storage Location | Stack      | Heap                      | Heap                       |
-| Variable Holds   | The Value  | The Address (Pointer)     | The Address (Pointer)      |
-| Mutability       | Immutable  | Mutable                   | Mutable                    |
-| Structure        | Fixed Size | Dynamic Graph             | Hash Map (Key-Value)       |
-| Lookup Cost      | Instant    | 1 Pointer Jump            | Key Hashing + Pointer Jump |
+| Feature          | Primitives | Objects               | Arrays                     |
+| :--------------- | :--------- | :-------------------- | :------------------------- |
+| Storage Location | Stack      | Heap                  | Heap                       |
+| Variable Holds   | The Value  | The Address (Pointer) | The Address (Pointer)      |
+| Mutability       | Immutable  | Mutable               | Mutable                    |
+| Structure        | Fixed Size | Dynamic Graph         | Hash Map (Key-Value)       |
+| Lookup Cost      | Instant    | 1 Pointer Jump        | Key Hashing + Pointer Jump |
