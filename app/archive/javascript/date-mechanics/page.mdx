@@ -1,0 +1,83 @@
+---
+title: "Date Mechanics"
+date: "18-12-2025"
+excerpt: "Understanding the JavaScript Date object: from its 64-bit millisecond core and Heap-based storage to the architectural traps of mutability and serialization."
+---
+
+# Date Mechanics
+
+In JavaScript, the `Date` object is a specialized built in object designed to handle time. It is a `Reference Type`.
+
+### 1. The Architectural Core
+
+At its physical heart, a `Date` is a wrapper around a single numeric value.
+
+- The Internal Slot (`[[DateValue]]`): Every Date object contains a hidden internal slot that stores a 64-bit integer.
+- The Millisecond Offset: This integer represents the number of milliseconds elapsed since the Unix Epoch (January 1, 1970, 00:00:00 UTC).
+- Storage Location: Because it is an object, the `Date` instance lives in the Heap Memory. The Slot Memory assigned to variable identifier in variable environment or lexical environment record holds the Heap address.
+
+---
+
+### 2. Mutability & The Reference Trap
+
+Date objects are `mutable`. Methods like `.setFullYear()`, `.setHours()`, or `.setDate()` modify the value stored in the Heap directly. They do not return a new object (unlike String methods).
+
+- The Aliasing Problem: If we assign one date variable to another, both point to the same memory address. Mutating one will affect the other.
+
+```javascript
+const eventDate = new Date("2025-12-31");
+const reminderDate = eventDate; // Both point to the same Heap address
+
+// Mutating the reminder silently changes the event
+reminderDate.setMonth(0); // Changes month to January
+
+console.log(eventDate.toLocaleDateString()); // "1/31/2025" -> Unexpected!
+```
+
+> Best Practice: To avoid this, always clone a date before modifying it using `new Date(originalDate)`.
+
+---
+
+### 3. Comparison Mechanics
+
+Because Dates are objects, standard comparison operators (`==` or `===`) behave differently than they do with primitives.
+
+- Reference Checking: Comparing two dates with `===` checks if they point to the same memory address, not if they represent the same time.
+- Value Coercion: To compare the actual time value, we must extract the internal millisecond integer.
+
+| Operation                             | Comparison Type | Result                                                                       |
+| ------------------------------------- | --------------- | ---------------------------------------------------------------------------- |
+| `dateA === dateB`                     | Reference       | `true` only if they are the exact same object instance.                      |
+| `+dateA === +dateB`                   | Value           | `true` if they represent the same millisecond (Unary `+` coerces to Number). |
+| `dateA.getTime() === dateB.getTime()` | Value           | The explicit way to compare the 64-bit internal values.                      |
+
+---
+
+### 4. Serialization & The Type Loss
+
+Dates have a unique and often problematic relationship with data transmission.
+
+- Stringification: When `JSON.stringify()` encounters a Date, it automatically converts it into an ISO 8601 String (e.g., `"2025-12-18T14:00:00.000Z"`).
+- The Parsing Trap: When we use `JSON.parse()`, the engine does not recognize that string as a Date. It remains a plain String in memory.
+- Hydration: We must manually hydrate the string back into a Date object after parsing to regain access to methods like `.getDay()` or `.getFullYear()`.
+
+```javascript
+const user = { joined: new Date() };
+const serialized = JSON.stringify(user);
+
+const parsed = JSON.parse(serialized);
+// parsed.joined is now a STRING, not a Date object.
+// parsed.joined.getFullYear() will throw a TypeError.
+```
+
+---
+
+### 5. Summary Table
+
+| Feature       | Behavior                                                  |
+| ------------- | --------------------------------------------------------- |
+| Type          | Object (Reference Type)                                   |
+| Storage       | Heap Memory (64-bit integer internal slot)                |
+| Mutability    | Mutable (Methods modify the object in-place)              |
+| Comparison    | By Reference (use `.getTime()` for value comparison)      |
+| JSON Behavior | Converts to ISO String (requires manual re-instantiation) |

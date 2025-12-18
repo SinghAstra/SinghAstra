@@ -24,7 +24,7 @@ b = 20; // a is still 10
 
 #### B. Objects (Copy by Reference)
 
-When we assign an Object, the engine copies the `Memory Address` (the pointer), not the Heap data.
+When we assign an Object, the engine copies the `Memory Address` stored in stack slot, not the Heap data.
 
 - Result: Both variables point to the same object in the Heap. This is called `Aliasing`.
 
@@ -37,13 +37,13 @@ let user2 = user1; // Copy the Address 0x001
 
 ### Aliasing & Mutation
 
-Aliasing is dangerous because it might lead to unintended result.We can modify a variable in File A, and it accidentally updates a variable in File B because they share the same Heap Address.
+Aliasing is dangerous because it might lead to unintended result. We can modify a variable in File A, and it accidentally updates a variable in File B because they share the same Heap Address.
 
 #### A. Mutation vs. Reassignment
 
 1.  Mutation (Modifying the Heap):
 
-    - You follow the pointer to the Heap and change the data inside.
+    - We follow the pointer to the Heap and change the data inside.
     - Effect: All aliases see the change.
 
     ```javascript
@@ -53,7 +53,7 @@ Aliasing is dangerous because it might lead to unintended result.We can modify a
 
 2.  Reassignment (Modifying the Stack):
 
-    - You change the value in the Stack Slot to point to a completely different object (or value).
+    - We change the value in the Stack Slot to point to a completely different object (or value).
     - Effect: The link between the variables is broken.
 
     ```javascript
@@ -81,7 +81,7 @@ ES6 introduced the Spread syntax.
 - Mechanism: It creates a New Object in the Heap and iterates over the properties of the old object.
 - The `Assignment` Trap: For each property, it performs a standard Assignment.
   - If the property is a Primitive, it copies the value.
-  - If the property is a Nested Object, it copies the Reference (Address).
+  - If the property is a Nested Object, it copies the Memory Address of the nested object.
 - The Limit: It only copies the First Layer. If the object contains nested objects (e.g., `user.address.city`), those nested objects are still copied by reference.
 
 ```javascript
