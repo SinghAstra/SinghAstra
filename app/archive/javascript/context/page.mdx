@@ -4,22 +4,21 @@ date: "12-12-2025"
 excerpt: "Demystifying the 'this' keyword: The 4 rules of invocation, the manual overrides (Explicit Binding), and the Arrow Function exception."
 ---
 
-## The Context System (`this`)
+## The Context System
 
 In JavaScript, functions are objects and are treated as `First Class Citizens`.
 
-Definition:
 `this` is a hidden parameter passed to every function that points to the `Execution Context's` current object.
 
-Unlike standard variables, which are determined by where you write the code (Lexical/ Static Scope), `this` has Dynamic Scoping. It is determined entirely by how the function is called (Invocation).
+Unlike standard variables, which are determined by where we write the code (Lexical/ Static Scope), `this` has Dynamic Scoping. It is determined entirely by how the function is called.
 
 ---
 
-In case of defined with function declaration:
+Following rules are applied when function is defined with function declaration:
 
 ### The 4 Rules of Invocation
 
-#### 1. New Binding (The Constructor)
+#### 1. New Binding
 
 If the function is called with the `new` keyword, the engine creates a brand new object and binds `this` to it.
 
@@ -33,9 +32,9 @@ const alice = new User("Alice");
 console.log(alice.name); // "Alice"
 ```
 
-#### 2. Implicit Binding (The Dot Rule)
+#### 2. Implicit Binding
 
-This is the most common rule. If the function is called as a method of an object (it has a dot `.` before it), `this` points to the object on the left side of the dot.
+If the function is called as a method of an object (it has a dot `.` before it), `this` points to the object on the left side of the dot.
 
 ```javascript
 const user = {
@@ -49,7 +48,7 @@ const user = {
 user.sayHi(); // Output: "Charlie"
 ```
 
-#### 3. Default Binding (The Catch-All)
+#### 3. Default Binding
 
 If none of the other rules apply (a standalone function call), the engine defaults to the global scope.
 
@@ -63,9 +62,9 @@ showGlobal();
 // Non-Strict Mode: Window / Global Object
 ```
 
-#### 4. Explicit Binding (The Overrides)
+#### 4. Explicit Binding
 
-This rule applies when you want to force a function to use a specific object as its context, overriding the Implicit or Default rules. We use three built-in methods which is inherited by all function objects.
+This rule applies when we want to force a function to use a specific object as its context, overriding the Implicit or Default rules. We use three built-in methods which is inherited by all function objects.
 
 A. `.call()`
 
@@ -85,7 +84,7 @@ greet.call(user, "Hello"); // Output: "Hello, Bob"
 B. `.apply()`
 
 - Mechanism: Invokes the function immediately.
-- Arguments: Passed as a single Array. Useful when you have a list of data.
+- Arguments: Passed as a single Array. Useful when we have a list of data.
 
 ```javascript
 const args = ["Hi", "!"];

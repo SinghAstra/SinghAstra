@@ -6,24 +6,20 @@ excerpt: "The engine of logic: Treating functions as data, the evolution of argu
 
 ## Functional Mechanics
 
-### Functions as First-Class Citizens
-
-In many languages (like Java or C++), functions are distinct structures compiled differently than variables. In JavaScript, functions are `First-Class Citizens`.
-
-#### A. The Definition
+In JavaScript, functions are objects and treated as `First-Class Citizens`.
 
 `First-Class` means the language treats a function exactly like any other variable (Number, String, Object).
 
 - Physical Reality: A function is just a standard Heap Object that possesses special internal slots allowing it to execute code.
 - Consequence: Because they are just objects, they can be passed around, returned, and assigned to properties.
 
-#### B. Internal Architecture (The 3 Hidden Slots)
+### Internal Architecture
 
 What makes a Function Object different from a regular `{}` Object? It has three hidden internal properties defined by the engine.
 
-1.  `[[Call]]`: The code logic. This slot is triggered when you invoke the function with `()`.
-2.  `[[Construct]]`: The factory logic. This slot is triggered only when you invoke the function with the `new` keyword (creates a new instance).
-3.  `[[Environment]]`: The memory link. A pointer to the Scope where the function was created. In case of closures, [[Environment]] is the specific pointer that links that function to the Context Object in the Heap.
+1.  `[[Call]]`: The code logic. This slot is triggered when we invoke the function with `()`.
+2.  `[[Construct]]`: The factory logic. This slot is triggered only when we invoke the function with the `new` keyword (creates a new instance).
+3.  `[[Environment]]`: A pointer to the lexical Environment record where the function was created. In case of closures, [[Environment]] is the specific pointer that links that function to the Context Object in the Heap.
 
 ---
 
@@ -31,14 +27,14 @@ What makes a Function Object different from a regular `{}` Object? It has three 
 
 ES6 introduced Arrow Functions not just as shorter syntax, but as a simpler architectural alternative.
 
-#### A. The Lightweight Architecture
+#### The Lightweight Architecture
 
-Arrow functions are designed to be non-constructible.
+Arrow functions are designed to be non constructible.
 
 - Missing Slot: They DO NOT have the `[[Construct]]` slot.
-- The Consequence: You cannot use `new` with an Arrow Function. If you try `new Arrow()`, the engine throws a `TypeError` because the internal factory logic simply doesn't exist.
+- The Consequence: We cannot use `new` with an Arrow Function. If we try `new Arrow()`, the engine throws a `TypeError` because the internal factory logic simply doesn't exist.
 
-#### B. The `this` Binding
+#### The this Binding
 
 - Standard Functions: Have their own dynamic `this` context determined by how they are called.
 - Arrow Functions: Do not have their own `this`. They resolve `this` lexically (they look up to the `[[Environment]]` of their parent).
@@ -49,15 +45,15 @@ Arrow functions are designed to be non-constructible.
 
 When a function is executed, it receives inputs. How the engine handles these inputs has evolved.
 
-#### A. The Legacy: The `arguments` Object
+#### The Legacy: The arguments Object
 
 Historically, every standard function automatically created a hidden object called `arguments` in the Heap.
 
-- Structure: It looks like an Array (has indices `0`, `1` and `.length`) but is not an Array. It is an Array-like Object.
-- Limitation: You cannot use array methods like `.map()` or `.filter()` on it.
+- Structure: It looks like an Array (has indices `0`, `1` and `.length`) but is not an Array. It is an Array like Object.
+- Limitation: We cannot use array methods like `.map()` or `.filter()` on it.
 - Arrow Function Note: Arrow functions DO NOT have the `arguments` object.
 
-#### B. The Modern: Rest Parameters (`...args`)
+#### The Modern: Rest Parameters (`...args`)
 
 ES6 introduced the Rest Operator to handle variable-length inputs architecturally correctly.
 
@@ -66,9 +62,9 @@ ES6 introduced the Rest Operator to handle variable-length inputs architecturall
 
 ---
 
-### Higher-Order Functions (HOFs)
+### Higher-Order Functions
 
-A Higher-Order Function is defined by the capabilities of First-Class Citizens. It is any function that:
+A Higher Order Function is defined by the capabilities of First-Class Citizens. It is any function that:
 
 1.  Takes one or more functions as arguments (Callbacks).
 2.  OR returns a function as its result.
@@ -77,19 +73,19 @@ A Higher-Order Function is defined by the capabilities of First-Class Citizens. 
 
 These methods represent the Functional Programming approach. They rely on Immutability (creating new arrays in the Heap rather than changing the old one).
 
-1. Map (Shape Shifter)
+1. Map
 
 - Purpose: One-to-One transformation.
 - Callback Contract: `(item, index) => newItem`
 - Requirement: The callback MUST return a value. This returned value is pushed into the new array.
 
-2. Filter (Gatekeeper)
+2. Filter
 
 - Purpose: Selection (Subset).
 - Callback Contract: `(item, index) => Boolean`
 - Requirement: The callback MUST return a Boolean. `true` keeps the item; `false` discards it.
 
-3. Reduce (The Aggregator)
+3. Reduce
 
 - Purpose: Many-to-One (collapsing an array into a single value).
 - Callback Contract: The function receives 4 arguments:
