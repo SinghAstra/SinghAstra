@@ -6,13 +6,13 @@ excerpt: "Beyond standard Objects: Understanding Maps for true Hash Mapping and 
 
 ### Maps & Sets
 
-In the previous archive, we learned that standard Objects have a fatal flaw: they implicitly convert all keys to Strings. ES6 introduced proper data structures to solve this architectural limitation.
+In the previous archive, we learnt that standard Objects have a fatal flaw. They implicitly convert all keys to Strings. ES6 introduced proper data structures to solve this architectural limitation.
 
 #### A. The Map
 
 A Map is a collection of keyed data items, similar to an Object. However, the main difference is that Map allows keys of any type.
 
-- No Coercion: You can use an Object, a Function, or a Number as a key. The engine does not convert them to strings.
+- No Coercion: We can use an Object, a Function, or a Number as a key. The engine does not convert them to strings.
 - Reference Equality: It uses the memory address of the key to identify it. Two different empty objects `{}` are treated as two unique keys.
 - Ordered: Unlike Objects (which have complex ordering rules), a Map guarantees that entries are iterated in the exact order they were inserted.
 
@@ -29,11 +29,11 @@ console.log(map.get(user)); // "Architect"
 console.log(map.size); // 1
 ```
 
-#### B. The Set (Unique List)
+#### B. The Set
 
-A Set is a special collection type—a set of values (without keys)—where each value may occur only once.
+A Set is a special collection of set of values (without keys) where each value may occur only once.
 
-- Uniqueness: If you try to add the same value twice, the Set automatically ignores the duplicate.
+- Uniqueness: If we try to add the same value twice, the Set automatically ignores the duplicate.
 - Architecture: It is optimized for checking presence. Checking `set.has(value)` is significantly faster (O(1)) than searching an Array `arr.includes(value)` (O(N)).
 
 Example:
