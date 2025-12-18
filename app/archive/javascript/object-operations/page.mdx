@@ -4,18 +4,16 @@ date: "09-12-2025"
 excerpt: "Mastering Object interaction: Dot vs. Bracket notation, the architectural restriction of String Keys, and safe iteration strategies."
 ---
 
-## Object Operations
+# Object Operations
 
-### Access & Manipulation
+Following are two ways of accessing & manipulating Object :-
 
-There are two distinct syntaxes, and they are not just stylistic choices—they behave differently at the architectural level.
-
-#### A. Dot Notation (The Static Interface)
+## 1. Dot Notation - The Static Interface
 
 - Restriction: The key must be a valid Identifier (no spaces, can't start with a number, no special characters).
-- Limitation: It is Static. You cannot use a variable. The engine interprets the text after the dot literally.
+- Limitation: It is `Static`. We cannot use a variable. The engine interprets the text after the dot literally.
 
-#### B. Bracket Notation (The Dynamic Interface)
+## 2. Bracket Notation - The Dynamic Interface
 
 - Capability: It evaluates the expression inside the brackets before accessing the property.
 - Use Case: Accessing properties dynamically (e.g., from user input) or properties with "illegal" names (e.g., "Content-Type").
@@ -33,15 +31,11 @@ let data = {
 
 ---
 
-### Implicit Conversion
+## Implicit Conversion
 
-This is the most fundamental architectural constraint of standard JavaScript Objects.
+This is the most fundamental architectural Limitation of standard JavaScript Objects.
 
-#### A. The String Rule
-
-In a standard Object, all keys are Strings (or Symbols). If you try to use any other data type as a key, the engine will silently convert it to a string before storage.
-
-#### B. Implicit Coercion (The Trap)
+> In a standard Object, all keys are Strings. If we try to use any other data type as a key, the engine will Implicitly convert it to a string before storage.
 
 Consider this scenario where we try to use Objects as keys:
 
@@ -64,7 +58,7 @@ console.log(dictionary[user]); // Output: "Admin Data"
   4.  It saves the value under that string key.
   5.  It repeats the process for admin, which generates the exact same key "[object Object]", overwriting the first entry.
 
-- The Constraint: Standard Objects cannot handle unique object references as keys. They only see the string representation. (To use actual objects as keys, we use the Map data structure, covered in Unit 5).
+- The Limitation: Standard Objects cannot handle unique object references as keys. They only see the string representation. (To use actual objects as keys, we use the Map data structure).
 
 ---
 
