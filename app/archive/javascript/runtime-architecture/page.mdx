@@ -4,106 +4,100 @@ date: "16-12-2025"
 excerpt: "JavaScript is single-threaded, meaning it can only do one thing at a time. Yet, it powers complex apps that fetch data, animate UIs, and listen for clicks simultaneously. This unit explains the architectural partnership that makes this possible."
 ---
 
-## Runtime Architecture
+# Runtime Architecture
 
-### 1. The Single-Threaded Core
+## 1. The Single-Threaded Core
 
 At its heart, the JavaScript engine is synchronous and single-threaded.
 
 - One Thread: It has exactly one Main Thread of execution.
 - One Call Stack: It has exactly one stack to track function calls.
 
-This means JavaScript, by itself, is linear. It executes code line-by-line, from top to bottom.
+This means JavaScript, by itself, is linear. It executes code line-by-line. If the stack is occupied, nothing else can run.
 
 ---
 
-### 2. The Blocking Problem
+## 2. The Blocking Problem
 
-Because we only have one thread, we are vulnerable to Blocking.
+Blocking occurs when a heavy computation is performed in the Call Stack. While the Stack is busy, the application is paralyzed.
 
-Blocking occurs when a slow operation sits on the Call Stack. While the Stack is busy executing that operation, the application is completely paralyzed.
-
-- The Freeze: The browser cannot repaint the screen, render animations, or handle clicks.
+- The Freeze: The browser cannot repaint the screen, render animations, or handle clicks because the Main Thread is stuck in a loop.
 
 ```javascript
-// A Blocking Operation
 function heavyTask() {
-  console.log("Task Started");
-
-  // A loop that blocks the thread for 5 seconds
   const end = Date.now() + 5000;
   while (Date.now() < end) {
-    // CPU is stuck here. Do nothing.
+    /* CPU is trapped here for 5s */
   }
-
-  console.log("Task Finished");
 }
 
-heavyTask(); // Freezes the browser for 5s
-console.log("This must wait...");
+heavyTask();
+console.log("This waits 5 seconds to run");
 ```
 
-The Dilemma: Modern web apps need to fetch data (network requests) or wait for timers. If these were synchronous, our app would freeze every time we loaded a user profile.
+---
+
+## 3. The Asynchronous Solution: Task Outsourcing
+
+JavaScript handles slow tasks by outsourcing them to the Host Environment (the Browser or Node.js). The Runtime is a collaboration between three distinct pillars:
+
+## A. The JS Engine (Synchronous)
+
+- Call Stack: Executes code.
+- Memory Heap: Allocates memory.
+
+## B. The Environment APIs (Multi-threaded)
+
+These are threads provided by the browser (Web APIs) or Node.js (C++ APIs). They handle the waiting in the background without blocking the Call Stack.
+
+- DOM Events: Clicks, scrolls.
+- Network: `fetch` or XHR requests.
+- Timers: `setTimeout` and `setInterval`.
+
+## C. The Glue: The Two Queues & The Event Loop
+
+The environment doesn't push code back to the stack directly. It places callbacks into one of two specialized queues.
+
+1. The Microtask Queue (Job Queue):
+
+- Priority: High.
+- Sources: `Promise` callbacks (`.then`, `.catch`), `queueMicrotask`, `MutationObserver`.
+- Behavior: The Event Loop flushes the entire microtask queue immediately after the current stack is empty, before doing anything else.
+
+2. The Macrotask Queue (Task Queue):
+
+- Priority: Standard.
+- Sources: `setTimeout`, `setInterval`, `setImmediate`, I/O, UI Rendering.
+- Behavior: The Event Loop picks one task from here only after the Microtask Queue is completely empty.
 
 ---
 
-### 3. The Asynchronous Solution
+## 4. The Event Loop Algorithm
 
-How does JavaScript handle slow tasks without freezing? It outsources them.
+The Event Loop is a continuously running process that handles execution of callback. Follows the following order :
 
-The JavaScript Runtime is actually a collaboration between the JS Engine and the Host Environment.
-
-#### A. The JS Engine
-
-The engine is strictly synchronous.
-
-- The Call Stack: Executes the actual JavaScript code line-by-line. It is single-threaded and blocking.
-- The Memory Heap: Where variables and objects live.
-
-#### B. The Web APIs (The Browser Environment)
-
-The engine effectively says, _"I don't know how to wait 5 seconds. You do it."_
-
-- Role: These are separate threads provided by the Browser (or C++ APIs in Node.js). They exist outside the JavaScript engine.
-- Capabilities: They handle the heavy lifting:
-  - `DOM` (rendering/clicks).
-  - `fetch` / `XHR` (network requests).
-  - `setTimeout` (timers).
-- Behavior: They run in parallel to the main stack. They do not block our code.
-
-#### C. The Glue (The Queue & Event Loop)
-
-These mechanisms manage the hand-off between the Browser and the Engine.
-
-- The Callback Queue: A waiting area where the Browser places finished tasks (callbacks).
-- The Event Loop: A continuously running process that pushes tasks from the Queue into the Engine's Call Stack when the Stack is empty.
+1. Execute Stack: Run synchronous code until the Call Stack is empty.
+2. Flush Microtasks: Run all tasks in the Microtask Queue. If a microtask adds another microtask, run that too.
+3. Render: (Browser only) Perform UI updates/repaints.
+4. Run Macrotask: Pick one task from the Macrotask Queue and push it to the Stack.
+5. Repeat: Go back to Step 1.
 
 ---
 
-### 4. The Event Loop (The Bridge)
+## Summary Table
 
-The Event Loop is a continuously running process that pushes tasks from the Queue into the Engine's Call Stack when the Stack is empty. It follows a simple algorithm:
-
-> If the Call Stack is empty, take the first callback from the Queue and push it onto the Stack.
-
----
-
-### 5. Summary Table
-
-| Component      | Responsibility                | Threading                   |
-| :------------- | :---------------------------- | :-------------------------- |
-| Call Stack     | Executes JS logic             | Single Thread (Blocking)    |
-| Web APIs       | Handles I/O, Network, Time    | Multi-threaded (Background) |
-| Callback Queue | Holds ready-to-run functions  | Passive Queue               |
-| Event Loop     | Orchestrates Queue $to$ Stack | Continuous Monitor          |
+| Component        | Responsibility     | Threading       | Priority       |
+| ---------------- | ------------------ | --------------- | -------------- |
+| Call Stack       | Executes JS logic  | Single Thread   | Immediate      |
+| Environment APIs | Background waiting | Multi-threaded  | N/A            |
+| Microtask Queue  | Promises           | Passive Queue   | High (Run All) |
+| Macrotask Queue  | Timers / Events    | Passive Queue   | Low (Run One)  |
+| Event Loop       | Orchestration      | Continuous Loop | Monitor        |
 
 ---
 
-### _Stop and Think: If I write `setTimeout(fn, 1000)`, is the function guaranteed to execute in exactly 1000ms ?_
+## _Stop and Think: Is setTimeout(fn, 0) immediate?_
 
-Answer: No.
-It is guaranteed to be added to the Queue after 1000ms.
-If the Call Stack is busy (e.g., executing a loop that takes 3 seconds), the Event Loop cannot push your callback onto the Stack. Your function will run at `1000ms + Wait Time`.
-Therefore, `setTimeout` indicates a minimum delay, not a guaranteed time.
+Answer: No. Even with `0ms`, the callback is placed in the Macrotask Queue. The Event Loop must first finish the current script, then flush the entire Microtask Queue, and then handle rendering before it finally picks up your `setTimeout` callback.
 
 ---
