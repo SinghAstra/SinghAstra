@@ -35,6 +35,42 @@ let user2 = user1; // Copy the Address 0x001
 
 ---
 
+### Object Comparison Mechanics
+
+Because objects live in the Heap, comparison operators do not look at the properties inside the object. They look at the addresses stored in the Stack.
+
+#### 1. The Reference Check
+
+Two objects are only equal if they point to the same physical memory address.
+
+- `{} === {}` is false because each literal creates a new unique address in the Heap.
+- `objA === objB` is true only if they share the same reference.
+
+#### 2. Double (`==`) vs. Triple (`===`) Equals
+
+The comparison behavior changes fundamentally depending on whether the engine stays in the Stack or triggers a Coercion routine into the Heap.
+
+A. Triple Equals (Strict Equality: `===`)
+
+- Logic: No Type Coercion. It checks if both the Data Type and the Memory Address are identical.
+- Result: If the types differ, it returns `false` immediately. If both are objects, it checks if they occupy the same Heap slot.
+
+B. Double Equals (Abstract Equality: `==`)
+
+- Object vs. Object: It behaves exactly like `===`. It compares addresses. No content checking occurs.
+- Object vs. Primitive: The engine triggers the `ToPrimitive` algorithm. It attempts to convert the object to a primitive (via `.toString()` or `.valueOf()`) to compare values instead of addresses.
+
+````javascript
+const arr = [42];
+const num = 42;
+
+// Scenario 1: Object vs Object
+console.log([42] == [42]); // false (Unique addresses in Heap)
+
+// Scenario 2: Object vs Primitive (Coercion)
+// arr.toString() becomes "42", then coerced to Number 42
+console.log(arr == num);   // true
+
 ### Aliasing & Mutation
 
 Aliasing is dangerous because it might lead to unintended result. We can modify a variable in File A, and it accidentally updates a variable in File B because they share the same Heap Address.
@@ -94,7 +130,7 @@ let copy = { ...original };
 
 copy.name = "Clone"; // Safe (Original is still "Singh")
 copy.meta.role = "User"; // DANGER! Original.meta.role becomes "User"
-```
+````
 
 #### B. Deep Copy (Breaking the Chain)
 

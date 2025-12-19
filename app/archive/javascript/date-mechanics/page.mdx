@@ -10,17 +10,91 @@ In JavaScript, the `Date` object is a specialized built in object designed to ha
 
 ### 1. The Architectural Core
 
-At its physical heart, a `Date` is a wrapper around a single numeric value.
+At its heart, a `Date` is a wrapper around a single numeric value.
 
-- The Internal Slot (`[[DateValue]]`): Every Date object contains a hidden internal slot that stores a 64-bit integer.
-- The Millisecond Offset: This integer represents the number of milliseconds elapsed since the Unix Epoch (January 1, 1970, 00:00:00 UTC).
+- The Internal Slot (`[[DateValue]]`): Every Date object contains a hidden internal slot that stores a 64-bit integer called Millisecond offset.
+- Millisecond Offset: This integer represents the number of milliseconds elapsed since the January 1, 1970 UTC.
 - Storage Location: Because it is an object, the `Date` instance lives in the Heap Memory. The Slot Memory assigned to variable identifier in variable environment or lexical environment record holds the Heap address.
+
+### 2. Time Standards: UTC & ISO 8601
+
+Before using the API, we must understand the Language of time used by the engine.
+
+#### A. UTC (Coordinated Universal Time)
+
+UTC is the primary time standard by which the world regulates clocks and time. It is not a timezone itself, but the high-precision reference point (0° longitude) from which all timezones are calculated as offsets (e.g., UTC+5:30).
+
+#### B. ISO 8601 (The Data Format)
+
+This is the internationally accepted way to represent dates and times as strings. JavaScript uses a simplified version of this.
+
+- Format: `YYYY-MM-DDTHH:mm:ss.sssZ`
+- T: Separator between Date and Time.
+- Z: Indicates UTC time (Zero offset).
 
 ---
 
-### 2. Mutability & The Reference Trap
+### 3. The Constructor: Instantiation Patterns
 
-Date objects are `mutable`. Methods like `.setFullYear()`, `.setHours()`, or `.setDate()` modify the value stored in the Heap directly. They do not return a new object (unlike String methods).
+The `Date()` constructor is overloaded. Depending on what we pass, the engine performs different memory allocation tasks.
+
+```javascript
+// 1. Current Time (No Arguments)
+// Allocates a new object with the current system millisecond
+const now = new Date();
+
+// 2. Unix Timestamp (Single Number)
+// Directly sets the internal [[DateValue]]
+const fromMs = new Date(1734566400000);
+
+// 3. Date String (ISO 8601)
+// The engine parses the string. Safest way to avoid cross-browser bugs.
+const fromString = new Date("2025-12-18T10:00:00Z");
+
+// 4. Component Parts (Multiple Numbers)
+// Note: Month is 0-indexed.
+// Signature: (year, monthIndex, day, hours, minutes, seconds, ms)
+const components = new Date(2025, 11, 25, 10, 30); // Dec 25, 2025, 10:30 AM
+```
+
+### 4. Method Categories
+
+The Engine provides three types of methods to interact with the `[[DateValue]]` in the Heap.
+
+#### A. Static Methods
+
+Called on the `Date` class. These do not require `new` and return Numbers, not objects.
+
+```javascript
+const ts = Date.now(); // Current timestamp (Fastest)
+const ms = Date.parse("2025-01-01"); // String -> Number
+```
+
+#### B. Accessor Methods (Getters)
+
+These read the internal slot and return Primitives.
+
+```javascript
+const d = new Date();
+console.log(d.getTime()); // The raw 64-bit integer
+console.log(d.getFullYear()); // Year in Local Time
+console.log(d.getUTCFullYear()); // Year in UTC Time
+```
+
+#### C. Mutator Methods (Setters)
+
+Warning: These modify the object in the Heap directly.
+
+```javascript
+const d = new Date();
+d.setFullYear(2030); // The object at this memory address is now changed
+```
+
+---
+
+### 5. Mutability & The Reference Trap
+
+Date objects are `mutable`. Methods like `.setFullYear()`, `.setHours()`, or `.setDate()` modify the value stored in the Heap directly. They do not return a new object.
 
 - The Aliasing Problem: If we assign one date variable to another, both point to the same memory address. Mutating one will affect the other.
 
@@ -38,7 +112,7 @@ console.log(eventDate.toLocaleDateString()); // "1/31/2025" -> Unexpected!
 
 ---
 
-### 3. Comparison Mechanics
+### 6. Comparison Mechanics
 
 Because Dates are objects, standard comparison operators (`==` or `===`) behave differently than they do with primitives.
 
@@ -53,7 +127,7 @@ Because Dates are objects, standard comparison operators (`==` or `===`) behave 
 
 ---
 
-### 4. Serialization & The Type Loss
+### 7. Serialization & The Type Loss
 
 Dates have a unique and often problematic relationship with data transmission.
 
