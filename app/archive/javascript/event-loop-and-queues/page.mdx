@@ -4,20 +4,20 @@ date: "15-12-2025"
 excerpt: "We previously learned that the Event Loop moves tasks from The Queue to the Stack. But modern JavaScript has *two* queues. This unit explores the priority war between Macrotasks (Timers) and Microtasks (Promises)."
 ---
 
-## Event Loop & Queues
+# Event Loop & Queues
 
-### 1. The Two Queues
+## 1. The Two Queues
 
 In the early days of JavaScript, there was only one queue (the Callback Queue). With the introduction of Promises, the architecture changed. We now have two distinct waiting areas for asynchronous callbacks.
 
-#### A. The Macrotask Queue (Task Queue)
+## A. The Macrotask Queue (Task Queue)
 
 This is the standard queue we discussed in previous unit.
 
 - Sources: `setTimeout`, `setInterval`, `setImmediate` (Node), I/O tasks, UI Rendering.
 - Behavior: Processed one at a time. After each macrotask, it is made sure that all task in microtask queue is executed until it becomes empty.
 
-#### B. The Microtask Queue (Job Queue)
+## B. The Microtask Queue (Job Queue)
 
 This is a high-priority queue introduced specifically for Promises.
 
@@ -26,7 +26,7 @@ This is a high-priority queue introduced specifically for Promises.
 
 ---
 
-### 2. The Priority Rule
+## 2. The Priority Rule
 
 The Golden Algorithm:
 
@@ -39,7 +39,7 @@ The Golden Algorithm:
 
 ---
 
-### 3. Code Evidence
+## 3. Code Evidence
 
 Let's predict the output of mixed synchronous and asynchronous code.
 
@@ -74,7 +74,7 @@ console.log("5. Script End");
 
 ---
 
-### 4. The Starvation Problem
+## 4. The Starvation Problem
 
 Because the Event Loop flushes the entire Microtask Queue before moving on, it is possible to block the Macrotask Queue indefinitely.
 
@@ -93,7 +93,7 @@ infiniteMicrotasks();
 
 ---
 
-### 5. Summary Table
+## 5. Summary Table
 
 | Feature          | Macrotask (Task Queue)                   | Microtask (Job Queue)                |
 | :--------------- | :--------------------------------------- | :----------------------------------- |
@@ -104,7 +104,7 @@ infiniteMicrotasks();
 
 ---
 
-### _Stop and Think : In what order will this run ?_
+## _Stop and Think : In what order will this run ?_
 
 ```javascript
 setTimeout(() => console.log("Timeout"), 0);
@@ -114,8 +114,10 @@ console.log("Sync");
 
 Answer:
 
-1.  `Sync` (Stack)
-2.  `Promise` (Microtask - Priority)
-3.  `Timeout` (Macrotask - Last)
+```
+1.  Sync (Stack)
+2.  Promise  (Microtask - Priority)
+3.  Timeout (Macrotask - Last)
+```
 
 ---
