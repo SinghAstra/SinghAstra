@@ -4,13 +4,13 @@ date: "15-12-2025"
 excerpt: "The architecture of persistence: How Closures force variables to move from the Stack to the Heap, and using IIFEs for scope privacy."
 ---
 
-### The Mechanics of Closure
+# The Mechanics of Closure
 
-A Closure is formed when an inner function returned from outer function is able to access and modify the variable defined in outer function even after function is popped off Call Stack.
+A Closure is formed when an inner function returned from outer function is accessing and modifying the variable defined in outer function. Even after outer function is popped off Call Stack the inner function is able to access and modify the variable defined in outer function because of `Heap Promotion`.
 
-#### A. The Stack Problem
+### A. The Stack Problem
 
-Normally, when a function finishes executing, its Stack Frame is Popped (deleted). All local variables should disappear.
+Normally, when a function finishes executing, its Stack Frame is Popped. All local variables should disappear.
 
 ```javascript
 function outer() {
@@ -26,20 +26,18 @@ const myFunc = outer(); // outer() runs and POPS.
 myFunc(); // But this works. How?
 ```
 
-#### B. The Heap Solution
-
-This is the architectural deep dive.
+### B. The Heap Solution
 
 1.  The Scan: During the Creation Phase of outer function Execution Context, the engine sees that inner function refers to variable in outer function.
-2.  The Promotion: The engine realizes variable accessed in inner function cannot live in the temporary Stack Frame. It allocates a specific Context Object (Closure) in the Heap and stores referenced variable there.
+2.  The Promotion: The engine realizes variable accessed in inner function cannot live in the temporary Stack Frame. It allocates a specific Context Closure Heap Object and stores referenced variable there.
 3.  The Link: The returned inner function has its `[[Environment]]` pointer linked to this Heap Object, not the dead Stack Frame.
-4.  Result: inner function acts like a Backpack. It carries the function logic plus a reference to the Heap data it needs.
+4.  Result: inner function carries the function logic plus a reference to the Heap data it needs.
 
-### C. Practical Applications: Functional Patterns
+## C. Practical Applications: Functional Patterns
 
 Since Closures allow functions to remember arguments provided in the past (by storing them in the Heap), we can leverage two powerful functional programming patterns.
 
-#### 1. Currying
+### 1. Currying
 
 Currying is a function transformation where a function that takes multiple arguments is converted into a sequence of functions that each take a single argument.
 f(a, b, c) -> f(a)(b)(c)
@@ -58,7 +56,7 @@ function multiply(a) {
 console.log(multiply(2)(5)); // 10
 ```
 
-#### 2. Partial Application
+### 2. Partial Application
 
 Partial Application is the process of fixing a specific number of arguments to a function, producing a new function of fewer arguments.
 
@@ -79,7 +77,7 @@ console.log(addFive(10)); // 15
 
 ---
 
-### The IIFE (Immediate Invocation)
+## The IIFE (Immediate Invocation)
 
 It is a function expression that is defined and run immediately.
 
@@ -95,7 +93,7 @@ An IIFE creates a temporary Function Scope.
 
 ---
 
-### Summary Table
+## Summary Table
 
 | Feature           | Behavior        | Memory Location             |
 | :---------------- | :-------------- | :-------------------------- |
