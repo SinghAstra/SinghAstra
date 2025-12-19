@@ -60,7 +60,7 @@ B. Double Equals (Abstract Equality: `==`)
 - Object vs. Object: It behaves exactly like `===`. It compares addresses. No content checking occurs.
 - Object vs. Primitive: The engine triggers the `ToPrimitive` algorithm. It attempts to convert the object to a primitive (via `.toString()` or `.valueOf()`) to compare values instead of addresses.
 
-````javascript
+```javascript
 const arr = [42];
 const num = 42;
 
@@ -69,7 +69,8 @@ console.log([42] == [42]); // false (Unique addresses in Heap)
 
 // Scenario 2: Object vs Primitive (Coercion)
 // arr.toString() becomes "42", then coerced to Number 42
-console.log(arr == num);   // true
+console.log(arr == num); // true
+```
 
 ### Aliasing & Mutation
 
@@ -130,7 +131,7 @@ let copy = { ...original };
 
 copy.name = "Clone"; // Safe (Original is still "Singh")
 copy.meta.role = "User"; // DANGER! Original.meta.role becomes "User"
-````
+```
 
 #### B. Deep Copy (Breaking the Chain)
 
@@ -140,7 +141,9 @@ To fully clone a nested tree, we need a Deep Copy.
 
     - `JSON.parse(JSON.stringify(obj))`
     - Mechanism: Serializes the Heap graph into a flat String, then parses it back into a brand new set of objects.
-    - Data Loss: It fails on "non-serializable" data. `Date` objects become Strings, `undefined` is removed, and `Functions`, `Maps`, and `Sets` are completely lost.
+    - Key Removal (Data Loss): If a value is a `Function`or `undefined`, the engine ignores the entire key-value pair,it is removed from the string.
+    - Date Transformation: It converts `Date` objects into ISO Strings (e.g., `"2025-12-19T..."`).
+    - The Consequence: Once converted to a string, it is no longer an object. We lose all Date methods like `.getFullYear()` or `.setHours()`.
 
 2.  structuredClone() (Modern Standard):
 
