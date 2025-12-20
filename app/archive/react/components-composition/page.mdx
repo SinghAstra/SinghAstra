@@ -6,11 +6,9 @@ excerpt: "Mastering the fundamental building blocks of React: Functional vs. Cla
 
 # Components & Composition
 
-## 1. What is a Component?
+Component is a reusable JavaScript Function or class that accepts Props and returns React JSX elements describing what should appear on the screen.
 
-Component is a reusable JavaScript Function that accepts Props and returns React JSX elements describing what should appear on the screen.
-
-## 2. Functional Components
+## Functional Components
 
 They are just standard JavaScript functions describing UI.
 
@@ -36,13 +34,13 @@ const Welcome = (props) => {
 
 ---
 
-## 3. Class Components
+## Class Components
 
-Before 2019, whenever we needed state, we had to use a Class Component.
+Earlier, whenever we needed state, we had to use a Class Component.
 
 - Inheritance: They inherit from React.Component and must have a render() method.
 - UI Logic: Inside render(), we return JSX describing the UI.
-- Super: super() is called inside the constructor to initialize the parent class so this can be used.
+- Super: super() is called inside the constructor to initialize the parent class.
 - Data: Both state and props are attached to the class instance, so we access them via this.state and this.props.
 - Methods: Arrow Functions live directly on the instance and are accessed via this.
 
@@ -63,7 +61,7 @@ class Welcome extends React.Component {
 
 ---
 
-## 4. Functional vs. Class Components: The Breakdown
+## Functional vs. Class Components: The Breakdown
 
 | Feature          | Functional Components           | Class Components                        |
 | :--------------- | :------------------------------ | :-------------------------------------- |
@@ -76,13 +74,13 @@ class Welcome extends React.Component {
 
 ---
 
-## 5. Component Composition
+## Component Composition
 
 In React, we don't use inheritance (like `class AdminUser extends User`). We use Composition.
 
 Composition means building complex components from simpler ones.
 
-### The `children` Prop
+### The children Prop
 
 This is a special prop that allows us to pass elements inside our component's opening and closing tags.
 
@@ -117,7 +115,7 @@ This pattern is critical for creating reusable layouts (like Modals, Cards, or L
 
 ---
 
-## 6. Practical Example: Counter Component
+## Practical Example: Counter Component
 
 Here is a full example of a React Class Component written in TypeScript. It uses `interface` for typing Props and State.
 
