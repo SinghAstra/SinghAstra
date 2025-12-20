@@ -6,11 +6,9 @@ excerpt: "Introduced in ES2017, `async` and `await` are often called syntactic s
 
 # Async / Await
 
-### 1. The `async` Keyword
+## async Keyword
 
-The `async` keyword is placed before a function declaration.
-
-The Rule: An `async` function always returns a Promise.
+The `async` keyword is placed before a function declaration. An `async` function always returns a Promise.
 
 - If we return a Promise, it returns that Promise.
 - If we return a value (e.g., `return 5`), JavaScript automatically wraps it in a resolved Promise (`Promise.resolve(5)`).
@@ -32,11 +30,10 @@ async function getAsyncNumber() {
 
 ---
 
-### 2. The `await` Keyword
+## await Keyword
 
 The `await` keyword can only be used inside an `async` function.
 
-The Mechanism:
 When the engine encounters `await promise`:
 
 1.  It pauses the execution of the `async` function right there.
@@ -56,16 +53,15 @@ async function fetchData() {
 }
 ```
 
-#### Why is this better?
+### Why is this better?
 
-It removes the callback structure entirely. We read the code top-to-bottom, just like we read synchronous code, even though time gaps exist between the lines.
+It removes the callback structure entirely. We read the code top-to-bottom, just like we read synchronous code, even though time gaps exists between the lines.
 
 ---
 
-### 3. Error Handling (`try / catch`)
+## Error Handling (`try / catch`)
 
 With Promises, we had to use `.catch()`. With `async/await`, we can return to the standard error handling mechanism of JavaScript: the `try / catch` block.
-
 This unifies error handling for both synchronous and asynchronous errors in a single block.
 
 ```javascript
@@ -83,13 +79,11 @@ async function getUser() {
 
 ---
 
-### 4. The Serial Trap (Performance)
+## The Serial Trap
 
-This is the most common mistake senior developers look for in code reviews.
+Because `await` pauses execution, using it inside a loop or sequentially can accidentally kill performance by forcing tasks to run one by one instead of at the same time.
 
-Because `await` pauses execution, using it inside a loop or sequentially can accidentally kill performance by forcing tasks to run one by one (Serially) instead of at the same time (Parallel).
-
-#### The Mistake (Waterfalls)
+## The Mistake (Waterfalls)
 
 ```javascript
 async function getDashboard() {
@@ -104,7 +98,7 @@ async function getDashboard() {
 
 > Why it's bad: `fetchPosts` doesn't need `fetchUser` to finish. They are independent. We just wasted 2 seconds.
 
-#### The Fix (Parallelism)
+## The Fix - Parallelism
 
 We initiate both promises before awaiting them, or use `Promise.all`.
 
@@ -124,7 +118,7 @@ async function getDashboard() {
 
 ---
 
-### 5. Summary Table
+## 5. Summary Table
 
 | Feature         | Promises (`.then`)        | Async / Await            |
 | :-------------- | :------------------------ | :----------------------- |
@@ -136,10 +130,10 @@ async function getDashboard() {
 
 ---
 
-### _Stop and Think: Is `await` blocking?_
+## _Stop and Think: Is await blocking?_
 
 Answer:
-It is Non-Blocking for the Browser (Event Loop), but Blocking for the code inside the function.
+It is Non-Blocking for the Browser, but Blocking for the code inside the function.
 While the `async` function is paused at the `await` line, the Browser is free to handle clicks, scroll events, and other scripts. The function yields control back to the engine.
 
 ---
