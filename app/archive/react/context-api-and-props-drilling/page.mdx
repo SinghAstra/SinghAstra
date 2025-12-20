@@ -6,9 +6,9 @@ excerpt: "Solving the pain of passing data through 10 layers of components by us
 
 # Context API & Props Drilling
 
-## 1. The Problem: Prop Drilling
+## The Problem: Prop Drilling
 
-Previously, we learned that data flows down via Props.
+Previously, we learnt that data flows down via Props.
 But what if we have a `user` object in our top-level `<App />` and we need it in a `<Avatar />` component deeply nested inside the Navbar?
 
 The Drilling approach:
@@ -17,11 +17,11 @@ The Drilling approach:
 Why is this bad?
 
 1.  Clutter: `Layout` and `Header` don't need user data, but they must accept it as props just to pass it down.
-2.  Maintenance: If we rename the prop, you have to update 5 files.
+2.  Maintenance: If we rename the prop, we have to update 5 files.
 
 ---
 
-## 2. The Solution: The Context API
+## The Solution: The Context API
 
 Context provides a way to pass data through the component tree without having to pass props down manually at every level. Think of it as Data Teleportation.
 
@@ -86,7 +86,7 @@ export const useApp = () => {
 
 ---
 
-## 3. The Limitation: Unnecessary Re-renders
+## The Limitation: Unnecessary Re-renders
 
 This is the biggest pitfall of Context. If we bundle unrelated state (like `User` and `Theme`) into a single Context, we force all consumers to re-render when any part of that data changes.
 
@@ -121,19 +121,19 @@ const ToggleTheme = () => {
 };
 ```
 
-### The "Click" Experiment
+### The Click Experiment
 
-What happens when you click the button in `<ToggleTheme />`?
+What happens when we click the button in `<ToggleTheme />`?
 
-1.  Action: We click "Switch to Dark Mode".
-2.  State Update: `toggleTheme` runs in `AppProvider`. `theme` changes to "dark".
+1.  Action: We click Current mode.
+2.  State Update: `toggleTheme` runs in `AppProvider`. `theme` toggles.
 3.  Provider Re-runs: The `AppProvider` component re-renders.
 4.  Object Recreation: The `contextValue` object is recreated:
     ```javascript
     // A BRAND NEW object is created in memory
     const contextValue = { user, theme, toggleTheme };
     ```
-5.  Notification: React sees the `value` prop changed (Old Object !== New Object). It notifies ALL consumers.
+5.  Notification: React sees the `value` prop changed (Old Object !== New Object). It notifies All consumers.
 
 ### The Result in Console:
 
@@ -163,9 +163,9 @@ In large apps, this causes major performance issues.
 
 ### _1. If we wrap our entire application in a provider with a huge object, and change one tiny property, what happens?_
 
-Every single component that consumes (`useContext`) that specific context will re-render.
+Every single component that consumes (`useContext`) will re-render.
 
-- The Detail: Even if Component A only uses `hugeObject.name` and you only changed `hugeObject.age`, Component A will still re-render because the entire `value` object reference changed.
+- The Detail: Even if Component A only uses `hugeObject.name` and we only changed `hugeObject.age`, Component A will still re-render because the entire `value` object reference changed.
 - The Fix: This is why we often split context (e.g., `UserContext` separate from `ThemeContext`) or use state management libraries (Redux/Zustand) that allow components to select only the specific data they need.
 
 ### _2. What happens if we call `useContext(UserContext)` outside of a Provider?_
@@ -174,14 +174,14 @@ It does not crash. It returns the Default Value you passed to `createContext(def
 
 - Example: `const UserContext = createContext("Guest");`
 - Result: `useContext(UserContext)` returns `"Guest"`.
-- Gotcha: If initialized as `createContext(null)`, your code might crash when you try to access `user.name` (reading property of null).
+- Gotcha: If initialized as `createContext(null)`, our code might crash when we try to access `user.name` (reading property of null).
 
 ### _3. Why use Redux if Context is built-in?_
 
 Context is primarily for Prop Drilling (passing data), while Redux is for State Management.
 
 1.  Performance: Context triggers re-renders for all consumers when the value changes. Redux allows components to subscribe to slices of the state, so they only update when their specific slice changes.
-2.  Debugging: Redux has the Redux DevTools, which let us "Time Travel" (undo/redo actions), inspect every state change, and see a log of exactly what happened. Context lacks these built-in debugging superpowers.
+2.  Debugging: Redux has the Redux DevTools, which let us Time Travel (undo/redo actions), inspect every state change, and see a log of exactly what happened. Context lacks these built-in debugging superpowers.
 
 ### _4. If `UserInfo` is wrapped in `React.memo`, will it still re-render?_
 
