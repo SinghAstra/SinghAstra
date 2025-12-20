@@ -6,14 +6,11 @@ excerpt: "The heart of React. Understanding the difference between Props and Sta
 
 # State & Data Flow
 
-## 1. Props
+## Props
 
 Components are functions, Props are the arguments passed into them. They allow a parent component to pass data down to a child component.
 
-### The Golden Rule of Props
-
-Props are Read-Only (Immutable).
-A child component receives props, but it cannot change them. If a child tries to modify `props.name = "New Name"`, React will throw an error (or fail silently). This strict rule ensures that data changes are predictable.
+> Props are Read-Only (Immutable). A child component receives props, but it cannot change them. If a child tries to modify `props.name = "New Name"`, React will throw an error (or fail silently). This strict rule ensures that data changes are predictable.
 
 ```javascript
 // Parent
@@ -31,11 +28,11 @@ function Welcome(props) {
 
 ---
 
-## 2. State
+## State
 
 Props are arguments, State is the component's internal variable. It is private memory that allows a component to change what it displays.
 
-### The `useState` Hook
+### The useState Hook
 
 In functional components, we use the `useState` hook to add memory.
 
@@ -70,7 +67,7 @@ Because React needs to know that data changed so it can trigger a re-render (upd
 
 ---
 
-## 3. Props vs. State: The Comparison
+## Props vs. State: The Comparison
 
 | Feature    | Props                         | State                                        |
 | :--------- | :---------------------------- | :------------------------------------------- |
@@ -81,7 +78,7 @@ Because React needs to know that data changed so it can trigger a re-render (upd
 
 ---
 
-## 4. Unidirectional Data Flow (One-Way Binding)
+## Unidirectional Data Flow (One-Way Binding)
 
 This is a defining characteristic of React architecture.
 
@@ -135,12 +132,12 @@ function Child(props) {
 
 ## 🛑 Stop and Think
 
-### _1. If we have a Great-Grandparent component that holds `User` data, and a Great-Grandchild that needs to display the `User Name`, how do you get the data there using only Props?_
+### _1. If we have a Great-Grandparent component that holds `User` data, and a Great-Grandchild that needs to display the `User Name`, how do we get the data there using only Props?_
 
 We must pass the data down through every single layer, even if the intermediate components (Grandparent, Parent, Child) do not need the data themselves.
 
 - The Flow: Great-Grandparent → Grandparent → Parent → Child → Great-Grandchild.
-- The Pain Point: This is called Prop Drilling. It makes our code messy because the middlemen components are cluttered with props they don't use just to pass them along.
+- The Pain Point: This is called `Prop Drilling`. It makes our code messy because the middlemen components are cluttered with props they don't use just to pass them along.
 
 ### _2. `setCount` is often asynchronous. If we run `setCount(count + 1); console.log(count);` immediately after, will the console log the old number or the new number?_
 
