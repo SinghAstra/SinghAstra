@@ -6,7 +6,7 @@ excerpt: "Handling impure operations like API calls and subscriptions using the 
 
 # Side Effects and Lifecycle
 
-## 1. What are Side Effects?
+## What are Side Effects ?
 
 React components are intended to be pure. This means if we give a function the same Props, it should return the exact same JSX, and it shouldn't change anything outside itself.
 
@@ -21,7 +21,7 @@ Rule: Never perform side effects directly inside the main component body (during
 
 ---
 
-## 2. The useEffect Hook
+## The useEffect Hook
 
 `useEffect` tells React that our component needs to do something after the render is committed to the screen.
 
@@ -45,7 +45,7 @@ function UserProfile({ userId }) {
 
 ---
 
-## 3. The Dependency Array
+## The Dependency Array
 
 The most important part of `useEffect` is the second argument: the Dependency Array `[]`. It controls when the effect runs.
 
@@ -75,7 +75,7 @@ useEffect(() => {
 
 ---
 
-## 4. The Cleanup Function
+## The Cleanup Function
 
 Sometimes an effect creates a mess that needs cleaning up when the component is removed.
 
@@ -102,7 +102,7 @@ If we forget this, our app will have memory leaks (ghost timers running in the b
 
 ---
 
-## 5. Lifecycle Comparison: Class vs. Hooks
+## Lifecycle Comparison: Class vs. Hooks
 
 | Class Method           | Functional Hook Equivalent                      |
 | :--------------------- | :---------------------------------------------- |
@@ -137,15 +137,7 @@ We create an Infinite Loop that will crash our browser tab.
   5.  Go back to Step 1.
 - The Fix: Always use a dependency array or check a condition before setting state.
 
-### _2. If we have `useEffect(() => { console.log(count) }, [])` (empty array), and `count` changes from 0 to 5, what will the console log? 0 or 5?_
-
-It will log 0.
-
-- Why: The effect ran only once when the component mounted. At that exact moment in time, `count` was `0`.
-- The Closure: The function inside `useEffect` closed over the variable `count` from the first render. It never ran again, so it never saw the updated value. It is holding onto a stale version of the variable.
-- The Fix: If we want to see the live value, `count` must be in the dependency array: `[count]`.
-
-### _3. In React 18 Strict Mode (development), `useEffect` runs twice on mount. Why does React do this intentionally?_
+### _2. In React 18 Strict Mode (development), `useEffect` runs twice on mount. Why does React do this intentionally?_
 
 React is stress-testing our Cleanup Function.
 
