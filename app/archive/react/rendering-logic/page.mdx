@@ -6,11 +6,11 @@ excerpt: "How to display data dynamically: mastering Conditional Rendering and e
 
 # Rendering Logic
 
-## 1. Conditional Rendering
+## Conditional Rendering
 
 We use javascript for conditional rendering
 
-### A. The Ternary Operator (`? :`)
+### The Ternary Operator (`? :`)
 
 - Used for "If this, then that, else the other."
 - This is the most common way to switch between two components.
@@ -21,7 +21,7 @@ function Greeting({ isLoggedIn }) {
 }
 ```
 
-### B. Short-Circuit Evaluation (`&&`)
+### Short-Circuit Evaluation (`&&`)
 
 - Used for "If this is true, show it. If false, show nothing."
 - This exploits the way JavaScript evaluates `AND` logic.
@@ -39,7 +39,7 @@ function Mailbox({ unreadMessages }) {
 }
 ```
 
-### C. Returning `null`
+### Returning `null`
 
 If we want a component to hide itself based on a prop, return `null`.
 
@@ -54,7 +54,7 @@ function Banner({ show }) {
 
 ---
 
-## 2. Lists & Keys
+## Lists & Keys
 
 To render a list of items, we use the JavaScript array method `.map()`. We transform an array of data into an array of JSX elements.
 
@@ -81,18 +81,18 @@ function UserList() {
 
 ---
 
-## 3. The key Prop - Why do we need keys?
+## The key Prop - Why do we need keys?
 
 When we render a list, React needs to know which items changed, were added, or were removed.
 
 - Without Keys: If we insert an item at the top of the list, React doesn't know we inserted one. It thinks we changed the text of Item 1, changed the text of Item 2, etc. It re-renders every single item.
 - With Unique Keys: React sees the key and says, "Oh, Key #3 is still Key #3, it just moved down. I don't need to re-render it."
 
-### The "Index as Key" Anti-Pattern
+### The `Index as Key` Anti-Pattern
 
 Avoid doing this: `users.map((user, index) => <li key={index}>...</li>)`
 
-- Why is it bad? The index is not stable. If we delete the first item, the second item (previously index 1) becomes index 0. React gets confused and might reuse the state of the old index 0 for the new index 0 (which is actually a different person!).
+- Why is it bad? The index is not stable. If we delete the first item, the second item (previously index 1) becomes index 0. React gets confused and might reuse the state of the old index 0 for the new index 0.
 - Rule: Only use `index` if the list is completely static (never changes, never filters, never reorders). Otherwise, use a unique ID (like database ID).
 
 ---
