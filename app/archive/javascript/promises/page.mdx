@@ -6,29 +6,23 @@ excerpt: "To solve the trust issues of Callbacks, JavaScript introduced Promises
 
 # Promises
 
-### 1. The Concept: A Future Value
+Architecturally, a Promise is an object that acts as a placeholder for a future value. When we start an asynchronous task like a network request, the engine immediately gives us this object. Initially, it is empty. Later, it will be filled with data or an error.
 
-Architecturally, a Promise is a container (an object) that acts as a placeholder for a future value.
-
-When we start an asynchronous task (like a network request), the engine immediately gives you this container. Initially, it is empty. Later, the engine will fill it with data or an error.
-
-#### The Three States
+### The Three States
 
 A Promise can be in exactly one of three states. The state transition is irreversible.
 
-1.  Pending: The initial state. The operation is still in progress.
-2.  Fulfilled (Resolved): The operation completed successfully. The container holds the value.
-3.  Rejected: The operation failed. The container holds the error (reason).
+1.  `Pending`: The initial state. The operation is still in progress.
+2.  `Resolved`: The operation completed successfully. The object holds the value.
+3.  `Rejected`: The operation failed. The object holds the error.
 
 ---
 
-### 2. The Constructor: Creating a Promise
+## The Constructor: Creating a Promise
 
 We create a Promise using the `new Promise()` constructor. This constructor takes a single function argument called the Executor Function.
 
-#### The Executor Function
-
-This is the most misunderstood part of Promises.
+### The Executor Function
 
 > Crucial Rule: The Executor Function runs Synchronously and Immediately.
 
@@ -58,14 +52,13 @@ Output:
 3. End
 ```
 
-> Note: Only the `resolve()` or `reject()` calls inside the asynchronous callback happen later. The setup happens now.
+> Note: Only the `resolve()` or `reject()` calls inside the asynchronous callback happen later. The executor function is executed now.
 
 ---
 
-### 3. Regaining Control (Solving Inversion of Control)
+## Regaining Control - Solving Inversion of Control
 
-In previous archive, we saw the danger of passing a callback into a third-party function (giving them control). Promises flip this model.
-
+In previous archive, we saw the danger of passing a callback into a third-party function, giving them control. Promises flip this model.
 Instead of passing our logic into `analytics.track()`, the function returns a Promise object to us.
 
 ```javascript
@@ -87,7 +80,7 @@ We trust the standard Promise API (the browser), not the third-party library, to
 
 ---
 
-### 4. Consuming a Promise (`.then` & `.catch`)
+## Consuming a Promise
 
 Once we have a promise, we attach handlers to react when the state changes. These handlers are placed in the Microtask Queue.
 
@@ -95,7 +88,7 @@ Once we have a promise, we attach handlers to react when the state changes. Thes
 - `.catch(onFailure)`: Runs if the promise is Rejected.
 - `.finally(onSettled)`: Runs when the promise is settled (either way).
 
-#### The Chaining Magic
+### The Chaining Magic
 
 The true power of Promises is Chaining.
 Every call to `.then()` returns a brand new Promise.
@@ -127,7 +120,7 @@ getUser(userId)
 
 ---
 
-### 5. Summary Table
+## 5. Summary Table
 
 | Feature      | Description                                                |
 | :----------- | :--------------------------------------------------------- |
@@ -138,7 +131,7 @@ getUser(userId)
 
 ---
 
-### _Stop and Think: What happens if we forget to return the promise inside a `.then()`?_
+## _Stop and Think: What happens if we forget to return the promise inside a `.then()`?_
 
 ```javascript
 taskA()
@@ -150,6 +143,6 @@ taskA()
   });
 ```
 
-Answer: The chain is broken. The next `.then()` ("Done") will run immediately because the first `.then` implicitly returns `undefined` (which is a value) instead of waiting for `taskB` to finish. `taskB` becomes a "floating" promise running in the background, detached from the chain.
+The chain is broken. The next `.then()` will run immediately because the first `.then` implicitly returns `undefined` (which is a value) instead of waiting for `taskB` to finish. `taskB` becomes a "floating" promise running in the background, detached from the chain.
 
 ---
