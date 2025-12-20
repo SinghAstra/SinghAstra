@@ -6,7 +6,7 @@ excerpt: "When you click a button, you aren't just clicking one pixel; you are t
 
 # DOM Events & Memory
 
-### 1. The Propagation Cycle
+## The Propagation Cycle
 
 Events in the DOM do not just appear on the element user clicks. They travel through the document hierarchy in a specific lifecycle known as Propagation.
 
@@ -18,7 +18,7 @@ There are three distinct phases to every event:
 3.  Bubbling Phase : The event floats up from the target back to the root.
     - Path: `Target` to `Parent` to ... to `Body` to `Window`.
 
-#### Code Evidence
+### Code Evidence
 
 By default, `addEventListener` listens to the Bubbling phase. We can force it to listen to the Capturing phase by passing `true` as the third argument.
 
@@ -53,11 +53,11 @@ parent.addEventListener("click", () => {
 
 ---
 
-### 2. Controlling the Flow
+## Controlling the Flow
 
 Sometimes, we don't want an event to travel all the way up to the `Window`.
 
-#### A. `e.stopPropagation()`
+### A. `e.stopPropagation()`
 
 This method stops the event dead in its tracks. It prevents any further propagation (bubbling or capturing).
 
@@ -71,7 +71,7 @@ button.addEventListener("click", (e) => {
 document.body.addEventListener("click", () => console.log("Body clicked"));
 ```
 
-#### B. `e.preventDefault()`
+### B. `e.preventDefault()`
 
 This does not stop propagation. It only stops the browser's default behavior for that element.
 
@@ -87,7 +87,7 @@ link.addEventListener("click", (e) => {
 
 ---
 
-### 3. Event Delegation
+## Event Delegation
 
 The Problem:
 Imagine we have a dynamic shopping list with 10,000 items (`<li>`).
@@ -129,7 +129,7 @@ The Benefits:
 
 ---
 
-### 4. Summary Table
+## Summary Table
 
 | Concept    | Direction | Default? | Usage                                          |
 | :--------- | :-------- | :------- | :--------------------------------------------- |
@@ -140,7 +140,7 @@ The Benefits:
 
 ---
 
-### _Stop and Think: In the Delegation example, why did we use `e.target.closest("li")` instead of `e.target.tagName === "LI"`?_
+## _Stop and Think: In the Delegation example, why did we use e.target.closest("li") instead of e.target.tagName === "LI"?_
 
 Answer:
 If our `<li>` contains other elements (like `<b>Bold Text</b>` or an `<icon>`), clicking that icon makes `e.target` the icon, not the `<li>`.
