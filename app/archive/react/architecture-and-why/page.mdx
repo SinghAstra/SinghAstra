@@ -6,7 +6,7 @@ excerpt: "Understanding the core philosophy behind React: SPAs, the Virtual DOM,
 
 # React Architecture & The Why
 
-## 1. SPA vs. MPA: The Big Shift
+## SPA vs. MPA: The Big Shift
 
 Before React, most websites were Multi-Page Applications (MPAs). Every time we clicked a link, the browser sent a request to the server, and the server replied with a brand-new HTML file. The screen would flash white, and the entire page would reload.
 
@@ -24,7 +24,7 @@ React popularized the Single Page Application (SPA).
 
 ---
 
-## 2. The Virtual DOM
+## The Virtual DOM
 
 The DOM (Document Object Model) is the browser's structure of the page. It is notoriously slow to manipulate. If we update the real DOM directly (like `document.getElementById('root').innerHTML = ...`), the browser has to recalculate the layout and repaint the screen, which is expensive.
 
@@ -38,20 +38,20 @@ React solves this with the Virtual DOM.
 
 ---
 
-## 3. JSX (JavaScript XML)
+## JSX (JavaScript XML)
 
-Following React code looks like a weird mix of HTML and JavaScript. This is JSX.
+Following React code looks like a weird mix of HTML and JavaScript. This is JSX. JSX is syntactic sugar over Javascript. JSX is used to write UI in Javascript file making web page content truly dynamic.
 
 ```javascript
 const element = <h1>Hello, world!</h1>;
 ```
 
-Browsers cannot understand JSX. Under the hood, a tool called Babel converts that line into standard JavaScript:
+Browsers cannot understand JSX. Under the hood, a tool called Babel converts that JSX into standard JavaScript:
 
-### A. The Translator: Babel
+### The Translator: Babel
 
-- What it is : Transpiler (Source to Source Compiler)
-- The Job: It takes our modern JSX/React code and translates it into older, standard JavaScript that browsers can understand.
+- Babel is `Transpiler` (Source to Source Compiler)
+- Babel takes our modern JSX/React code and translates it into older, standard JavaScript that browsers can understand.
 - The Transformation:
 
   ```javascript
@@ -62,23 +62,18 @@ Browsers cannot understand JSX. Under the hood, a tool called Babel converts tha
   const element = React.createElement("h1", null, "Hello");
   ```
 
-### B. The Packager: Webpack (or Vite/Turbopack)
+### The Packager: Webpack
 
-- What it is: A Bundler.
-- The Job: It takes our hundreds of JavaScript files, CSS files, and images, and stitches them together into one optimized file (usually `bundle.js`) so the browser doesn't have to make 500 requests.
+- Webpack is a `Bundler`.
+- Bundler takes our hundreds of JavaScript files, CSS files, and images, and stitches them together into one optimized file (usually `bundle.js`) so the browser doesn't have to make 500 requests.
 - Relationship with Babel: Webpack is the Boss. It manages the files. When it sees a file with React code, it asks Babel to translate it, then Webpack packages the translated code.
 
 ---
 
-```javascript
-// What the browser actually sees:
-const element = React.createElement("h1", null, "Hello, world!");
-```
-
 ### The Three Rules of JSX:
 
 1.  Return a Single Parent: We cannot return two sibling elements side-by-side. We must wrap them in a `div` or a Fragment (`<>...</>`).
-    - Why? Because a JavaScript function can only return one value.
+    > Why ? Because a JavaScript function can only return one value.
 2.  CamelCase Attributes: Since `class` is a reserved keyword in JavaScript (for making classes), we use `className`. Similarly, `onclick` becomes `onClick`, and `tabindex` becomes `tabIndex`.
 3.  Close All Tags: In HTML, `<br>` is fine. In JSX, self-closing tags must end with a slash: `<br />` or `<img />`.
 
@@ -102,7 +97,7 @@ const element = React.createElement("h1", null, "Hello, world!");
 
 Directly manipulating the real DOM is slow because every change can trigger a Reflow (calculating layout/position) and Repaint (drawing pixels).
 
-- Without Virtual DOM: If we update 10 different items on a list one by one, the browser might try to recalculate the layout 10 separate times. This is called Layout Thrashing.
+- Without Virtual DOM: If we update 10 different items on a list one by one, the browser might try to recalculate the layout 10 separate times. This is called `Layout Thrashing`.
 - With Virtual DOM: React works in memory (which is instant). It sees those 10 changes, compares the trees, and says, "Okay, I need to make these 10 changes." It then batches them together and updates the real DOM in one single go.
 
 ---
