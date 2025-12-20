@@ -6,7 +6,7 @@ excerpt: A single await is useful, but awaiting tasks one by one is slow. To bui
 
 # Concurrency
 
-### 1. The Need for Concurrency
+## The Need for Concurrency
 
 In pervious archive, we saw the Serial Trap: awaiting Task A, then awaiting Task B. This doubles the total wait time.
 
@@ -14,13 +14,11 @@ To fix this, we need Concurrency: initiating multiple operations at once and wai
 
 ---
 
-### 2. `Promise.all`
-
-Goal: "I need all of these tasks to finish successfully. If even one fails, the whole operation fails."
+## Promise.all
 
 - Behavior: It takes an array of Promises and runs them in parallel.
 - Success: Returns an array of results `[resultA, resultB, ...]`.
-- Failure: Fail-Fast. If any promise rejects, `Promise.all` immediately rejects with that error. It ignores the others (even if they are still running).
+- Failure: Fail-Fast. If any promise rejects, `Promise.all` immediately rejects with that error. It ignores the others even if they are still running.
 
 ```javascript
 const p1 = fetch("/user"); // Takes 1s
@@ -42,9 +40,7 @@ async function loadPage() {
 
 ---
 
-### 3. `Promise.allSettled` (The Surveyor)
-
-Goal: "I need to know the result of every task, whether it worked or failed. Don't crash if one fails."
+## Promise.allSettled
 
 - Behavior: Waits for all promises to finish, regardless of outcome.
 - Result: It returns an array of objects describing the outcome of each promise.
@@ -68,12 +64,10 @@ console.log(results);
 
 ---
 
-### 4. `Promise.race` (The Speedster)
-
-Goal: "I only care about the first one to finish. I don't care if it succeeded or failed."
+## Promise.race
 
 - Behavior: The first promise to settle (resolve OR reject) wins. The result of the race becomes the result of the whole function.
-- Use Case: Timeouts. You can race a network request against a timer.
+- Use Case: Timeouts. We can race a network request against a timer.
 
 ```javascript
 const fetchData = fetch("/api/slow");
@@ -92,12 +86,10 @@ try {
 
 ---
 
-### 5. `Promise.any` (The Optimist)
-
-Goal: "I need the first successful result. I ignore failures unless everyone fails."
+## Promise.any
 
 - Behavior: The first promise to Fulfill wins. It ignores rejections until/unless all promises reject.
-- Use Case: Redundancy. You request data from 3 different servers (mirrors); you take the one that answers first.
+- Use Case: We request data from 3 different servers (mirrors); we take the one that answers first.
 
 ```javascript
 const serverA = fetch("/us-east/data"); // Fails
@@ -110,7 +102,7 @@ console.log(data); // Returns result from serverB (first success)
 
 ---
 
-### 6. Summary Table: The Combinators
+## Summary Table: The Combinators
 
 | Method             | Wait Condition | Rejection Behavior                         | Use Case                              |
 | :----------------- | :------------- | :----------------------------------------- | :------------------------------------ |
@@ -121,10 +113,10 @@ console.log(data); // Returns result from serverB (first success)
 
 ---
 
-### _Stop and Think: If I use `Promise.all([A, B])` and `A` fails immediately, what happens to `B`?_
+## _Stop and Think: If I use Promise.all([A, B]) and A fails immediately, what happens to B?_
 
 Answer:
-`Promise.all` rejects immediately, so your code moves to the `catch` block.
-However, `B` is not cancelled. JavaScript promises generally cannot be "cancelled" once started. `B` will continue to run in the background (e.g., the network request will finish), but its result will be ignored by our code because we have already moved on.
+`Promise.all` rejects immediately, so our code moves to the `catch` block.
+However, `B` is not cancelled. JavaScript promises generally cannot be cancelled once started. `B` will continue to run in the background (e.g., the network request will finish), but its result will be ignored by our code because we have already moved on.
 
 ---
