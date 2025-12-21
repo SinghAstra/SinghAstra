@@ -1,0 +1,138 @@
+---
+title: "The Anatomy of a Render "
+date: "21-12-2025"
+excerpt: "Peeling back the abstraction. Understanding that JSX is just a lie, and the Virtual DOM is just a pile of disposable objects."
+---
+
+# The Anatomy of a Render
+
+Before we can optimize our applications (using Memoization), we must understand what a `Render` actually is at the memory level.
+
+## JSX is a Lie
+
+We write JSX because it looks like HTML, and it allows us to visualize the layout. However, browsers cannot read JSX. React doesn't run JSX. React runs the result of the Babel transformation.
+When we write this:
+
+```javascript
+const element = <h1 className="title">Hello</h1>;
+```
+
+Babel turns it into a standard JavaScript function call:
+
+```javascript
+// The Reality: What the browser actually runs
+const element = React.createElement(
+  "h1", // type
+  { className: "title" }, // props
+  "Hello" // children
+);
+```
+
+## The React Element
+
+The result of `React.createElement()` is not a DOM node. It is a plain, lightweight JavaScript Object. We call this a `React Element`.
+
+```javascript
+// The Result in Memory
+const element = {
+  type: "h1",
+  props: {
+    className: "title",
+    children: "Hello",
+  },
+  key: null,
+  ref: null,
+  $$typeof: Symbol.for("react.element"), // Security tag against XSS
+};
+```
+
+## Immutability & Transience
+
+There are two critical characteristics of these Blueprint objects:
+
+1. Immutable: Once created, we cannot change this object. If we want to update the UI (e.g., change `className` to active), we must create a brand new object. We cannot scribble on the old ticket.
+2. Transient: These objects are created, compared, and thrown away (Garbage Collected) in milliseconds.
+
+> Key Insight: React is okay with creating and destroying 10,000 of these simple objects per second. Modern JavaScript engines (V8 in Chrome) are incredibly fast at handling short-lived objects. The performance cost of React usually comes from the calculation inside our components, not the object creation itself.
+
+## The Virtual DOM Myth
+
+The Virtual DOM isn't a magical separate software installed in our browser. It is simply the collection of these Blueprint Objects kept in memory.
+
+When we say React compares the Virtual DOM, we mean:
+
+1. React calls our Component Function.
+2. Our function returns a New Tree of Blueprint Objects.
+3. React compares this New Tree vs the Old Tree (from the previous render).
+4. It finds the difference (`Diffing`).
+5. It touches the Real DOM only where necessary (`Reconciliation`).
+
+---
+
+## 📝 Summary Table
+
+| Concept       | Definition                       | The Reality                               |
+| ------------- | -------------------------------- | ----------------------------------------- |
+| JSX           | Syntactic sugar for React.       | Becomes `React.createElement()`.          |
+| React Element | The return value of a component. | A plain JS Object (The Blueprint).        |
+| Immutability  | Unable to be changed.            | We must create a new object to update UI. |
+| Virtual DOM   | The tree of React Elements.      | Just a data structure in memory.          |
+| Render Phase  | Calling the component function.  | Creating Blueprints (Pure JS).            |
+| Commit Phase  | Updating the browser.            | Touching the actual DOM (Expensive).      |
+
+---
+
+## 🛑 Stop and Think
+
+### _Referential Equality_
+
+If `Function A` runs twice:
+
+1. Run 1: Creates Object `{ name: "Box" }`
+2. Run 2: Creates Object `{ name: "Box" }`
+
+Are these the same object?
+No. `Object 1 !== Object 2`.
+They look the same, but they are different objects in memory.
+_This is the fundamental reason why we need `useMemo` and `useCallback` — to force React to keep the object the same between runs._
+
+Here are the answers to your deep-dive questions.
+
+### _When does the conversion happen from JSX to Blueprint Object ?_
+
+You are distinguishing between "Code Transformation" and "Code Execution."
+
+- Build Time (On our computer/server):
+  This is where Babel works. It takes our JSX file (`<div />`) and rewrites the text into standard JavaScript text (`React.createElement('div')`). The browser never sees JSX. It receives a bundle file containing thousands of `React.createElement` function calls.
+- Runtime (In the User's Browser):
+  This is where the Blueprint Object is created.
+  When the user loads our page, their browser's JavaScript engine actually runs the code.
+
+1. The browser executes the line `React.createElement(...)`.
+2. That function returns the plain JavaScript Object (the Blueprint).
+3. That object is stored in the browser's RAM (Heap).
+
+The creation of the object happens in the browser, in production, live on the user's device. Every time a component renders, the browser CPU executes those functions and creates those objects in RAM.
+
+---
+
+### _Why are React Elements Immutable if JS Objects are mutable ?_
+
+Yes, standard JavaScript objects are mutable. We could technically modify a property on an object in the heap.
+
+However, React forces them to be Immutable for two reasons:
+
+1. `Object.freeze()` (The Enforcement):
+   In Development mode, React actually runs `Object.freeze(element)` on the object immediately after creating it.
+   If we try to write `element.props.name = "Bob"`, the browser will throw a strict JavaScript error: _Cannot assign to read only property..._. React intentionally locks the object to prevent us from breaking things.
+2. The Diffing Algorithm (The Logic):
+   React's entire performance relies on Shallow Comparison.
+   React checks if `OldObject === NewObject`.
+
+- If we mutate the existing object (`oldObject.title = "New Title"`), the reference stays the same (`oldObject === oldObject` is true).
+- React will think nothing changed and will not update the screen.
+- To trigger an update, we must provide a new object reference.
+
+So to sum it up they are immutable because React often freezes them programmatically, and because mutating them would silently break the UI updates.
+
+---
