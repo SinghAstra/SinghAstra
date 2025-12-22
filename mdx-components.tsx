@@ -143,7 +143,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     ul: ({ className, ...props }) => (
       <ul
         className={cn(
-          "my-6 ml-6 space-y-3 text-foreground list-disc",
+          "my-3 ml-3 sm:my-6 sm:ml-6 space-y-3 text-foreground list-disc",
           className
         )}
         {...props}
@@ -152,7 +152,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     ol: ({ className, ...props }) => (
       <ol
         className={cn(
-          "my-6 ml-6 space-y-3 text-foreground list-decimal",
+          "my-3 ml-3 sm:my-6 sm:ml-6 space-y-3 text-foreground list-decimal",
           className
         )}
         {...props}
@@ -170,7 +170,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     blockquote: ({ className, ...props }) => (
       <blockquote
         className={cn(
-          "my-8 border-l-4 border-accent pl-6 pr-4 py-2 text-muted-foreground bg-muted/30 rounded-r-md flex items-center [&>p]:mb-0",
+          "sm:my-4 pl-3 my-8 border-l-4 border-accent sm:pl-6 pr-4 py-2 text-muted-foreground bg-muted/30 rounded-r-md flex items-center [&>p]:mb-0",
           className
         )}
         {...props}
@@ -189,7 +189,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
       <CodeBlock className={className} {...props} />
     ),
     hr: ({ ...props }) => (
-      <hr className="my-10 border-border/50 border-t-2" {...props} />
+      <hr className="my-6 sm:my-10 border-border/50 border-t-2" {...props} />
     ),
     strong: ({ className, ...props }) => (
       <strong

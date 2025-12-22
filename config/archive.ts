@@ -135,6 +135,10 @@ export const archiveLinks: ArchiveSectionLink[] = [
         path: "/archive/react/fiber-engine",
       },
       {
+        title: "DOM Bridge & Escape Hatches",
+        path: "/archive/react/dom-bridge-and-escape-hatches",
+      },
+      {
         title: "Advanced Hooks & Performance",
         path: "/archive/react/advanced-hooks-and-performance",
       },

@@ -51,12 +51,10 @@ const BlogsLayout = ({ children }: { children: React.ReactNode }) => {
       />
       <div className="flex flex-1 overflow-hidden relative">
         <ArchiveSidebar />
-        <div className="flex-1 flex overflow-hidden pb-2 pr-2 pl-2 lg:pl-0">
-          <div className="flex-1 h-full flex overflow-hidden border rounded bg-muted/10">
-            <div className="h-full p-2 sm:p-4 sm:px-8 flex-1 overflow-y-auto">
-              {children}
-              <ArchivePagination />
-            </div>
+        <div className="flex-1 h-full flex overflow-hidden border rounded bg-muted/10">
+          <div className="h-full p-4 sm:px-8 flex-1 overflow-y-auto">
+            {children}
+            <ArchivePagination />
           </div>
         </div>
       </div>

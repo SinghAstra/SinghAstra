@@ -71,7 +71,7 @@ export default function RootLayout({
         className="antialiased min-h-screen bg-background font-grotesk "
         suppressHydrationWarning
       >
-        <NextTopLoader color="hsl(var(--primary))" showSpinner={false} />
+        <NextTopLoader color="(var(--primary)" showSpinner={false} />
         {children}
         <Toaster
           theme="dark"
