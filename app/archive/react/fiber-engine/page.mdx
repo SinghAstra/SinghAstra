@@ -1,0 +1,115 @@
+---
+title: "Fiber Engine"
+date: "22-12-2025"
+excerpt: "Connecting the dots. How the Fiber Architecture acts as the persistent Brain that remembers state while Blueprint objects are destroyed."
+---
+
+# The Fiber Engine
+
+In previous archive, we established that React Elements (Blueprints) are transient they are destroyed and recreated after every single render. This creates a massive logical gap: If the object is thrown away every time, how does `useState` remember that `count` is 5?
+The answer is `Fiber Node`. The `Fiber Node` represents the Current UI state (it matches what is currently on the screen and holds the state memory). The `Blueprint` (React Element) represents the Future UI state (it is the request for what the UI should become).
+
+## 1. The Fiber Node: The Persistent Brain
+
+While the Blueprint is just a description (I want a div), the Fiber Node is the actual internal instance that React keeps in memory to manage that part of the UI.
+
+- The Blueprint (React Element): Created/Destroyed every render. Immutable.
+- The Fiber Node: Created on mount, updated during lifecycle, destroyed on unmount. Mutable.
+
+### Inside the Fiber Node
+
+Every component on your screen has a corresponding Fiber Node in memory containing these critical fields:
+
+1. `type`: The function component itself (e.g., `Button`).
+2. `stateNode`: The link to reality (the actual DOM node).
+3. `memoizedState`: This is where Hooks live. It holds the current values of `useState` and `useRef`.
+4. `child` / `sibling` / `return`: Pointers to other fibers (forming a tree).
+
+> When our component re-renders, the function runs again and local variables are wiped. But React injects the data back in from the persistent Fiber Node's `memoizedState`.
+
+## 2. The Component Lifecycle in Memory
+
+This is the engine that drives the Journey from JSX to HTML.
+
+### Stage A: Mounting (First Render)
+
+1. Trigger: App starts.
+2. Render Phase: React calls our function. It gets the Blueprint.
+3. Fiber Creation: React builds a Fiber Node based on that Blueprint.
+4. Commit Phase: React uses the Fiber to create the real DOM nodes and paints the screen.
+
+### Stage B: Updating (Re-render)
+
+1. Trigger: We call `setState`. React marks the specific Fiber as dirty.
+2. Render Phase: React calls our function again. It gets a New Blueprint.
+3. Reconciliation (The Comparison):
+
+- React compares the New Blueprint vs. the Existing Fiber Node.
+- It asks: _Did the type change ?_ (e.g., was it `div`, is it now `span`?).
+- No ? Reuse the Fiber. Update its props. Keep the state.
+- Yes ? Destroy the old Fiber (and all its state). Create a new one.
+
+4. Commit Phase: React patches only the differences to the Real DOM.
+
+### Stage C: Unmounting
+
+1. Trigger: The Parent stops rendering this Child (it's absent from the New Blueprint).
+2. Cleanup: React detaches the Fiber Node from the tree, destroys the `stateNode` (DOM), and deletes the `memoizedState` (memory).
+
+## 3. memoizedState: The Linked List of Hooks
+
+Deep inside the Fiber Node, `memoizedState` is not a simple object. It is a Linked List.
+
+When you write this:
+
+```javascript
+const [name, setName] = useState("Alice"); // Hook 1
+const [age, setAge] = useState(25); // Hook 2
+```
+
+React stores it in the Fiber like this:
+`Fiber.memoizedState = { value: "Alice", next: { value: 25, next: null } }`
+
+During a Re-render:
+
+1. React calls `useState` the first time. It looks at the Head of the linked list. Returns "Alice". Moves pointer to `next`.
+2. React calls `useState` the second time. It looks at the Next item. Returns `25`.
+
+---
+
+## 📝 Summary Table
+
+| Feature    | React Element (The Blueprint) | Fiber Node (The Engine)       |
+| ---------- | ----------------------------- | ----------------------------- |
+| Lifespan   | Transient (Milliseconds).     | Long-lived (Until unmount).   |
+| Mutability | Immutable.                    | Mutable (Props/State update). |
+| Role       | Description of UI.            | Storage of State & DOM links. |
+
+---
+
+## 🛑 Stop and Think
+
+### _1. The Key Prop Explained_
+
+Why does adding a `key` help performance?
+Because during Reconciliation, React uses the `key` to match the New Blueprint to the correct Existing Fiber.
+
+- Without a key: React just compares by order (Slot 1 vs Slot 1). If we insert an item at the top, React updates every single Fiber to match the new text.
+- With a key: React says: _"I see the Blueprint has moved to position 5, but it has key 'user-123'. I will find the Fiber with key 'user-123' and reuse it."_
+
+### _2. Why Hooks Order Matters_
+
+Since `memoizedState` is a Linked List, React blindly relies on the _order_ of calls to know which state belongs to which variable.
+
+The Bug:
+
+```javascript
+if (condition) {
+  useState(0); // If this doesn't run...
+}
+useState("Bob"); // ...React assigns the '0' state to "Bob"!
+```
+
+If we put a Hook inside an `if` statement and the condition becomes false, the Linked List desyncs. React gives the wrong data to the wrong variable, and the app crashes.
+
+---

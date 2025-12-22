@@ -131,6 +131,10 @@ export const archiveLinks: ArchiveSectionLink[] = [
         path: "/archive/react/anatomy-of-render",
       },
       {
+        title: "Fiber Engine",
+        path: "/archive/react/fiber-engine",
+      },
+      {
         title: "Advanced Hooks & Performance",
         path: "/archive/react/advanced-hooks-and-performance",
       },
