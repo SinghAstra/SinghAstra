@@ -56,7 +56,7 @@ function DocsNavItems({
               key={index}
               href={item.path}
               className={cn(
-                "group flex h-8 w-full items-center pl-4 text-foreground hover:bg-muted/40 transition-all border-l-2 border-muted hover:border-primary",
+                "group flex  w-full items-center p-2 pl-4 text-foreground hover:bg-muted/40 transition-all border-l-2 border-muted hover:border-primary",
                 pathname === item.path && "bg-muted/40 border-primary"
               )}
               onClick={onLinkClick}

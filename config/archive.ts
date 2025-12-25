@@ -139,8 +139,8 @@ export const archiveLinks: ArchiveSectionLink[] = [
         path: "/archive/react/dom-bridge-and-escape-hatches",
       },
       {
-        title: "Advanced Hooks & Performance",
-        path: "/archive/react/advanced-hooks-and-performance",
+        title: "Memoization & Referential Equality",
+        path: "/archive/react/memoization-and-referential-equality",
       },
     ],
   },

@@ -1,0 +1,119 @@
+---
+title: "Memoization & Referential Equality"
+date: "25-12-2025"
+excerpt: "Stopping the re-render chain. Understanding why {} !== {} and how to use useMemo and useCallback to stabilize your app."
+---
+
+# Memoization & Referential Equality
+
+To optimize React, we first need to understand how React behaves out of the box.
+
+## The Default Behavior: The Render Chain
+
+The most important rule of React rendering is simple and aggressive:
+
+> When a Parent Component renders, all of its Child Components render recursively.
+
+It does not matter if the `props` passed to the child have changed. It does not matter if the child is completely static. If the parent runs, the child runs.
+
+```javascript
+function Parent() {
+  const [count, setCount] = useState(0); // Parent state changes
+
+  return (
+    <div>
+      <button onClick={() => setCount((c) => c + 1)}>Count: {count}</button>
+
+      {/* This Child will re-render every time the button is clicked, 
+          even though it has no props! */}
+      <BigList />
+    </div>
+  );
+}
+```
+
+This behavior is intentional (it ensures the UI is always up to date), but it can cause performance issues if the Child is expensive (e.g., a large list or a complex graph).
+
+## The Solution: React.memo
+
+To stop this chain reaction, we need a gatekeeper. We use `React.memo`.
+
+`React.memo` is a Higher Order Component that wraps our child component. It changes the default behavior to:
+
+> Only re-render this component if the props have changed.
+
+```javascript
+const BigList = React.memo(function BigList() {
+  console.log("BigList Rendered");
+  return <ul>...</ul>;
+});
+```
+
+Now, if the Parent renders but the props for `BigList` are identical, React skips rendering `BigList`.
+
+## The Problem: Referential Equality
+
+One might think `React.memo` solves everything. It doesn't. We will often find that even wrapped in `React.memo`, the child still re-renders.
+
+Why ? Because of how JavaScript compares data.
+
+### Primitives vs. References
+
+When `React.memo` checks Did props change ?, it uses a shallow comparison (`===`).
+
+- Primitives (True Check): `true === true`, `1 === 1`. These are easy.
+- Objects/Functions/Array (Reference Check): JavaScript does not check if they contain the same data; it checks if they are stored at the same memory address. The Re-rendering of parent component leads to creation of object with same data at new memory location thereby by-passing the logic of `React.memo` and causing unnecessary re-renders.
+
+## The Stabilizers: useMemo and useCallback
+
+To make `React.memo` work, we need to ensure that objects, arrays and functions keep the same memory address across renders.
+
+### A. useCallback (For Functions)
+
+This hook freezes a function definition. It ensures the pointer (memory address) stays the same unless dependencies change.
+
+```javascript
+// WITHOUT useCallback: New address every render
+const handleClick = () => console.log("Clicked");
+
+// WITH useCallback: Same address forever (because dependency array is empty)
+const handleClick = useCallback(() => {
+  console.log("Clicked");
+}, []);
+```
+
+### B. useMemo (For Values/Objects)
+
+This hook caches the result of a calculation or the creation of an object.
+
+```javascript
+// WITHOUT useMemo: New object created every render
+const boxStyle = { margin: 10, color: "red" };
+
+// WITH useMemo: The object is created once and cached
+const boxStyle = useMemo(() => {
+  return { margin: 10, color: "red" };
+}, []);
+```
+
+_Note: `useMemo` is also used for expensive math calculations (filtering 10k items), not just stabilizing objects._
+
+## 5. The Optimization Triad
+
+To truly stop a re-render chain, we usually need all three parts working together. If we miss one, the optimization breaks.
+
+| Component | Role                     | Code                               |
+| --------- | ------------------------ | ---------------------------------- |
+| Child     | The Guard (Checks Props) | `export default React.memo(Child)` |
+| Parent    | Stabilize Functions      | `useCallback(() => {...}, [])`     |
+| Parent    | Stabilize Objects        | `useMemo(() => ({...}), [])`       |
+
+## 🛑 When NOT to Optimize
+
+Do not apply this structure to every component.
+
+1. Premature Optimization: React is fast. Only do this if you notice lag or see thousands of unnecessary re-renders in the Profiler.
+2. Simple Components: If a component renders simple HTML (buttons, inputs, text), the cost of `useMemo` checking dependencies is often higher than just re-rendering the HTML.
+3. Code Complexity: `useCallback` and `useMemo` make code harder to read. Use them only when the performance gain justifies the complexity.
+
+---
