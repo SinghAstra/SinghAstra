@@ -205,58 +205,6 @@ function UserProfile() {
 }
 ```
 
----
-
-## 📝 Summary Table
-
-| Component         | Purpose                              | HTML Equivalent        |
-| ----------------- | ------------------------------------ | ---------------------- |
-| `<BrowserRouter>` | The Brain that listens to history.   | N/A                    |
-| `<Routes>`        | The container for all rules.         | N/A                    |
-| `<Route>`         | A single rule (`path` -> `element`). | N/A                    |
-| `<Link>`          | Navigating without refresh.          | `<a href="...">`       |
-| `useNavigate`     | Redirecting via code function.       | `window.location.href` |
-
-| Concept        | URL Example                           | Hook Used                |
-| -------------- | ------------------------------------- | ------------------------ |
-| Path Parameter | `/users/123`                          | `useParams()`            |
-| Query Param    | `/users?active=true`                  | `useSearchParams()`      |
-| Purpose        | Identifying a specific resource (ID). | Filtering/Sorting lists. |
-| Required?      | Yes (Route won't match without it).   | No (Optional).           |
-
----
-
-## 🛑 Stop and Think
-
-### _1. If React Router swaps components, does `useState` inside `<Home />` survive when I navigate to `<About />`?_
-
-No.
-When we navigate away from `/` to `/about`, the `<Home />` component is Unmounted (destroyed). Its internal state is wiped.
-If we need state to survive navigation (e.g., "Cart Items"), we must move that state UP (to Context or Redux) or store it in `localStorage`.
-
-### _2. What happens if I visit a route that doesn't exist?_
-
-React Router checks routes from top to bottom. If none match, it renders nothing (blank screen).
-_Best Practice:_ Always add a Catch-all route (`path="*"`) at the bottom to render a 404 Component.
-
-### _3. What happens if I go to `/products` without an ID?_
-
-The route `/products/:id` will not match.
-React Router expects a value after the slash. We would need a separate route `<Route path="/products" ... />` to handle the list view without an ID.
-
-### _4. Does the component unmount when changing from `/users/1` to `/users/2`?_
-
-No!
-React sees that we are rendering the same Component (`UserProfile`). To optimize performance, it reuses the existing component instance and just updates the `userId` variable from `useParams`.
-_Consequence:_ If we fetch data in `useEffect`, we must include `[userId]` in the dependency array, otherwise the data won't refresh when switching users.
-
-```javascript
-useEffect(() => {
-  fetchUser(userId);
-}, [userId]); // Critical!
-```
-
----
 
 # Nested Routes & Layouts
 
@@ -273,7 +221,7 @@ React Router allows us to nest routes inside other routes.
 - Parent Route: Renders the "Frame" (Layout).
 - Child Route: Renders the "Content" inside the frame.
 
-## 2. The Implementation: `<Outlet />`
+## 2. The Implementation
 
 The Parent component renders its own UI (Sidebar) and a special placeholder called `<Outlet />`. This tells React Router: _"Put the matching Child component right here."_
 
@@ -340,9 +288,25 @@ We use the Wildcard `*` path, which matches anything that hasn't been matched ye
 </Routes>
 ```
 
+
 ---
 
 ## 📝 Summary Table
+
+| Component         | Purpose                              | HTML Equivalent        |
+| ----------------- | ------------------------------------ | ---------------------- |
+| `<BrowserRouter>` | The Brain that listens to history.   | N/A                    |
+| `<Routes>`        | The container for all rules.         | N/A                    |
+| `<Route>`         | A single rule (`path` -> `element`). | N/A                    |
+| `<Link>`          | Navigating without refresh.          | `<a href="...">`       |
+| `useNavigate`     | Redirecting via code function.       | `window.location.href` |
+
+| Concept        | URL Example                           | Hook Used                |
+| -------------- | ------------------------------------- | ------------------------ |
+| Path Parameter | `/users/123`                          | `useParams()`            |
+| Query Param    | `/users?active=true`                  | `useSearchParams()`      |
+| Purpose        | Identifying a specific resource (ID). | Filtering/Sorting lists. |
+| Required?      | Yes (Route won't match without it).   | No (Optional).           |
 
 | Component        | Purpose                                                           |
 | ---------------- | ----------------------------------------------------------------- |
@@ -355,7 +319,36 @@ We use the Wildcard `*` path, which matches anything that hasn't been matched ye
 
 ## 🛑 Stop and Think
 
-### _1. Why not just import the Sidebar in every page?_
+### _1. If React Router swaps components, does `useState` inside `<Home />` survive when I navigate to `<About />`?_
+
+No.
+When we navigate away from `/` to `/about`, the `<Home />` component is Unmounted (destroyed). Its internal state is wiped.
+If we need state to survive navigation (e.g., "Cart Items"), we must move that state UP (to Context or Redux) or store it in `localStorage`.
+
+### _2. What happens if I visit a route that doesn't exist?_
+
+React Router checks routes from top to bottom. If none match, it renders nothing (blank screen).
+_Best Practice:_ Always add a Catch-all route (`path="*"`) at the bottom to render a 404 Component.
+
+### _3. What happens if I go to `/products` without an ID?_
+
+The route `/products/:id` will not match.
+React Router expects a value after the slash. We would need a separate route `<Route path="/products" ... />` to handle the list view without an ID.
+
+### _4. Does the component unmount when changing from `/users/1` to `/users/2`?_
+
+No!
+React sees that we are rendering the same Component (`UserProfile`). To optimize performance, it reuses the existing component instance and just updates the `userId` variable from `useParams`.
+_Consequence:_ If we fetch data in `useEffect`, we must include `[userId]` in the dependency array, otherwise the data won't refresh when switching users.
+
+```javascript
+useEffect(() => {
+  fetchUser(userId);
+}, [userId]); // Critical!
+```
+
+
+### _5. Why not just import the Sidebar in every page?_
 
 If you put `<Sidebar />` inside `<Stats />` and also inside `<Settings />`:
 
@@ -364,7 +357,7 @@ If you put `<Sidebar />` inside `<Stats />` and also inside `<Settings />`:
 3. Scroll Loss: If you scrolled down the menu, it would jump back to the top.
    Using Layouts keeps the Sidebar mounted permanently.
 
-### _2. Can I nest layouts inside layouts?_
+### _6. Can I nest layouts inside layouts?_
 
 Yes! You can have a `MainLayout` (Header) `DashboardLayout` (Sidebar) `Content`. You just nest the `<Route>` tags deeper and use multiple `<Outlet />`s.
 
