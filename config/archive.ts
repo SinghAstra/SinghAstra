@@ -146,6 +146,10 @@ export const archiveLinks: ArchiveSectionLink[] = [
         title: "Forms",
         path: "/archive/react/forms",
       },
+      {
+        title: "Custom Hooks & Logic Extraction",
+        path: "/archive/react/custom-hooks-and-logic-extraction",
+      },
     ],
   },
 ];

@@ -1,0 +1,347 @@
+---
+title: "Custom Hooks: The Philosophy of Extraction"
+date: "26-12-2025"
+excerpt: "Stop copying and pasting useEffects. How to separate Behavioral Logic from Visual UI using Custom Hooks."
+---
+
+# Custom Hooks: The Philosophy of Extraction
+
+If two components need to fetch data, listen to the window size, or sync with LocalStorage, beginners often copy-paste the `useEffect` code into both. This violates the DRY (Don't Repeat Yourself) principle.
+
+Custom Hooks allow us to extract this stateful logic into reusable JavaScript functions.
+
+## 1. The Anatomy of a Custom Hook
+
+A Custom Hook is technically just a standard JavaScript/TypeScript function. However, by convention and rule, it has specific characteristics:
+
+1. Naming: It must start with `use` (e.g., `useWindowSize`, `useUser`). This tells React (and the Linter) that this function contains React Hooks.
+2. Composition: It calls other React Hooks (`useState`, `useEffect`, etc.) inside itself.
+3. Independence: Every time we call a custom hook, it creates a completely isolated instance of state.
+
+---
+
+## 2. The Refactoring Pattern
+
+The best way to write a custom hook is to write the code inside a component first, realize it is bloated, and then extract it.
+
+### Phase 1: The Bloated Component
+
+Here is a component that mixes UI Logic (rendering the toggle) with State Logic (handling the boolean switch).
+
+```tsx
+import { useState } from "react";
+
+function Modal() {
+  // --- LOGIC START ---
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+
+  const open = () => setIsOpen(true);
+  const close = () => setIsOpen(false);
+  const toggle = () => setIsOpen((prev) => !prev);
+  // --- LOGIC END ---
+
+  return (
+    <>
+      <button onClick={open}>Open Modal</button>
+      {isOpen && (
+        <div className="modal">
+          Hello! <button onClick={close}>X</button>
+        </div>
+      )}
+    </>
+  );
+}
+```
+
+### Phase 2: The Extraction
+
+We cut the Logic section and paste it into a new function.
+
+```tsx
+// hooks/useToggle.ts
+import { useState } from "react";
+
+// 1. Define the Return Type for clarity
+// Returning a tuple (array) is a common convention, like useState
+type UseToggleReturn = [boolean, () => void, () => void, () => void];
+
+export const useToggle = (initialValue: boolean = false): UseToggleReturn => {
+  const [value, setValue] = useState<boolean>(initialValue);
+
+  const setTrue = () => setValue(true);
+  const setFalse = () => setValue(false);
+  const toggle = () => setValue((prev) => !prev);
+
+  // Return whatever the component needs to control this logic
+  return [value, toggle, setTrue, setFalse];
+};
+```
+
+### Phase 3: The Clean Component
+
+Now our component focuses purely on Structure, not Behavior.
+
+```tsx
+import { useToggle } from "./hooks/useToggle";
+
+function Modal() {
+  // The logic is now hidden behind a descriptive name
+  const [isOpen, toggle, open, close] = useToggle(false);
+
+  return (
+    <>
+      <button onClick={open}>Open Modal</button>
+      {isOpen && (
+        <div className="modal">
+          Hello! <button onClick={close}>X</button>
+        </div>
+      )}
+    </>
+  );
+}
+```
+
+---
+
+## 3. The Golden Rule: State Independence
+
+A common misconception is that Custom Hooks share state between components (like a Global Store). They do not. They share logic.
+
+```tsx
+function App() {
+  // Instance A: Has its own boolean state
+  const [isMenuOpen, toggleMenu] = useToggle();
+
+  // Instance B: Has its OWN boolean state.
+  // Clicking the modal does NOT open the menu.
+  const [isModalOpen, toggleModal] = useToggle();
+
+  return <div />;
+}
+```
+
+Every time we call `useToggle()`, it runs `useState()` inside it, creating a fresh memory cell in the Fiber Node for that specific component instance.\
+
+# Real-World Hooks: useFetch & Generics
+
+In the real world, fetching data is messy. We need to track:
+
+1. Loading State: Is the data on its way?
+2. Error State: Did the server crash?
+3. Data State: The actual JSON response.
+
+Instead of writing three `useState` variables in every single component that needs data, we bundle them into a `useFetch` hook.
+
+## 1. The Problem: Repetitive Async Logic
+
+Without a custom hook, every component fetching data looks like this repetitive mess:
+
+```tsx
+function UserList() {
+  const [data, setData] = useState<User[] | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/users");
+        if (!res.ok) throw new Error("Failed");
+        const json = await res.json();
+        setData(json);
+      } catch (err) {
+        setError((err as Error).message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error}</p>;
+  return <div>{/* Render Data */}</div>;
+}
+```
+
+This is Boilerplate. We can abstract it.
+
+## 2. The Solution: useFetch
+
+We will use TypeScript Generics (`<T>`) so this hook can work for any type of data (Users, Products, Comments, etc.).
+
+```tsx
+// hooks/useFetch.ts
+import { useState, useEffect } from "react";
+
+// T represents the "Type" of data we expect (User[], Product, etc.)
+interface FetchResult<T> {
+  data: T | null;
+  loading: boolean;
+  error: string | null;
+  refetch: () => void; // A helper to manually reload data
+}
+
+export function useFetch<T>(url: string): FetchResult<T> {
+  const [data, setData] = useState<T | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  // We use a counter to trigger re-runs
+  const [trigger, setTrigger] = useState(0);
+
+  useEffect(() => {
+    // 1. cleanup flag to prevent updating state if component unmounts
+    let isMounted = true;
+    setLoading(true);
+
+    const fetchData = async () => {
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`Error: ${response.statusText}`);
+        }
+        const json = await response.json();
+
+        // Only update state if the component is still on screen
+        if (isMounted) {
+          setData(json);
+          setError(null);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError((err as Error).message);
+        }
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    fetchData();
+
+    // Cleanup function runs when component unmounts
+    return () => {
+      isMounted = false;
+    };
+  }, [url, trigger]); // Re-run if URL changes or 'refetch' is called
+
+  const refetch = () => setTrigger((prev) => prev + 1);
+
+  return { data, loading, error, refetch };
+}
+```
+
+## 3. Usage in Components
+
+Now, our component becomes incredibly clean and Declarative.
+
+```tsx
+// Types defined elsewhere
+interface User {
+  id: number;
+  name: string;
+}
+
+function UserList() {
+  // We pass <User[]> to tell TS what the data looks like
+  const { data, loading, error, refetch } = useFetch<User[]>("/api/users");
+
+  if (loading) return <p>Loading users...</p>;
+  if (error) return <p>Something went wrong: {error}</p>;
+
+  return (
+    <div>
+      <button onClick={refetch}>Refresh List</button>
+      <ul>
+        {data?.map((user) => (
+          <li key={user.id}>{user.name}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+## 4. The AbortController
+
+In the `useFetch` code above, we used an `isMounted` boolean. A more modern and professional approach is to use the browser's `AbortController` to actually cancel the network request if the user leaves the page before it finishes.
+
+```tsx
+useEffect(() => {
+  const controller = new AbortController(); // 1. Create Controller
+
+  const fetchData = async () => {
+    try {
+      // 2. Pass the signal to fetch
+      const res = await fetch(url, { signal: controller.signal });
+      const json = await res.json();
+      setData(json);
+    } catch (err) {
+      // 3. Ignore errors caused by cancellation
+      if (err.name !== "AbortError") {
+        setError(err.message);
+      }
+    }
+  };
+
+  fetchData();
+
+  // 4. Abort the request on unmount
+  return () => controller.abort();
+}, [url]);
+```
+
+---
+
+## 📝 Summary Table
+
+| Concept           | Description                                                                        |
+| ----------------- | ---------------------------------------------------------------------------------- |
+| Logic Extraction  | Moving `useState`/`useEffect` out of the UI component.                             |
+| Naming Convention | Must start with `use` (e.g., `useForm`).                                           |
+| Shared Logic      | Components reuse the code/behavior.                                                |
+| Isolated State    | Components do not share the data (the cake).                                       |
+| Return Value      | Can be anything (Array, Object, Value). Objects are better for many return values. |
+
+| Feature     | Without Hook                    | With `useFetch` Hook                 |
+| ----------- | ------------------------------- | ------------------------------------ |
+| State       | 3 separate `useState` calls.    | 1 line of code.                      |
+| Reusability | Copy-paste code everywhere.     | Import the hook anywhere.            |
+| Type Safety | Manually typed every time.      | Generic `<T>` handles dynamic types. |
+| Cleanup     | Often forgotten (memory leaks). | Handled centrally inside the hook.   |
+
+---
+
+## 🛑 Stop and Think
+
+### _1. Can I use a Custom Hook inside a standard JavaScript function (like a helper)?_
+
+No.
+Rules of Hooks: Hooks can only be called inside:
+
+1. React Function Components.
+2. Other Custom Hooks.
+
+If we try to call `useToggle` inside a standard helper function `calculateTotal()`, React will throw an Invalid Hook Call error because that helper doesn't have a Fiber Node to store the state.
+
+### _2. Why do we usually return an array `[value, toggle]` instead of an object `{ value, toggle }`?_
+
+It mimics `useState`. Returning an array allows the consumer to rename the variables easily when destructuring.
+
+- Array: `const [isModalOpen, toggleModal] = useToggle()` (Renamed instantly).
+- Object: `const { value: isModalOpen, toggle: toggleModal } = useToggle()` (Renamed with verbose syntax).
+- Note: If we return many values (more than 3), use an Object so order doesn't matter.
+
+### _3. Why do we need `isMounted` or `AbortController`?_
+
+Imagine a user clicks Load Users (taking 3 seconds), but immediately clicks Home to leave the page.
+Without cleanup, 3 seconds later the API responds. The function tries to call `setData(json)`.
+But the `UserList` component doesn't exist anymore! React will throw a warning: _Can't perform a React state update on an unmounted component._ This is a memory leak.
+
+### _4. Should I use this custom `useFetch` in production?_
+
+For small apps, yes.
+For large, professional apps, No.
+Libraries like TanStack Query (React Query) or SWR do exactly this but better. They add caching, background updates, and deduplication. We build `useFetch` to learn how hooks work, but we use libraries for production.
+
+---
