@@ -142,6 +142,10 @@ export const archiveLinks: ArchiveSectionLink[] = [
         title: "Memoization & Referential Equality",
         path: "/archive/react/memoization-and-referential-equality",
       },
+      {
+        title: "Forms",
+        path: "/archive/react/forms",
+      },
     ],
   },
 ];
