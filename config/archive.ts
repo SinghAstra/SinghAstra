@@ -154,6 +154,10 @@ export const archiveLinks: ArchiveSectionLink[] = [
         title: "Reducer Pattern",
         path: "/archive/react/reducer-pattern",
       },
+      {
+        title: "Client Side Routing",
+        path: "/archive/react/client-side-routing",
+      },
     ],
   },
 ];

@@ -1,0 +1,371 @@
+---
+title: "Client-Side Routing: The SPA Illusion"
+date: "26-12-2025"
+excerpt: "How to build multi-page apps without refreshing the browser. Mastering React Router, Links, and the History API."
+---
+
+# Client-Side Routing: The SPA Illusion
+
+In a traditional website (Multi-Page Application), clicking a link like `<a href="/about">` causes the browser to:
+
+1. Destroy the current page (and all React state).
+2. Send a request to the server for `about.html`.
+3. Download and paint the new page from scratch.
+
+This is slow and flashes the screen. Client-Side Routing (SPA) creates an illusion.
+
+1. User clicks a link.
+2. JavaScript intercepts the click.
+3. It updates the URL bar (so user can copy-paste it).
+4. It swaps the visible component (e.g., hide `<Home />`, show `<About />`).
+5. Crucially: The browser never refreshes. State is preserved.
+
+## The Tool: React Router
+
+React does not include a router by default. The industry standard is React Router (`react-router-dom`).
+
+### Setup: The Provider Pattern
+
+Just like Context, the Router needs to sit at the very top of our app to listen to URL changes.
+
+```jsx
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Home from "./Home";
+import About from "./About";
+
+function App() {
+  return (
+    // 1. The Wrapper: Listens to the Browser URL
+    <BrowserRouter>
+      {/* 2. The Switch: Decides WHICH component to show based on URL */}
+      <Routes>
+        {/* 3. The Rules: If path is "/", show <Home /> */}
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+
+        {/* Wildcard for 404 pages */}
+        <Route path="*" element={<h1>Not Found</h1>} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+```
+
+## Navigation
+
+- The `<a>` tag: Standard HTML. It triggers a browser refresh. Do not use this for internal navigation.
+- The `<Link>` component: A special React component that looks like a link but uses JavaScript to change the URL without refreshing.
+
+```jsx
+import { Link } from "react-router-dom";
+
+function Navbar() {
+  return (
+    <nav>
+      {/* ❌ BAD: Destroys App State (Redux, Context, Inputs) */}
+      <a href="/about">About (Slow)</a>
+
+      {/* ✅ GOOD: Preserves State, Instant Transition */}
+      <Link to="/about">About (Fast)</Link>
+    </nav>
+  );
+}
+```
+
+## Programmatic Navigation
+
+Sometimes we need to redirect the user after an action finishes (like submitting a login form), not just when they click a link.
+
+We use the `useNavigate` hook for this.
+
+```jsx
+import { useNavigate } from "react-router-dom";
+
+function LoginPage() {
+  const navigate = useNavigate();
+
+  const handleLogin = async () => {
+    await loginUser();
+
+    // Redirect user to the dashboard
+    navigate("/dashboard");
+
+    // OR: Go back one page (like clicking the browser Back button)
+    // navigate(-1);
+  };
+
+  return <button onClick={handleLogin}>Log In</button>;
+}
+```
+
+---
+
+# Dynamic Routing: URL Parameters
+
+In a real app, we don't write a separate route for every user (`/user/alice`, `/user/bob`, `/user/charlie`). We write one route that can handle any user ID.
+
+This is called Dynamic Routing. We use a placeholder in the URL (a colon parameter) to tell React Router that part of the path is variable.
+
+## 1. Defining the Route
+
+To define a dynamic segment, we add a colon `:` before the segment name in our `<Route>`.
+
+```jsx
+<Routes>
+  {/* Static Route */}
+  <Route path="/" element={<Home />} />
+
+  {/* Dynamic Route: matches /products/1, /products/abc, etc. */}
+  <Route path="/products/:id" element={<ProductDetails />} />
+</Routes>
+```
+
+## 2. Reading the Parameter
+
+Now that the URL is `/products/55`, how does the `<ProductDetails />` component know that the ID is `55`?
+
+We use the `useParams` hook. It returns an object containing all the dynamic segments we defined.
+
+```jsx
+import { useParams } from "react-router-dom";
+
+function ProductDetails() {
+  // The key 'id' matches the ':id' we defined in the Route path
+  const { id } = useParams();
+
+  // Real-world usage: Use the ID to fetch specific data
+  // const { data } = useFetch(`/api/products/${id}`);
+
+  return (
+    <div>
+      <h1>Viewing Product ID: {id}</h1>
+    </div>
+  );
+}
+```
+
+## 3. Query Strings
+
+Sometimes we want to pass optional configuration (like filters or sorting) that isn't part of the main resource ID. We use Query Strings for this.
+
+- URL: `/products?sort=price&category=shoes`
+- Hook: `useSearchParams` (Works like `useState`!).
+
+```jsx
+import { useSearchParams } from "react-router-dom";
+
+function SearchPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Reading values
+  const sort = searchParams.get("sort"); // "price"
+
+  // Updating URL (adds ?sort=name)
+  const changeSort = () => {
+    setSearchParams({ sort: "name" });
+  };
+
+  return <button onClick={changeSort}>Sort by Name</button>;
+}
+```
+
+## 4. Practical Example: The User Profile
+
+Here is how the pieces fit together. A list of links navigates to a dynamic page, which then reads the ID.
+
+The User List (Parent):
+
+```jsx
+const users = [
+  { id: 1, name: "Alice" },
+  { id: 2, name: "Bob" },
+];
+
+function UserList() {
+  return (
+    <div>
+      {users.map((user) => (
+        // Link to /users/1, /users/2...
+        <Link key={user.id} to={`/users/${user.id}`}>
+          {user.name}
+        </Link>
+      ))}
+    </div>
+  );
+}
+```
+
+The Profile Page (Child):
+
+```jsx
+function UserProfile() {
+  const { userId } = useParams(); // Matches path="/users/:userId"
+
+  return <h1>Profile for User #{userId}</h1>;
+}
+```
+
+---
+
+## 📝 Summary Table
+
+| Component         | Purpose                              | HTML Equivalent        |
+| ----------------- | ------------------------------------ | ---------------------- |
+| `<BrowserRouter>` | The Brain that listens to history.   | N/A                    |
+| `<Routes>`        | The container for all rules.         | N/A                    |
+| `<Route>`         | A single rule (`path` -> `element`). | N/A                    |
+| `<Link>`          | Navigating without refresh.          | `<a href="...">`       |
+| `useNavigate`     | Redirecting via code function.       | `window.location.href` |
+
+| Concept        | URL Example                           | Hook Used                |
+| -------------- | ------------------------------------- | ------------------------ |
+| Path Parameter | `/users/123`                          | `useParams()`            |
+| Query Param    | `/users?active=true`                  | `useSearchParams()`      |
+| Purpose        | Identifying a specific resource (ID). | Filtering/Sorting lists. |
+| Required?      | Yes (Route won't match without it).   | No (Optional).           |
+
+---
+
+## 🛑 Stop and Think
+
+### _1. If React Router swaps components, does `useState` inside `<Home />` survive when I navigate to `<About />`?_
+
+No.
+When we navigate away from `/` to `/about`, the `<Home />` component is Unmounted (destroyed). Its internal state is wiped.
+If we need state to survive navigation (e.g., "Cart Items"), we must move that state UP (to Context or Redux) or store it in `localStorage`.
+
+### _2. What happens if I visit a route that doesn't exist?_
+
+React Router checks routes from top to bottom. If none match, it renders nothing (blank screen).
+_Best Practice:_ Always add a Catch-all route (`path="*"`) at the bottom to render a 404 Component.
+
+### _3. What happens if I go to `/products` without an ID?_
+
+The route `/products/:id` will not match.
+React Router expects a value after the slash. We would need a separate route `<Route path="/products" ... />` to handle the list view without an ID.
+
+### _4. Does the component unmount when changing from `/users/1` to `/users/2`?_
+
+No!
+React sees that we are rendering the same Component (`UserProfile`). To optimize performance, it reuses the existing component instance and just updates the `userId` variable from `useParams`.
+_Consequence:_ If we fetch data in `useEffect`, we must include `[userId]` in the dependency array, otherwise the data won't refresh when switching users.
+
+```javascript
+useEffect(() => {
+  fetchUser(userId);
+}, [userId]); // Critical!
+```
+
+---
+
+# Nested Routes & Layouts
+
+In many apps (like a Dashboard), we want parts of the page to stay static (Sidebar, Header) while only the center content changes.
+
+We could copy-paste the `<Sidebar />` into every single page component, but that is repetitive and causes the Sidebar to unmount/remount (losing its scroll position and drop down scroll state) every time we navigate.
+
+The solution is Nested Routes.
+
+## 1. The Concept: Parent & Child Routes
+
+React Router allows us to nest routes inside other routes.
+
+- Parent Route: Renders the "Frame" (Layout).
+- Child Route: Renders the "Content" inside the frame.
+
+## 2. The Implementation: `<Outlet />`
+
+The Parent component renders its own UI (Sidebar) and a special placeholder called `<Outlet />`. This tells React Router: _"Put the matching Child component right here."_
+
+### Step A: Create the Layout Component
+
+```jsx
+import { Outlet, Link } from "react-router-dom";
+
+function DashboardLayout() {
+  return (
+    <div style={{ display: "flex" }}>
+      {/* 1. Static Sidebar (Never unmounts) */}
+      <nav style={{ width: "200px", background: "#eee" }}>
+        <Link to="/dashboard">Stats</Link>
+        <br />
+        <Link to="/dashboard/settings">Settings</Link>
+      </nav>
+
+      {/* 2. Dynamic Content Area */}
+      <main style={{ flex: 1, padding: "20px" }}>
+        {/* The matched child route will appear here */}
+        <Outlet />
+      </main>
+    </div>
+  );
+}
+```
+
+### Step B: Define the Nested Structure
+
+In our main `App.js`, we wrap the child routes _inside_ the parent route.
+
+```jsx
+<Routes>
+  {/* Parent Route (Layout) */}
+  <Route path="/dashboard" element={<DashboardLayout />}>
+    {/* Child A: Matches "/dashboard" (Index) */}
+    <Route index element={<Stats />} />
+
+    {/* Child B: Matches "/dashboard/settings" */}
+    <Route path="settings" element={<Settings />} />
+  </Route>
+</Routes>
+```
+
+## 3. Index Routes
+
+Notice the `index` keyword above?
+If the user visits exactly `/dashboard`, there is no child path (like "settings") to match.
+The `index` route tells React: _"If the user is at the parent path, render this default component inside the Outlet."_
+
+## 4. The "404 Not Found" Route
+
+What if the user types a URL that doesn't exist? We should show a nice error page instead of a blank screen.
+We use the Wildcard `*` path, which matches anything that hasn't been matched yet.
+
+```jsx
+<Routes>
+  <Route path="/" element={<Home />} />
+  <Route path="/about" element={<About />} />
+
+  {/* This MUST be the last route */}
+  <Route path="*" element={<NotFound />} />
+</Routes>
+```
+
+---
+
+## 📝 Summary Table
+
+| Component        | Purpose                                                           |
+| ---------------- | ----------------------------------------------------------------- |
+| Nested `<Route>` | Defines a parent-child relationship in the URL structure.         |
+| `<Outlet>`       | A placeholder component where the Child Route renders.            |
+| Index Route      | The default child to show when visiting the parent path directly. |
+| Wildcard `*`     | Catch-all route for 404 pages.                                    |
+
+---
+
+## 🛑 Stop and Think
+
+### _1. Why not just import the Sidebar in every page?_
+
+If you put `<Sidebar />` inside `<Stats />` and also inside `<Settings />`:
+
+1. When you navigate, React destroys the old Sidebar and creates a new one.
+2. State Loss: If you had a "Collapsed/Expanded" state in the menu, it would reset.
+3. Scroll Loss: If you scrolled down the menu, it would jump back to the top.
+   Using Layouts keeps the Sidebar mounted permanently.
+
+### _2. Can I nest layouts inside layouts?_
+
+Yes! You can have a `MainLayout` (Header) `DashboardLayout` (Sidebar) `Content`. You just nest the `<Route>` tags deeper and use multiple `<Outlet />`s.
+
+---
