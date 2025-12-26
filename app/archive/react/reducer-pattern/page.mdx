@@ -1,0 +1,288 @@
+---
+title: "The Reducer Pattern: Logic Over State"
+date: "26-12-2025"
+excerpt: "When useState isn't enough. Moving from imperative state updates to declarative state transitions using useReducer."
+---
+
+# The Reducer Pattern: Logic Over State
+
+As applications grow, keeping logic inside our components becomes messy. We might find yourself writing event handlers that manually update 4 or 5 different state variables at once.
+
+```javascript
+// The "useState" Mess: Logic is mixed with UI
+const handleSuccess = () => {
+  // The component has to know EXACTLY how to update the state
+  setLoading(false);
+  setError(null);
+  setData(result);
+  setSuccessMessage("Done!");
+};
+```
+
+This approach has two major flaws:
+
+1. Logic Leakage: Our component is cluttered with complex state rules instead of focusing on UI.
+2. Brittle Code: If we forget one setter (e.g., forgetting to set `loading(false)`), our app enters a "buggy" state.
+
+`useReducer` solves this by strictly separating the Behavioral Logic from the UI.
+
+### Why adopt this pattern?
+
+- Separation of Concerns: We move the Business Logic (how state changes) into a separate function, often in a separate file (`reducer.js`). Our component remains clean and focuses only on rendering.
+- Predictable State Changes: Instead of changing state directly (`loading = false`), we dispatch an Action (`FETCH_SUCCESS`). The Reducer guarantees that every time this action happens, the state updates exactly the same way.
+- Reusability: While the state itself isn't shared, the logic (the reducer function) can be imported and reused by multiple components to ensure consistent behavior across our app.
+
+## The Anatomy of a Reducer
+
+There are three key players in this pattern:
+
+### A. The State
+
+The data itself (usually an object).
+
+```javascript
+const initialState = { count: 0, error: null };
+```
+
+### B. The Action
+
+An instruction object. It tells the reducer what happened.
+It always has a `type` (string). It optionally has a `payload` (data).
+
+```javascript
+{ type: 'INCREMENT' }
+{ type: 'UPDATE_NAME', payload: 'Alice' }
+
+```
+
+### C. The Reducer Function
+
+A Pure Function that takes the Old State and an Action, and returns the New State.
+`(state, action) => newState`
+
+## Basic Implementation: The Counter
+
+Let's look at the syntax for a simple counter.
+
+```typescript
+import { useReducer } from "react";
+
+// 1. Define the Reducer Function OUTSIDE the component
+// This ensures it stays pure and isn't recreated on every render.
+function counterReducer(state, action) {
+  switch (action.type) {
+    case "INCREMENT":
+      return { count: state.count + 1 };
+    case "DECREMENT":
+      return { count: state.count - 1 };
+    case "RESET":
+      return { count: 0 };
+    default:
+      // Safety net: return existing state if action is unknown
+      return state;
+  }
+}
+
+export default function Counter() {
+  // 2. Initialize the Hook
+  // Syntax: const [state, dispatch] = useReducer(reducerFn, initialState);
+  const [state, dispatch] = useReducer(counterReducer, { count: 0 });
+
+  return (
+    <div className="flex gap-4 p-4 border rounded">
+      <h1 className="text-2xl font-bold">{state.count}</h1>
+
+      {/* 3. Dispatch Actions (Sending orders to the chef) */}
+      <button onClick={() => dispatch({ type: "DECREMENT" })}>-</button>
+      <button onClick={() => dispatch({ type: "RESET" })}>Reset</button>
+      <button onClick={() => dispatch({ type: "INCREMENT" })}>+</button>
+    </div>
+  );
+}
+```
+
+## Why is this better?
+
+1. Decoupling: The UI (`Counter`) doesn't know how to calculate the next count. It just asks for it. The logic lives in `counterReducer`.
+2. Predictability: State transitions are explicit. We can't accidentally set the count to banana unless we add a specific case for it in the reducer.
+
+# Advanced Reducers: Objects & Payloads
+
+A simple counter (`count + 1`) is easy. But in real apps, we manage complex objects (like a user profile or a shopping cart) where an action needs to carry _data_, not just an instruction.
+
+## The Scenario: Fetching Data
+
+Let's revisit the Data Fetching logic. We have three related pieces of state: `data`, `loading`, and `error`.
+Instead of managing them separately, we treat them as a State Machine.
+
+The States:
+
+1. `INIT`: Idle, nothing happened.
+2. `FETCH_START`: Loading is true, error is null.
+3. `FETCH_SUCCESS`: Loading false, Data is here.
+4. `FETCH_ERROR`: Loading false, Error message is here.
+
+## Adding Payloads to Actions
+
+An action often needs to deliver data. We add a `payload` property to the action object.
+
+- Simple Action: `{ type: "LOGOUT" }`
+- Payload Action: `{ type: "LOGIN_SUCCESS", payload: { name: "Alice" } }`
+
+## The Implementation
+
+We will use TypeScript interfaces here to enforce strict typing (optional but recommended).
+
+```typescript
+// 1. Define the Shape of our State
+interface State {
+  loading: boolean;
+  error: string | null;
+  data: any[] | null;
+}
+
+// 2. Define the Action Types (Union Type)
+type Action =
+  | { type: "FETCH_START" }
+  | { type: "FETCH_SUCCESS"; payload: any[] } // Takes data
+  | { type: "FETCH_ERROR"; payload: string }; // Takes error msg
+
+// 3. The Reducer Logic
+const fetchReducer = (state: State, action: Action): State => {
+  switch (action.type) {
+    case "FETCH_START":
+      return {
+        ...state, // Copy existing state (Good habit)
+        loading: true,
+        error: null, // Clear old errors
+        data: null,
+      };
+
+    case "FETCH_SUCCESS":
+      return {
+        ...state,
+        loading: false,
+        data: action.payload, // Use the data sent from the component
+      };
+
+    case "FETCH_ERROR":
+      return {
+        ...state,
+        loading: false,
+        error: action.payload, // Use the error message sent
+      };
+
+    default:
+      return state;
+  }
+};
+```
+
+## Using it in a Component
+
+Notice how clean the Component logic becomes. We don't worry about setting `loading` to false inside the success block. The Reducer handles the transition automatically.
+
+```javascript
+import { useReducer } from "react";
+
+const initialState = {
+  loading: false,
+  error: null,
+  data: null,
+};
+
+function UserList() {
+  const [state, dispatch] = useReducer(fetchReducer, initialState);
+
+  const fetchUsers = async () => {
+    // Transition 1: Start Loading
+    dispatch({ type: "FETCH_START" });
+
+    try {
+      const res = await fetch("/api/users");
+      const data = await res.json();
+
+      // Transition 2: Success (Send data as payload)
+      dispatch({ type: "FETCH_SUCCESS", payload: data });
+    } catch (err) {
+      // Transition 3: Error (Send error msg as payload)
+      dispatch({ type: "FETCH_ERROR", payload: err.message });
+    }
+  };
+
+  return (
+    <div>
+      <button onClick={fetchUsers}>Load Users</button>
+
+      {state.loading && <p>Loading...</p>}
+      {state.error && <p style={{ color: "red" }}>{state.error}</p>}
+
+      {state.data && (
+        <ul>
+          {state.data.map((user) => (
+            <li key={user.id}>{user.name}</li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+```
+
+## The Immutability Trap
+
+A common mistake in reducers is mutating the state directly.
+
+❌ BAD (Mutation):
+
+```javascript
+case "ADD_TODO":
+  state.todos.push(action.payload); // Modifies the existing array!
+  return state; // React thinks nothing changed because the reference is the same.
+
+```
+
+✅ GOOD (Immutable Update):
+
+```javascript
+case "ADD_TODO":
+  return {
+    ...state,
+    todos: [...state.todos, action.payload] // Creates a NEW array
+  };
+
+```
+
+---
+
+## 📝 Summary Table
+
+| Feature        | `useState`                            | `useReducer`                              |
+| -------------- | ------------------------------------- | ----------------------------------------- |
+| Best For       | Independent values (Toggle, Input).   | Related values (Data + Loading + Error).  |
+| Logic Location | Inside the Component (Event Handler). | Outside the Component (Reducer Function). |
+| Update Method  | `setState(newValue)`                  | `dispatch({ type, payload })`             |
+
+---
+
+## 🛑 Stop and Think
+
+### _1. Why must the reducer be a Pure Function?_
+
+A pure function means: Same Input = Same Output (No side effects).
+You cannot fetch data, change `localStorage`, or use `Date.now()` inside a reducer.
+_Why?_ React might run the reducer multiple times (Strict Mode) or speculatively in the future. If our reducer has side effects, our app state will become unpredictable.
+
+### _2. Can I use `useState` and `useReducer` in the same component?_
+
+Yes! Use `useReducer` for the complex Business Logic (e.g., shopping cart logic) and `useState` for simple UI state (e.g., is the dropdown menu open?).
+
+### _3. Why do we include `...state` even if we update all fields?_
+
+It is a safety habit. If we add a new property to our state later (e.g., `isAdmin`), but forget to update our reducer cases, returning a new object _without_ spreading the old state first would delete `isAdmin`. Spreading ensures we keep everything we aren't explicitly changing.
+
+### _4. Is `useReducer` slower than `useState`?_
+
+Technically, it is marginally slower because of the switch statement execution, but in reality, the difference is negligible. The performance benefit comes from Cleaner Code and Predictability, which prevents bugs.
+
+---

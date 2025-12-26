@@ -150,6 +150,10 @@ export const archiveLinks: ArchiveSectionLink[] = [
         title: "Custom Hooks & Logic Extraction",
         path: "/archive/react/custom-hooks-and-logic-extraction",
       },
+      {
+        title: "Reducer Pattern",
+        path: "/archive/react/reducer-pattern",
+      },
     ],
   },
 ];
