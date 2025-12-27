@@ -162,6 +162,10 @@ export const archiveLinks: ArchiveSectionLink[] = [
         title: "Server State & Tanstack Query",
         path: "/archive/react/server-state-and-tanstack-query",
       },
+      {
+        title: "Cache Mechanics & Invalidation",
+        path: "/archive/react/cache-mechanics-and-invalidation",
+      },
     ],
   },
 ];

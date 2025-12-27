@@ -1,0 +1,213 @@
+---
+title: Cache Mechanics & Invalidation
+date: 27-12-2025
+excerpt: How TanStack Query balances instant UI feedback with data accuracy. Mastering the SWR pattern and its internal triggers.
+---
+
+# Stale While Revalidate (SWR)
+
+In traditional fetching, the user is a prisoner of the network. They click a link, see a spinner, and wait for the Truth to arrive from the server. SWR changes this by prioritizing Perceived Performance.
+
+## 1. The Strategy: Better Old than Empty
+
+The core philosophy of SWR is simple: It is better to show the user stale (old) data immediately than to show them a blank screen and a loading spinner.
+
+1. Stale: When a component mounts, React Query checks the cache. If it finds data, it displays it instantly.
+2. While: While the user is interacting with that stale data...
+3. Revalidate: React Query performs a background fetch to revalidate (verify) the data against the server.
+
+If the server data is different, the UI is updated silently. If it is the same, nothing happens. To the user, the app feels like it has Zero Latency.
+
+## 2. Refetch Triggers: The Synchronization Hooks
+
+The SWR pattern only works if the app knows when to revalidate. TanStack Query uses Smart Triggers to ensure data doesn't stay stale for too long without manual intervention.
+
+### A. refetchOnWindowFocus
+
+This is the most magical feature. If a user leaves our app to check an email and then clicks back into the browser tab, React Query automatically triggers a revalidation.
+
+- Why? It assumes that while the user was gone, the Server State might have changed. It keeps the app in sync without a Refresh button.
+
+### B. refetchOnMount
+
+Whenever a new instance of a component appears (e.g., navigating back to a page), React Query revalidates.
+
+- Note: It still shows the cached data first, so the navigation feels instant.
+
+### C. refetchOnReconnect
+
+If the user’s Wi-Fi drops and then reconnects, React Query immediately revalidates all active queries to catch up on any missed updates.
+
+---
+
+## 3. The Silent Switch vs. Hard Loading
+
+It is crucial to understand the difference between `isLoading` and `isFetching`:
+
+- `isLoading` (Hard Loading): The cache is empty. There is no data to show. The user must see a spinner.
+- `isFetching` (Background Sync): The cache has data (it's being shown), but a revalidation is happening in the background.
+
+> Professional Tip: For a top-tier UX, use `isLoading` for the first-ever load, but use a subtle background loading bar or nothing at all for `isFetching` to keep the experience smooth.
+
+---
+
+## 4. Controlled Revalidation (staleTime)
+
+We can tell React Query to Trust the data and stop revalidating for a set period using `staleTime`.
+
+```typescript
+const { data } = useQuery({
+  queryKey: [settings],
+  queryFn: fetchSettings,
+  // Trust the settings for 5 minutes.
+  // No background revalidations will happen during this window.
+  staleTime: 1000 * 60 * 5,
+});
+```
+
+---
+
+## 📝 Summary Table: SWR Triggers
+
+| Trigger      | Default | Purpose                                 |
+| ------------ | ------- | --------------------------------------- |
+| Mount        | `true`  | Refetch when the component appears.     |
+| Window Focus | `true`  | Refetch when user returns to the tab.   |
+| Reconnect    | `true`  | Refetch after internet restoration.     |
+| Interval     | `false` | Continuous polling (e.g., live scores). |
+
+---
+
+## 🛑 Stop and Think
+
+> SWR is a psychological trick as much as a technical one. By showing 'old' data instantly, we satisfy the user's need for immediate feedback, and by revalidating in the background, we satisfy the requirement for data integrity.
+
+# Mutations: Changing Server Data
+
+In Server State management, we distinguish between Queries (fetching data) and Mutations (changing data). Mutations are side effects that alter the state of the server and, consequently, our local cache.
+
+## 1. The useMutation Hook
+
+`useQuery` is declarative while `useMutation` is imperative. Unlike `useQuery`, which usually runs automatically when a component mounts, `useMutation` only runs when we explicitly call the `mutate` function.
+
+```typescript
+const mutation = useMutation({
+  // 1. The Action (Promise-based)
+  mutationFn: (newTodo: string) => {
+    return axios.post("/api/todos", { title: newTodo });
+  },
+
+  // 2. The Lifecycle Callbacks
+  onSuccess: () => {
+    console.log("Data saved successfully!");
+  },
+  onError: (error) => {
+    console.error("Something went wrong:", error);
+  },
+});
+
+// To trigger the action:
+// mutation.mutate("Buy Milk");
+```
+
+## 2. The Feedback Loop: State Tracking
+
+One of the biggest benefits of `useMutation` is that it provides built in state tracking. We no longer need to create manual `isSubmitting` or `error` states in our component.
+
+| Property    | Description                                                                                |
+| ----------- | ------------------------------------------------------------------------------------------ |
+| `isPending` | True while the network request is in-flight. Use this to disable buttons or show spinners. |
+| `isError`   | True if the mutation failed.                                                               |
+| `isSuccess` | True if the mutation finished successfully.                                                |
+| `reset`     | A function to clear the mutation state (useful for clearing error messages).               |
+
+### Example: A Protected Button
+
+```jsx
+<button
+  disabled={mutation.isPending}
+  onClick={() => mutation.mutate("New Task")}
+>
+  {mutation.isPending ? "Saving..." : "Add Todo"}
+</button>;
+
+{
+  mutation.isError && <p>Error: {mutation.error.message}</p>;
+}
+```
+
+---
+
+## 3. Mutation Callbacks (The Hooks)
+
+Mutations have their own lifecycle, allowing us to trigger logic at specific moments:
+
+1. `onMutate`: Runs before the network call. Best for Optimistic Updates.
+2. `onSuccess`: Runs if the request works. Best for clearing forms or triggering Invalidations.
+3. `onError`: Runs if the request fails. Best for showing error toasts.
+4. `onSettled`: Runs when the request finishes, regardless of success or failure. Best for hiding modals.
+
+---
+
+## 4. Why Mutations Alone Aren't Enough
+
+If we use `useMutation` to add a new item to a list, the server updates, but our UI won't change yet. The Reason: our local `useQuery` cache for that list is still old. It doesn't know that the server just changed.
+
+> The Bridge: To solve this, we must link our Mutation to our Query. This brings us to the most important pattern in the ecosystem: The Invalidation Loop.
+
+---
+
+## 📝 Summary Table: Query vs. Mutation
+
+| Feature   | `useQuery`                      | `useMutation`                     |
+| --------- | ------------------------------- | --------------------------------- |
+| Purpose   | Reading data (GET)              | Writing data (POST/PUT/DELETE)    |
+| Execution | Automatic (on mount/key change) | Manual (calling `.mutate()`)      |
+| Caching   | Results are cached              | Results are generally not cached  |
+| Retries   | Automatic (3x default)          | No automatic retries (by default) |
+
+---
+
+## 🛑 Stop and Think
+
+> A Mutation is a 'Command.' We are telling the server to do something. But a command is only half the battle; the other half is ensuring the UI reflects the result of that command by refreshing the relevant queries.
+
+# The Invalidation Loop
+
+The biggest challenge in state management is keeping the UI in sync after a change. If we delete a user, you want that user to vanish from the list immediately. The Invalidation Loop is the mechanism that automates this.
+
+## 1. The Strategy: "Mark as Dirty"
+
+Instead of manually trying to find and remove an item from a local array (which is error-prone), TanStack Query uses a simpler philosophy:
+"I don't know exactly what changed, but I know the 'Users' list is now wrong. Mark it as dirty and fetch it again."
+
+When you Invalidate a query:
+
+1. It is immediately marked as Stale.
+2. If the query is currently being rendered on the screen (Active), it triggers an Automatic Refetch in the background.
+
+## 2. Implementing the Loop
+
+To perform an invalidation, we use the `queryClient` inside the `onSuccess` callback of our mutation.
+
+```typescript
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+function DeleteUserButton({ id }) {
+  const queryClient = useQueryClient(); // Access the cache engine
+
+  const { mutate } = useMutation({
+    mutationFn: (userId) => axios.delete(`/api/users/${userId}`),
+
+    // The Sync Bridge
+    onSuccess: () => {
+      // 1. Find every query that starts with the key ['users']
+      // 2. Mark them as stale
+      // 3. Trigger a background refetch for any that are visible
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+  });
+
+  return <button onClick={() => mutate(id)}>Delete User</button>;
+}
+```
