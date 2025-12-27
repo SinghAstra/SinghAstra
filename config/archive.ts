@@ -158,6 +158,10 @@ export const archiveLinks: ArchiveSectionLink[] = [
         title: "Client Side Routing",
         path: "/archive/react/client-side-routing",
       },
+      {
+        title: "Server State & Tanstack Query",
+        path: "/archive/react/server-state-and-tanstack-query",
+      },
     ],
   },
 ];
