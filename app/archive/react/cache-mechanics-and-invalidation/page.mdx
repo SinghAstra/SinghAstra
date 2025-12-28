@@ -30,13 +30,15 @@ This is the most magical feature. If a user leaves our app to check an email and
 
 ### B. refetchOnMount
 
-Whenever a new instance of a component appears (e.g., navigating back to a page), React Query revalidates.
+Whenever a component using that query that has been labeled as stale is mounted, React Query revalidates.
 
 - Note: It still shows the cached data first, so the navigation feels instant.
 
 ### C. refetchOnReconnect
 
 If the user’s Wi-Fi drops and then reconnects, React Query immediately revalidates all active queries to catch up on any missed updates.
+
+> Tanstack query does not perform revalidation on re-rendering.
 
 ---
 
@@ -174,14 +176,14 @@ If we use `useMutation` to add a new item to a list, the server updates, but our
 
 # The Invalidation Loop
 
-The biggest challenge in state management is keeping the UI in sync after a change. If we delete a user, you want that user to vanish from the list immediately. The Invalidation Loop is the mechanism that automates this.
+The biggest challenge in state management is keeping the UI in sync after a change. If we delete a user, we want that user to vanish from the list immediately. The Invalidation Loop is the mechanism that automates this.
 
 ## 1. The Strategy: "Mark as Dirty"
 
 Instead of manually trying to find and remove an item from a local array (which is error-prone), TanStack Query uses a simpler philosophy:
 "I don't know exactly what changed, but I know the 'Users' list is now wrong. Mark it as dirty and fetch it again."
 
-When you Invalidate a query:
+When we Invalidate a query:
 
 1. It is immediately marked as Stale.
 2. If the query is currently being rendered on the screen (Active), it triggers an Automatic Refetch in the background.
