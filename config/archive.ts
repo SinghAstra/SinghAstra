@@ -170,6 +170,10 @@ export const archiveLinks: ArchiveSectionLink[] = [
         title: "Optimistic UI & Advanced Patterns",
         path: "/archive/react/optimistic-ui-and-advanced-patterns",
       },
+      {
+        title: "Client State Architecture",
+        path: "/archive/react/client-state-architecture",
+      },
     ],
   },
 ];

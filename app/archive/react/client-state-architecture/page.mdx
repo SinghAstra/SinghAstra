@@ -1,0 +1,95 @@
+---
+title: "Client-State Architecture: Context vs. Selectors"
+date: "28-12-2025"
+excerpt: "An architectural deep-dive into the performance gap between built-in React Context and external state stores like Zustand and Redux."
+---
+
+# Unit 18: Client State Architecture
+
+In a professional React ecosystem, we have already offloaded 70% of our state to TanStack Query (Server State). What remains is the Client State data owned entirely by the browser.
+
+While the Context API is excellent for static or less frequently changing data across components wrapped in parent provider component, it introduces a significant Performance Gap when used for complex or high-frequency data. This unit deconstructs that gap and introduces the External Store pattern.
+
+## 1. The Decision Matrix: The Three-Bucket Strategy
+
+Before choosing a tool, we must categorize your data. Choosing the wrong bucket leads to either Prop Drilling or Performance Lag.
+
+| Bucket         | Data Type          | Nature                       | Recommended Tool |
+| -------------- | ------------------ | ---------------------------- | ---------------- |
+| Local State    | UI Toggles, Inputs | Transient / Component-scoped | `useState`       |
+| Static Context | Theme, Auth        | Low-frequency / Global       | Context API      |
+| Complex Store  | Carts, Dashboards  | High-performance / Shared    | Zustand / RTK    |
+
+---
+
+## 18.1 The Performance Gap: The Broadcast Problem
+
+To understand why libraries like Redux or Zustand exist, we must look at how the React Fiber Engine handles updates in the Context API.
+
+### The Mechanism of Failure
+
+The Context API is a transport mechanism, not a state management tool. When a value in a Context Provider changes, React triggers a Broadcast:
+
+- The Penalty: React marks _every_ component calling `useContext` for that provider as "dirty."
+- The Result: Even if a component only uses `state.user` and you update `state.settings`, the component re-renders. In large trees, this causes O(N) re-renders where N is the number of consumers.
+
+---
+
+## 2. The Solution: The Selector Pattern (Pub-Sub)
+
+External stores (Zustand, Redux) solve the broadcast problem by decoupling state from the React component tree. They move the "Brain" of the app into a plain JavaScript object and use a Publish-Subscribe (Pub-Sub) model.
+
+### Subscription Mechanics
+
+Instead of the Provider "pushing" updates to everyone, components "subscribe" to specific slices of the store using Selectors.
+
+```typescript
+// Component A only cares about the 'name' property
+const name = useStore((state) => state.user.name);
+
+// Component B only cares about 'items' length
+const count = useStore((state) => state.cart.items.length);
+```
+
+### How it works under the hood:
+
+1. Plain JS Memory: The Store lives outside the React tree.
+2. Strict Equality Checks: When the state changes, the store performs a `prev === next` check on the result of the selector.
+3. Targeted Updates: Only the specific component whose selector result changed is notified. This results in O(1) re-renders—only the affected component updates.
+
+---
+
+## 3. Decoupling Logic (Architecture)
+
+Moving state into an external store achieves a clean Separation of Concerns:
+
+- The Store (The Brain): Contains pure JavaScript business logic. It is independent of React and easily testable.
+- The Component (The Body): A "dumb" view that simply reacts to the specific slices of data it is fed.
+
+### Performance Profiling
+
+Using the React DevTools Profiler, the difference is visible:
+
+- Context API: A single update turns the entire Flamegraph yellow (re-rendering).
+- Selector Stores: Only the single affected component turns yellow; the rest of the tree remains gray (skipped).
+
+---
+
+## 📝 Summary Comparison
+
+| Feature      | Context API               | External Stores (Zustand/RTK)        |
+| ------------ | ------------------------- | ------------------------------------ |
+| Update Model | Broadcast (Re-render all) | Subscription (Targeted re-render)    |
+| Logic        | Coupled with JSX          | Decoupled (Pure JS)                  |
+| Performance  | Drops frames at scale     | High-frequency capable               |
+| Primary Use  | Theming / User Auth       | Complex Logic / Performance Critical |
+
+---
+
+## 🛑 Stop and Think
+
+> "React Context is for Dependency Injection, not State Management. If your state object has more than two unrelated properties, or if it updates frequently, you are using the wrong tool for the job. Use a Selector-based store to isolate your renders."
+
+---
+
+Would you like me to move on to 18.2: Redux Toolkit (RTK) - Modern Slices and Immer? This will show you the "Standard" way to implement these selectors in industry-scale apps.
