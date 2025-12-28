@@ -4,7 +4,7 @@ date: "28-12-2025"
 excerpt: "An architectural deep-dive into the performance gap between built-in React Context and external state stores like Zustand and Redux."
 ---
 
-# Unit 18: Client State Architecture
+# Client State Architecture
 
 In a professional React ecosystem, we have already offloaded 70% of our state to TanStack Query (Server State). What remains is the Client State data owned entirely by the browser.
 
@@ -18,11 +18,11 @@ Before choosing a tool, we must categorize your data. Choosing the wrong bucket 
 | -------------- | ------------------ | ---------------------------- | ---------------- |
 | Local State    | UI Toggles, Inputs | Transient / Component-scoped | `useState`       |
 | Static Context | Theme, Auth        | Low-frequency / Global       | Context API      |
-| Complex Store  | Carts, Dashboards  | High-performance / Shared    | Zustand / RTK    |
+| Complex Store  | Carts, Dashboards  | High-performance / Shared    | Zustand / Redux  |
 
 ---
 
-## 18.1 The Performance Gap: The Broadcast Problem
+## The Performance Gap: The Broadcast Problem
 
 To understand why libraries like Redux or Zustand exist, we must look at how the React Fiber Engine handles updates in the Context API.
 
@@ -30,18 +30,18 @@ To understand why libraries like Redux or Zustand exist, we must look at how the
 
 The Context API is a transport mechanism, not a state management tool. When a value in a Context Provider changes, React triggers a Broadcast:
 
-- The Penalty: React marks _every_ component calling `useContext` for that provider as "dirty."
-- The Result: Even if a component only uses `state.user` and you update `state.settings`, the component re-renders. In large trees, this causes O(N) re-renders where N is the number of consumers.
+- The Action: React destroys and creates value object thereby all consumers are re-rendered.
+- The Result: Even if a component only uses `state.user` and we update `state.settings`, the component re-renders. In large trees, this causes O(N) re-renders where N is the number of consumers.
 
 ---
 
-## 2. The Solution: The Selector Pattern (Pub-Sub)
+## 2.The Solution: The Selector Pattern (Pub-Sub)
 
-External stores (Zustand, Redux) solve the broadcast problem by decoupling state from the React component tree. They move the "Brain" of the app into a plain JavaScript object and use a Publish-Subscribe (Pub-Sub) model.
+External stores (Zustand, Redux) solve the broadcast problem by decoupling state from the React component tree. They move the Brain of the app into a plain JavaScript object and use a Publish-Subscribe (Pub-Sub) model.
 
 ### Subscription Mechanics
 
-Instead of the Provider "pushing" updates to everyone, components "subscribe" to specific slices of the store using Selectors.
+Instead of the Provider pushing updates to everyone, components subscribe to specific slices of the store using Selectors.
 
 ```typescript
 // Component A only cares about the 'name' property
@@ -55,16 +55,16 @@ const count = useStore((state) => state.cart.items.length);
 
 1. Plain JS Memory: The Store lives outside the React tree.
 2. Strict Equality Checks: When the state changes, the store performs a `prev === next` check on the result of the selector.
-3. Targeted Updates: Only the specific component whose selector result changed is notified. This results in O(1) re-renders—only the affected component updates.
+3. Targeted Updates: Only the specific component whose selector result changed is notified. This results in O(1) re-renders only the affected component updates.
 
 ---
 
-## 3. Decoupling Logic (Architecture)
+## 3. Decoupling Logic
 
 Moving state into an external store achieves a clean Separation of Concerns:
 
-- The Store (The Brain): Contains pure JavaScript business logic. It is independent of React and easily testable.
-- The Component (The Body): A "dumb" view that simply reacts to the specific slices of data it is fed.
+- The Store (The Brain): Contains pure JavaScript business logic. It is independent of React.
+- The Component (The Body): A dumb view that simply reacts to the specific slices of data it is fed.
 
 ### Performance Profiling
 
@@ -88,8 +88,6 @@ Using the React DevTools Profiler, the difference is visible:
 
 ## 🛑 Stop and Think
 
-> "React Context is for Dependency Injection, not State Management. If your state object has more than two unrelated properties, or if it updates frequently, you are using the wrong tool for the job. Use a Selector-based store to isolate your renders."
+> If our state object has more than two unrelated properties, or if it updates frequently, we are using the wrong tool for the job. Use a Selector based store to isolate our renders.
 
 ---
-
-Would you like me to move on to 18.2: Redux Toolkit (RTK) - Modern Slices and Immer? This will show you the "Standard" way to implement these selectors in industry-scale apps.
