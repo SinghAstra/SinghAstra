@@ -77,17 +77,17 @@ The Rollback is the most critical part of a Senior-level UX. If we don't handle 
 
 # Infinite Queries
 
-Fetching data in chunks is essential for performance when dealing with large datasets (like social media feeds or product lists). TanStack Query provides the `useInfiniteQuery` hook specifically to handle "Load More" patterns and infinite scrolling.
+Fetching data in chunks is essential for performance when dealing with large datasets (like social media feeds or product lists). TanStack Query provides the `useInfiniteQuery` hook specifically to handle Load More patterns and infinite scrolling.
 
 ### 1. The Core Concept: Page Params
 
-Unlike a standard `useQuery`, `useInfiniteQuery` tracks multiple "pages" of data within a single cache entry. It uses a `pageParam` to keep track of where the next request should start (e.g., an offset or a cursor).
+Unlike a standard `useQuery`, `useInfiniteQuery` tracks multiple pages of data within a single cache entry. It uses a `pageParam` to keep track of where the next request should start (e.g., an offset or a cursor).
 
 ---
 
 ### 2. Implementation: `useInfiniteQuery`
 
-To implement an infinite list, you need to define how to fetch the next page and how to determine the next parameter.
+To implement an infinite list, we need to define how to fetch the next page and how to determine the next parameter.
 
 #### Example: Cursor-based Pagination
 
@@ -114,7 +114,7 @@ The `data` object returned by `useInfiniteQuery` is structured differently than 
 - `data.pages`: An array containing all the fetched pages `[ { data, nextCursor }, { data, nextCursor } ]`.
 - `data.pageParams`: An array of the parameters used to fetch each page.
 
-To render this, you typically flat-map the pages:
+To render this, we typically flat map the pages:
 
 ```jsx
 {
@@ -130,12 +130,12 @@ To render this, you typically flat-map the pages:
 
 ---
 
-### 4. Triggering the "Load More"
+### 4. Triggering the Load More
 
 There are two common ways to trigger the next fetch:
 
-1. Manual Trigger: A "Load More" button that calls `fetchNextPage()`.
-2. Infinite Scroll: Using a library like `react-intersection-observer` to detect when a "sentinel" element at the bottom of the list enters the viewport.
+1. Manual Trigger: A Load More button that calls `fetchNextPage()`.
+2. Infinite Scroll: Using a library like `react-intersection-observer` to detect when a sentinel element at the bottom of the list enters the viewport.
 
 > Pro Tip: Always check `hasNextPage` and `isFetchingNextPage` before calling `fetchNextPage` to prevent duplicate network requests.
 
@@ -146,5 +146,51 @@ There are two common ways to trigger the next fetch:
 | UX Pattern | Infinite Scroll / Load More     | Page Numbers (1, 2, 3...)             |
 | State      | Appends new data to old data    | Replaces old data with new data       |
 | Use Case   | Feeds, Comments, Search results | Dashboards, Data tables, Admin panels |
+
+---
+
+# Performance Tuning
+
+Even with efficient caching, a Senior UX requires making the app feel like it is running locally. This section covers how to eliminate loading states entirely and how to use the official tools to debug our cache.
+
+### 1. Prefetching
+
+Prefetching is the act of loading data into the cache before the user actually navigates to a component. The most common trigger is hovering over a link or a list item.
+
+```javascript
+const queryClient = useQueryClient();
+
+const prefetchTodo = async (id) => {
+  // This will populate the cache for the todo detail page
+  await queryClient.prefetchQuery({
+    queryKey: ["todo", id],
+    queryFn: () => fetchTodoById(id),
+    staleTime: 1000 * 60, // Ensure it's considered fresh for at least 1 minute
+  });
+};
+
+// In our component:
+<button onMouseEnter={() => prefetchTodo(todo.id)}>View Details</button>;
+```
+
+---
+
+### 2. Mastering the Query DevTools
+
+The TanStack Query DevTools are non negotiable for performance tuning. They allow us to see the exact state of every query in our application in real-time.
+
+- Fresh: No network request will be made; data is returned from cache.
+- Stale: Data is returned from cache, and a background fetch will be triggered on basis of 4 smart triggers.
+- Fetching: A network request is currently in flight.
+- Inactive: The query is no longer used on the page and is waiting for `gcTime` (Garbage Collection) to be deleted.
+
+> Performance Tip: If there are too many queries in the Fetching state simultaneously, consider increasing our `staleTime` or checking for unnecessary component remounts.
+
+### 4. Garbage Collection (`gcTime`)
+
+Formerly known as `cacheTime`, `gcTime` determines how long inactive data stays in the cache before it is wiped to free up memory.
+
+- Default: 5 minutes.
+- Best Practice: Keep this high if users navigate back and forth frequently, but keep it low for memory-intensive data (like large image blobs).
 
 ---
