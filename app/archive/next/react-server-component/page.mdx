@@ -1,0 +1,62 @@
+---
+title: Next.js Architecture: React Server Components
+date: 28-12-2025
+excerpt: The paradigm shift from Client-Side React to Server-First architecture. Solving the hydration problem and the bundle size bottleneck.
+---
+
+# React Server Components
+
+Welcome to the Third Age of React. In traditional React, the browser was the primary engine for rendering. In Next.js, we move the engine back to the Server. This isn't just a new feature; it is a fundamental shift in how we build for the web.
+
+The objective of this unit is to eliminate the Client Side Waterfall where the browser has to download JS, then execute it, then fetch data, then re-render by doing the heavy lifting before the code ever reaches the user's device.
+
+---
+
+## The Shift: Client-Side vs. Server-Side
+
+To understand Next.js, we must first understand the failure points of Standard Client-Side React (CSR).
+
+### The Hydration Problem
+
+In a standard React app, the server sends a nearly empty HTML file and a massive JavaScript bundle.
+
+1. The Download: The browser downloads the JS.
+2. The Execution: The browser runs the JS to build the UI.
+3. Hydration: React attaches event listeners to the HTML to make it interactive.
+
+The Bottleneck: As our app grows, the JS bundle grows. This leads to poor First Input Delay (FID) and Total Blocking Time (TBT). The user sees the page, but they can't click anything because the browser's main thread is busy processing a 2MB JavaScript file.
+
+### The RSC Solution: Zero Bundle Size
+
+React Server Components (RSC) allow us to render parts of our UI on the server and send the result as a lightweight description (not just HTML, but a special RSC Payload) to the browser.
+
+- Code stays on the Server: If we use a heavy library (like `date-fns` or `lucide-react`) inside a Server Component, that library never gets sent to the browser.
+- Zero Client Footprint: The JavaScript bundle size for these components is exactly 0 KB.
+- Direct Access: Because they run on the server, these components can talk directly to our database or file system without an intermediate API layer.
+
+### The Mental Model: Thinking Server-First
+
+In React JS, our first thought was: _How do I fetch this data in a useEffect?_
+In Next.js, our first thought must be: _Does the client actually need the JavaScript for this, or can I just render the result on the server?_
+
+> The Rule of Thumb: If it doesn't have a button, a form, or a state change, it should probably be a Server Component.
+
+---
+
+## 📝 Comparison: The Architectural Pivot
+
+| Feature           | Client-Side React (CSR)     | React Server Components (RSC)       |
+| ----------------- | --------------------------- | ----------------------------------- |
+| Execution Context | Browser                     | Server                              |
+| Bundle Size       | Grows with component count  | Zero (stays on server)              |
+| Data Fetching     | `useEffect` + API calls     | `async/await` directly in component |
+| Security          | API keys exposed to browser | API keys hidden on server           |
+| SEO               | Harder (depends on crawler) | Perfect (HTML ready on arrival)     |
+
+---
+
+## 🛑 Stop and Think
+
+> In the Client Side era, we treated the browser like a powerful workstation. In the RSC era, we treat the browser like a thin client a specialized view layer that only receives the JavaScript it absolutely needs for interactivity.
+
+---

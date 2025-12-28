@@ -176,4 +176,13 @@ export const archiveLinks: ArchiveSectionLink[] = [
       },
     ],
   },
+  {
+    title: "Next JS",
+    links: [
+      {
+        title: "React Server Components",
+        path: "/archive/next/react-server-component",
+      },
+    ],
+  },
 ];
