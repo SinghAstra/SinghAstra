@@ -166,6 +166,10 @@ export const archiveLinks: ArchiveSectionLink[] = [
         title: "Cache Mechanics & Invalidation",
         path: "/archive/react/cache-mechanics-and-invalidation",
       },
+      {
+        title: "Optimistic UI & Advanced Patterns",
+        path: "/archive/react/optimistic-ui-and-advanced-patterns",
+      },
     ],
   },
 ];

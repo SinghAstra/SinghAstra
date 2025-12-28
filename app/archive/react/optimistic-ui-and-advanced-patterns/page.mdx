@@ -1,0 +1,150 @@
+---
+title: "Optimistic UI & Advanced Patterns"
+date: "28-12-2025"
+excerpt: "Master high-level UX patterns in TanStack Query. Learn to implement zero-latency optimistic updates, manage complex infinite scrolling, and fine-tune cache performance for a senior-level application."
+---
+
+# Optimistic Updates
+
+Optimistic UI is a pattern where the client interface updates immediately as if a server request has already succeeded. We "lie" to the user to provide a zero-latency experience, then reconcile that lie once the server responds.
+
+### The Core Logic
+
+Instead of showing a loading spinner while waiting for a `POST` or `PATCH` request, we manually update the TanStack Query cache.
+
+1. User triggers action (e.g., clicks "Like").
+2. UI Updates instantly (Optimistic Update).
+3. Request sent to the server in the background.
+4. Success: The "lie" becomes the truth.
+5. Failure: The UI "rolls back" to the previous state.
+
+---
+
+### The `onMutate` Lifecycle
+
+To implement this in TanStack Query, we use the `useMutation` hook. The key is the `onMutate` function, which runs before the actual mutation function starts.
+
+#### Step-by-Step Implementation
+
+```javascript
+const queryClient = useQueryClient();
+
+const mutation = useMutation({
+  mutationFn: updateTodo,
+  // 1. When mutate is called:
+  onMutate: async (newTodo) => {
+    // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+    await queryClient.cancelQueries({ queryKey: ["todos"] });
+
+    // Snapshot the previous value
+    const previousTodos = queryClient.getQueryData(["todos"]);
+
+    // Optimistically update to the new value
+    queryClient.setQueryData(["todos"], (old) => [...old, newTodo]);
+
+    // Return a context object with the snapshotted value
+    return { previousTodos };
+  },
+  // 2. If the mutation fails:
+  onError: (err, newTodo, context) => {
+    queryClient.setQueryData(["todos"], context.previousTodos);
+  },
+  // 3. Always refetch after error or success to sync with server:
+  onSettled: () => {
+    queryClient.invalidateQueries({ queryKey: ["todos"] });
+  },
+});
+```
+
+---
+
+### The Rollback Strategy
+
+The Rollback is the most critical part of a Senior-level UX. If we don't handle failures, the UI will show data that doesn't exist on the server, leading to a ghost state where the user thinks a task is completed when it isn't.
+
+> Note: Always use `queryClient.cancelQueries` in `onMutate`. If we don't, a background fetch might finish while our mutation is in flight, overwriting our optimistic UI with old data from the server.
+
+### When to use Optimistic Updates?
+
+| Use Case               | Recommended? | Why?                                                       |
+| ---------------------- | ------------ | ---------------------------------------------------------- |
+| Like/Heart Buttons     | ✅ Yes       | Low risk, high frequency.                                  |
+| Form Submissions       | ❌ No        | Better to show a loading state as users expect validation. |
+| Deleting Items         | ✅ Yes       | Makes the app feel snappy and lightweight.                 |
+| Financial Transactions | ❌ No        | Accuracy is more important than perceived speed.           |
+
+---
+
+# Infinite Queries
+
+Fetching data in chunks is essential for performance when dealing with large datasets (like social media feeds or product lists). TanStack Query provides the `useInfiniteQuery` hook specifically to handle "Load More" patterns and infinite scrolling.
+
+### 1. The Core Concept: Page Params
+
+Unlike a standard `useQuery`, `useInfiniteQuery` tracks multiple "pages" of data within a single cache entry. It uses a `pageParam` to keep track of where the next request should start (e.g., an offset or a cursor).
+
+---
+
+### 2. Implementation: `useInfiniteQuery`
+
+To implement an infinite list, you need to define how to fetch the next page and how to determine the next parameter.
+
+#### Example: Cursor-based Pagination
+
+```javascript
+const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
+  useInfiniteQuery({
+    queryKey: ["projects"],
+    queryFn: ({ pageParam = 0 }) => fetchProjects(pageParam),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) => {
+      // If the last page has data, return the next cursor
+      // Return 'undefined' if there are no more pages
+      return lastPage.nextCursor ?? undefined;
+    },
+  });
+```
+
+---
+
+### 3. Understanding the Data Object
+
+The `data` object returned by `useInfiniteQuery` is structured differently than a standard query:
+
+- `data.pages`: An array containing all the fetched pages `[ { data, nextCursor }, { data, nextCursor } ]`.
+- `data.pageParams`: An array of the parameters used to fetch each page.
+
+To render this, you typically flat-map the pages:
+
+```jsx
+{
+  data.pages.map((group, i) => (
+    <React.Fragment key={i}>
+      {group.projects.map((project) => (
+        <p key={project.id}>{project.name}</p>
+      ))}
+    </React.Fragment>
+  ));
+}
+```
+
+---
+
+### 4. Triggering the "Load More"
+
+There are two common ways to trigger the next fetch:
+
+1. Manual Trigger: A "Load More" button that calls `fetchNextPage()`.
+2. Infinite Scroll: Using a library like `react-intersection-observer` to detect when a "sentinel" element at the bottom of the list enters the viewport.
+
+> Pro Tip: Always check `hasNextPage` and `isFetchingNextPage` before calling `fetchNextPage` to prevent duplicate network requests.
+
+### 5. Infinite Query vs. Pagination
+
+| Feature    | Infinite Query                  | Standard Pagination                   |
+| ---------- | ------------------------------- | ------------------------------------- |
+| UX Pattern | Infinite Scroll / Load More     | Page Numbers (1, 2, 3...)             |
+| State      | Appends new data to old data    | Replaces old data with new data       |
+| Use Case   | Feeds, Comments, Search results | Dashboards, Data tables, Admin panels |
+
+---
