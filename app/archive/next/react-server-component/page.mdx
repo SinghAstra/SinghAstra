@@ -60,3 +60,173 @@ In Next.js, our first thought must be: _Does the client actually need the JavaSc
 > In the Client Side era, we treated the browser like a powerful workstation. In the RSC era, we treat the browser like a thin client a specialized view layer that only receives the JavaScript it absolutely needs for interactivity.
 
 ---
+
+# Component Taxonomy
+
+In Next.js, not all components are created equal. To optimize performance, we must categorize every component into one of two buckets. By default, every component in the App Router is a Server Component. We must explicitly opt in to the browser.
+
+---
+
+## 1. Server Components
+
+These are the heavy lifters. They stay on the server and never touch the browser's JavaScript engine.
+
+Capabilities:
+
+- Async by Nature: We can turn the component itself into an `async` function.
+- Direct Database Access: Use `prisma`, `drizzle`, or `pg` directly inside the component.
+- Zero Bundle Impact: Heavy dependencies used here do not increase the user's download size.
+- Security: Keep sensitive information (API keys, tokens) on the server.
+
+```tsx
+// app/profile/page.tsx
+import { db } from "@/lib/db";
+
+export default async function ProfilePage() {
+  // Direct DB call - no API route needed!
+  const user = await db.user.findFirst();
+
+  return (
+    <div>
+      <h1>{user.name}</h1>
+      <p>{user.bio}</p>
+    </div>
+  );
+}
+```
+
+---
+
+## 2. Client Components
+
+Client Components are the Interactivity Layer. They are rendered on the server (for SEO) but then hydrated in the browser to allow for React state and effects.
+
+When to use them:
+
+- Interactivity: Using `onClick`, `onChange`, etc.
+- State & Effects: Using `useState`, `useReducer`, `useEffect`.
+- Browser APIs: Using `window`, `document`, `localStorage`, or Geolocation.
+- Custom Hooks: Any hook that relies on state or lifecycle.
+
+---
+
+## 3. The use client Directive
+
+The `'use client'` string at the very top of a file acts as a Boundary Marker. It tells Next.js: _Everything in this file and everything imported into this file is now part of the Client Bundle._
+
+```tsx
+"use client"; // This is the boundary
+
+import { useState } from "react";
+
+export default function Counter() {
+  const [count, setCount] = useState(0);
+
+  return <button onClick={() => setCount(count + 1)}>Count is: {count}</button>;
+}
+```
+
+---
+
+## 4. Summary Table: When to use what?
+
+| Feature                         | Server Component | Client Component |
+| ------------------------------- | ---------------- | ---------------- |
+| Fetch Data                      | ✅ (Directly)    | ⚠️ (via API/SWR) |
+| Access Backend Resources        | ✅ (Directly)    | ❌               |
+| Keep Sensitive Info (Secrets)   | ✅               | ❌               |
+| Use `useState` / `useEffect`    | ❌               | ✅               |
+| Use Event Listeners (`onClick`) | ❌               | ✅               |
+| Zero Bundle Size                | ✅               | ❌               |
+
+---
+
+## 🛑 Stop and Think
+
+> The goal of a Next.js architect is to push as much logic as possible to Server Components and only use Client Components at the very 'leaves' of the tree (e.g., a specific button or a search input). This keeps the JavaScript Tax on the user as low as possible.
+
+---
+
+# The Boundary Mechanics
+
+The Network Boundary is the conceptual line between code that runs on the server and code that runs in the browser. Mastering how to move data and components across this line is the difference between a buggy Next.js app and a high-performance one.
+
+---
+
+## 1. Serializing Props
+
+When we pass data from a Server Component to a Client Component, it must cross the network. Because the server and browser don't share memory, the data must be Serialized (converted into a format like JSON that can be sent as text).
+
+- Allowed (Serializable): Primitives (strings, numbers, booleans), plain objects, arrays, and special types like `Promises` or `FormData`.
+- Forbidden (Non-Serializable): Functions (Event handlers, callbacks), Classes, and complex objects with methods.
+
+> The Error: If we try to pass a function like `const handleClick = () => ...` from a Server Component to a Client Component, Next.js will throw a `Serialization Error`. Functions only exist in the memory of the environment they were created in.
+
+---
+
+## 2. Composition Patterns: The Nesting Rule
+
+A common point of confusion is: _"Can I put a Server Component inside a Client Component?"_
+The answer is: Yes, but not by importing it.
+
+### The Illegal Import
+
+We cannot import a Server Component into a file marked with `'use client'`. Doing so will automatically convert that Server Component into a Client Component, losing all its server-side benefits (like direct DB access).
+
+```tsx
+"use client";
+import MyServerComponent from "./MyServerComponent"; // ❌ This forces it to be a Client Component!
+```
+
+### The Legal Composition (The Children Pattern)
+
+To keep a Server Component on the server while displaying it inside a Client Component, we must use Composition. We pass the Server Component as a `children` prop (or any JSX prop) from a parent Server Component.
+
+```tsx
+// 1. THE CLIENT COMPONENT (The "Shell")
+"use client";
+export default function ClientWrapper({ children }) {
+  const [isOpen, setIsOpen] = useState(false);
+  return <div className={isOpen ? "active" : ""}>{children}</div>;
+}
+
+// 2. THE SERVER COMPONENT (The "Content")
+// This stays on the server, even though it's wrapped by the client!
+export default function Page() {
+  return (
+    <ClientWrapper>
+      <MyServerComponent />
+    </ClientWrapper>
+  );
+}
+```
+
+---
+
+## 3. Why the Children Pattern Works
+
+Think of Client Components as a Hole in the UI.
+
+1. The Server renders the `Page` and `MyServerComponent`.
+2. It sees the `ClientWrapper` and says: _I'll just leave a placeholder here._
+3. The browser receives the rendered HTML for the server parts and the JavaScript for the client parts.
+4. React slots the server rendered content into the `children` hole of the Client Component.
+
+---
+
+## 📝 Summary: Boundary Rules
+
+| Action                       | Allowed? | Strategy                                  |
+| ---------------------------- | -------- | ----------------------------------------- |
+| Pass String/Number to Client | ✅       | Standard Props.                           |
+| Pass Function to Client      | ❌       | Use Server Actions (Unit 3).              |
+| Import SC into CC            | ❌       | Will turn the SC into a Client Component. |
+| Pass SC as `children` to CC  | ✅       | Recommended Pattern.                      |
+
+---
+
+## 🛑 Stop and Think
+
+> The 'children' prop is the bridge across the network. It allows you to keep your heavy, data-fetching logic on the server while wrapping it in an interactive, stateful shell in the browser.
+
+---
