@@ -183,6 +183,10 @@ export const archiveLinks: ArchiveSectionLink[] = [
         title: "React Server Components",
         path: "/archive/next/react-server-component",
       },
+      {
+        title: "Rendering Strategies",
+        path: "/archive/next/rendering-strategies",
+      },
     ],
   },
 ];

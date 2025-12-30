@@ -1,0 +1,201 @@
+---
+title: "Rendering Strategies: Static vs. Dynamic"
+date: "30-12-2025"
+excerpt: "Mastering the Performance Engine. Understanding how Next.js automatically optimizes content delivery through Static and Dynamic rendering."
+---
+
+# Rendering Strategies
+
+In Next.js, Rendering is no longer an all or nothing choice. The framework uses Automatic Rendering Optimization to decide how to deliver each route based on the features we use. The goal is to maximize performance by shifting as much work as possible to the Build Step.
+
+## Static vs Dynamic Rendering
+
+Next.js categorizes every route into one of two buckets. This decision happens automatically at build time.
+
+### 1. Static Rendering
+
+By default, Next.js performs Static Rendering. This means the HTML and RSC Payload are generated once during the build process (when we run `npm run build`) or in the background.
+
+- The Benefit: The output is stored on a Content Delivery Network (CDN). When a user visits, they receive a raw HTML file almost instantly from a server geographically close to them.
+- Use Case: Marketing pages, blog posts, documentation, and product catalogs.
+- Architecture: Since the data is fetched at build time, there is zero server think time when a user requests the page.
+
+### 2. Dynamic Rendering
+
+If Next.js detects that a route needs information it can only get at Request Time (when a specific user visits), it switches to Dynamic Rendering.
+
+The Triggers:
+
+- Dynamic Functions: Using `cookies()`, `headers()`, or `searchParams`.
+- Uncached Data: Using a fetch request with `{ cache: 'no-store' }`.
+
+> The Database Nuance: Simply fetching from a database does NOT make a route dynamic. Next.js will attempt to fetch that data at build time and statically cache it. A database-driven route only becomes Dynamic if the query depends on a user's cookie, a header, or a live URL parameter.
+
+---
+
+## The Rendering Matrix
+
+It is vital to distinguish between Component Nature (Server/Client) and Rendering Timing (Static/Dynamic). They are independent axes.
+
+| Component Type   | Static (Build Time)                                     | Dynamic (Request Time)                                          |
+| :--------------- | :------------------------------------------------------ | :-------------------------------------------------------------- |
+| Server Component | Fetches DB data once at build. No JS sent to client.    | Fetches DB data on every click. No JS sent to client.           |
+| Client Component | Pre-renders initial HTML at build. Hydrates in browser. | Pre-renders initial HTML on every request. Hydrates in browser. |
+
+---
+
+## The Switch Mechanics
+
+We don't usually set a page to be dynamic; Next.js infers it. However, we can force the behavior using Route Segment Config.
+
+```tsx
+// Force a page to be dynamic even if it doesn't use cookies
+export const dynamic = "force-dynamic";
+
+export default async function Dashboard() {
+  const data = await fetch("https://api.example.com/stats"); // No-cache is implied
+  return <div>...</div>;
+}
+```
+
+---
+
+## 📝 Summary: Performance Comparison
+
+| Feature         | Static Rendering                 | Dynamic Rendering                |
+| --------------- | -------------------------------- | -------------------------------- |
+| When it happens | Build Time                       | Request Time                     |
+| Data Freshness  | Build-time only (until re-build) | Real-time                        |
+| User Latency    | Ultra Low (Instant from CDN)     | Variable (Server must calculate) |
+| Server Load     | Low (Served as a file)           | High (Server runs JS per visit)  |
+
+---
+
+## 🛑 Stop and Think
+
+> Next.js is a Static-First framework. Its primary goal is to move as much work as possible to the CDN. We should only move to Dynamic Rendering when we absolutely need access to user-specific data like session cookies or live search parameters.
+
+---
+
+# Incremental Static Regeneration
+
+Static rendering is fast, but it has a major flaw: the data becomes stale the moment the build finishes. ISR is the Holy Grail of rendering that solves this. It allows us to update static pages after we've built our site, without needing a full redeploy.
+
+### 1. The Strategy: Stale While Revalidate
+
+ISR works on a background refresh model. It doesn't make the user wait for the server to think. Instead, it serves a cached version while it fetches a fresh one in the background.
+
+The Workflow:
+
+1. Initial Build: All pages are generated statically.
+2. User A Visits (Window of Validity): They get the cached version instantly.
+3. User B Visits (After Revalidate Period): They still\ see the stale (old) cached version (no waiting).
+
+- Next.js triggers a background re-render of that specific page.
+
+4. User C Visits (After Background Finish): They see the new, fresh version.
+
+### 2. Implementation: How to specify ISR
+
+There are two ways to tell Next.js a route should be ISR:
+
+#### A. The Fetch Option
+
+Inside Server Component, add the `next.revalidate` property to `fetch` call.
+
+```tsx
+export default async function Page() {
+  // This page is now ISR. It refreshes at most every 60 seconds.
+  const res = await fetch(
+    "[https://api.example.com/data](https://api.example.com/data)",
+    {
+      next: { revalidate: 60 },
+    }
+  );
+  const data = await res.json();
+
+  return <div>{/* ... */}</div>;
+}
+```
+
+#### B. The Segment Config
+
+If we are using a DB client (Prisma/Drizzle) instead of `fetch`, export the `revalidate` constant at the top of `page.tsx`.
+
+```tsx
+// Revalidate this page every hour (3600 seconds)
+export const revalidate = 3600;
+
+import { db } from "@/lib/db";
+
+export default async function Page() {
+  const data = await db.posts.findMany();
+  return <div>{/* ... */}</div>;
+}
+```
+
+### 3. The ISR Constraint: Shared vs. Private
+
+A critical architectural rule: ISR is for Shared Data only. Because the revalidated page is stored in a public cache, it must be independent of the user currently viewing it.
+
+- The Rule: We cannot use `cookies()`, `headers()`, or user-specific DB queries inside a route using ISR.
+- The Risk: If we try to fetch My Profile using ISR, the data of the user who triggered the revalidation will be cached and shown to every other user until the next revalidation cycle.
+
+| Use Case            | Strategy      | Why?                                              |
+| :------------------ | :------------ | :------------------------------------------------ |
+| Public Product Page | ISR           | The product details are the same for everyone.    |
+| User Dashboard      | Dynamic (SSR) | The data is unique to the `userId` in the cookie. |
+
+---
+
+# Partial Prerendering
+
+PPR is a new architectural pattern that eliminates the all or nothing choice between Static and Dynamic rendering. It allows a single route to have both static and dynamic parts.
+
+### 1. The Static Shell Pattern
+
+Imagine an E-commerce product page.
+
+- Static Parts: Product title, description, and images (never change per user).
+- Dynamic Parts: Personalized recommendations, stock levels, and shopping cart.
+
+With PPR, Next.js generates a Static Shell at build time. When a user visits:
+
+1. The Static Shell is sent immediately (instant load).
+2. The Dynamic Holes are filled in via Streaming as the server finishes the data fetching.
+
+### 2. Leveraging React Suspense
+
+PPR relies on `Suspense` boundaries to define where the Dynamic Holes are.
+
+```tsx
+export default function ProductPage() {
+  return (
+    <main>
+      <StaticProductInfo /> {/* Sent Instantly */}
+      <Suspense fallback={<CartSkeleton />}>
+        <DynamicCart /> {/* Streamed in later */}
+      </Suspense>
+    </main>
+  );
+}
+```
+
+---
+
+## 📝 Rendering Strategy Cheat Sheet
+
+| Strategy      | Performance | Freshness     | Best For                      |
+| ------------- | ----------- | ------------- | ----------------------------- |
+| Static (SSG)  | ⚡⚡        | ❌ Stale      | Marketing, Docs               |
+| Dynamic (SSR) | 🐢          | ⚡⚡          | User Dashboards, Private data |
+| ISR           | ⚡⚡        | ✅ Background | Large Blogs, Product Catalogs |
+| PPR           | ⚡ (Shell)  | ✅ (Holes)    | E-commerce, Social Feeds      |
+
+---
+
+## 🛑 Stop and Think
+
+> ISR moves the 'Cost of Freshness' from the User to the Background Worker. The user always gets a fast experience, even if the data is a few minutes old. Only use Dynamic Rendering if the data must be 100% real-time for the user currently looking at the screen.
+
+---

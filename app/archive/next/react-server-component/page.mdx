@@ -1,5 +1,5 @@
 ---
-title: Next.js Architecture: React Server Components
+title: React Server Components
 date: 28-12-2025
 excerpt: The paradigm shift from Client-Side React to Server-First architecture. Solving the hydration problem and the bundle size bottleneck.
 ---
@@ -33,6 +33,15 @@ React Server Components (RSC) allow us to render parts of our UI on the server a
 - Code stays on the Server: If we use a heavy library (like `date-fns` or `lucide-react`) inside a Server Component, that library never gets sent to the browser.
 - Zero Client Footprint: The JavaScript bundle size for these components is exactly 0 KB.
 - Direct Access: Because they run on the server, these components can talk directly to our database or file system without an intermediate API layer.
+
+### Deep Dive: The Result vs. Instructions Model
+
+A common point of confusion is how libraries like `lucide-react` can be zero bundle if the icons still appear on the screen.
+
+- The Client Model (Instructions): In standard React, we send the browser the JavaScript instructions (the library code). The browser's CPU must execute that code to figure out how to draw an icon.
+- The Server Model (Result): In Next.js, the Server executes the library code. It converts the `<TrashIcon />` into raw SVG text (e.g., `<svg><path ... /></svg>`).
+
+The Outcome: The browser receives the finished Product (HTML/SVG) but Zero Logic. This is why the library stays on the server; the browser is just a dumb viewer of the pre-calculated results.
 
 ### The Mental Model: Thinking Server-First
 
@@ -107,6 +116,8 @@ When to use them:
 - State & Effects: Using `useState`, `useReducer`, `useEffect`.
 - Browser APIs: Using `window`, `document`, `localStorage`, or Geolocation.
 - Custom Hooks: Any hook that relies on state or lifecycle.
+
+> Important Distinction: Client Components are Pre-rendered on the server to generate a fast static preview for SEO and UX. However, they are the only components that undergo Hydration in the browser. Server Components are sent as static results and never hydrate, which is why they have a Zero Bundle Size.
 
 ---
 
