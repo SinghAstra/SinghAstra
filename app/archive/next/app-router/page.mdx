@@ -79,3 +79,75 @@ When we visit a URL, Next.js assembles the components in a specific order. Imagi
 | `error.tsx`    | Error Recovery        | N/A                | Client Only      |
 
 ---
+
+Next.js provides specialized folder patterns that allow us to manipulate the URL structure and organize code without cluttering the browser's address bar.
+
+---
+
+## 1. Route Groups (folder)
+
+Sometimes we want to group routes together (e.g., all Auth pages or all Dashboard pages) but we don't want the folder name to appear in the URL.
+
+- Syntax: Wrap the folder name in parentheses: `(auth)`.
+- The URL: `app/(auth)/login/page.tsx` becomes `your-domain.com/login`.
+- The Benefit: We can create different layouts for different groups. For example, all pages in `(auth)` can share a layout with no navbar, while pages in `(marketing)` share a layout with a big hero section.
+
+---
+
+## 2. Private Folders
+
+By default, every folder in `app` is a potential route segment. If we want to keep your components, hooks inside the route folder but prevent them from being accessible via a URL, use an underscore.
+
+- Syntax: Prefix the folder with an underscore: `_components`.
+- Result: Next.js and its routing system will completely ignore this folder.
+- Use Case: Colocation. Keeping the components used only by a specific route right next to the `page.tsx` without accidentally creating a `/components` URL.
+
+---
+
+## 3. Dynamic Routes [slug]
+
+When we don't know the exact segment name ahead of time (e.g., a blog post ID or a username), we use dynamic segments.
+
+- Syntax: Wrap the folder name in brackets: `[id]`.
+- Accessing Data: The value is passed to the `page.tsx` via the `params` prop.
+
+```tsx
+// app/blog/[slug]/page.tsx
+export default function BlogPost({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const data = await params;
+  return <h1>Reading: {data.slug}</h1>;
+}
+```
+
+---
+
+## 4. Catch-all Segments [...slug]
+
+If you need to match multiple levels of a URL (e.g., a documentation site with infinite nested categories), use the spread operator.
+
+- Syntax: `[...slug]` (matches `/docs/setup`, `/docs/setup/linux`, etc.)
+- Optional Catch-all: `[[...slug]]` (also matches the root `/docs` without extra segments).
+
+---
+
+## 📝 Organizational Summary
+
+| Pattern        | Folder Syntax | URL Impact   | Best For                                |
+| -------------- | ------------- | ------------ | --------------------------------------- |
+| Standard Route | `dashboard`   | `/dashboard` | Regular pages.                          |
+| Route Group    | `(marketing)` | _None_       | Shared layouts without URL bloat.       |
+| Private Folder | `_lib`        | _Hidden_     | Colocating code, components, or styles. |
+| Dynamic Route  | `[id]`        | `/123`       | Dynamic content like IDs or slugs.      |
+| Catch-all      | `[...slug]`   | `/a/b/c`     | Complex docs or folder navigations.     |
+
+---
+
+## 🛑 Stop and Think
+
+> Route Groups are our best friend for cleaner architecture. Instead of having a messy root `app` folder, group features into `(main)`, `(auth)`, and `(admin)`. This keeps our layouts organized and your URL structure exactly how we want it.
+
+---
