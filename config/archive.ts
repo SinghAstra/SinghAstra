@@ -195,6 +195,10 @@ export const archiveLinks: ArchiveSectionLink[] = [
         title: "App Router",
         path: "/archive/next/app-router",
       },
+      {
+        title: "Layout Patterns",
+        path: "/archive/next/layout-patterns",
+      },
     ],
   },
 ];

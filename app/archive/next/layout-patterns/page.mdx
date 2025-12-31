@@ -1,0 +1,61 @@
+---
+title: "Layout Patterns & State Preservation"
+date: "31-12-2025"
+excerpt: "Deep dive into nested layouts and performance. Understanding how Next.js maintains UI state during navigation through persistent segments."
+---
+
+# Layout Patterns
+
+One of the most powerful features of the App Router is its ability to handle Persistent UI. In traditional React apps, navigating usually meant unmounting the entire page tree. In Next.js, we can keep the bones of our application (Sidebars, Navbars, Audio Players) alive while only swapping out the content.
+
+## Nested Layouts
+
+Layouts are the foundation of state preservation. When we navigate between two routes that share a layout, Next.js only re renders the page segment, leaving the layout completely untouched.
+
+### 1. The Wrapping Logic
+
+Layouts follow the folder structure. A `layout.tsx` in a parent folder wraps the `layout.tsx` and `page.tsx` of all child folders. This creates a nested hierarchy of React components.
+
+### 2. State Preservation: The Sticky Sidebar
+
+Because the Layout component does not unmount during navigation, any React state inside it (or browser state like scroll position and video playback) is preserved.
+
+- Scenario: We have a search input in our Sidebar (`layout.tsx`).
+- Action: We type Next.js into the sidebar and click a link to `/settings`.
+- Result: The Main content area changes to Settings, but our search text Next.js remains in the input.
+
+### 3. Performance Benefits
+
+By nesting layouts, Next.js reduces the amount of work the browser has to do:
+
+- Minimal Rendering: Only the parts of the UI that change are updated.
+- Data Fetching: If our Layout fetches data (e.g., User Profile), that data isn't re-fetched when we move between child pages.
+
+### 4. Layout vs. Page: Responsibility
+
+| Feature     | `layout.tsx`                     | `page.tsx`                      |
+| ----------- | -------------------------------- | ------------------------------- |
+| Persistence | Lives across multiple routes.    | Unique to a specific URL.       |
+| State       | Preserved on navigation.         | Reset on navigation.            |
+| Best For    | Global Nav, Sidebars, Providers. | Main content, Data-heavy views. |
+| Re-renders  | Only when its own props change.  | Every time the URL changes.     |
+
+---
+
+## 📝 The Composition Flow
+
+When we visit `/dashboard/analytics`, Next.js essentially renders your app like this:
+
+```tsx
+<RootLayout>
+  {/* app/layout.tsx */}
+  <DashboardLayout>
+    {/* app/dashboard/layout.tsx */}
+    <AnalyticsPage /> {/* app/dashboard/analytics/page.tsx */}
+  </DashboardLayout>
+</RootLayout>
+```
+
+> Important Note: We cannot pass data from a Layout to its children via props. Since the Layout wraps the Page, the Page is passed as a `{children}` prop. To share data, we should fetch the data in both (Next.js will automatically deduplicate the request) or use React Context.
+
+---
