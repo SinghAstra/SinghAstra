@@ -68,3 +68,72 @@ export async function GET(request: Request) {
 ## 🛑 Stop and Think
 
 > Don't default to the Edge just because it sounds 'faster.' If our app needs a heavy library like `bcrypt` or `pdf-lib`, the Edge Runtime will throw an error. Use the Node.js Runtime for our main application logic and the Edge Runtime for low-latency tasks like Middleware and simple redirect
+
+---
+
+# The Next.js Build Pipeline
+
+When we run `npm run build`, Next.js doesn't just bundle our code. It performs a series of complex optimizations, static analysis, and environment checks. Understanding this pipeline helps us debug production issues and optimize our application's bundle size.
+
+---
+
+## 1. SWC: The Rust-Powered Engine
+
+For years, JavaScript tools relied on Babel and Terser (written in JS). Next.js replaced these with SWC (Speedy Web Compiler), written in Rust.
+
+- The Performance Gap: SWC is up to 20x faster than Babel on a single core and 70x faster on multiple cores.
+- What it does: It handles compilation (TS/JSX to JS), minification, and even CSS optimization.
+- The Benefit: Fast `Fast Refresh` during development and significantly shorter build times in CI/CD pipelines.
+
+---
+
+## 2. Analyzing the .next Folder Structure
+
+After a successful build, a `.next` directory is generated. This is what actually gets deployed to our server. Knowing what’s inside helps us understand how Next.js separates concerns.
+
+### The Key Directories:
+
+- `/static`: Contains assets (JS, CSS, Images) that are sent to the browser. These are fingerprinted with hashes for long term caching.
+- `/server`: Contains our Server Components, API routes, and Server Actions. This folder never reaches the browser.
+- `/cache`: Stores the Data Cache and Full Route Cache. This is how Next.js remembers what it rendered at build time.
+- `/types`: Automatically generated TypeScript types for our routes (ensuring `params` and `searchParams` are typed correctly).
+
+---
+
+## 3. The Build Output: Interpreting Symbols
+
+At the end of the build process, Next.js prints a summary in terminal. This is the most important health check for our app.
+
+### The Symbols:
+
+- `○` (Static): A route that was rendered as plain HTML at build time. No request time work needed.
+- `ƒ` (Dynamic): A route that requires a server to run on every request (e.g., using `cookies()` or `searchParams`).
+- `●` (SSG/ISR): A static route that has a `revalidate` timer or uses `generateStaticParams`.
+
+---
+
+## 4. Tree Shaking & Code Splitting
+
+Next.js is aggressive about keeping our JS Tax low.
+
+1. Route based Code Splitting: The browser only downloads the JavaScript needed for the current page. When we navigate, it fetches the code for the next page in the background.
+2. Server Side Tree Shaking: Because Server Components stay on the server, the large libraries they use (like `moment` or `zod`) are shaken off and never included in the client-side bundle.
+
+---
+
+## 📝 Comparison: Dev Mode vs. Build Mode
+
+| Feature      | `next dev`                | `next build`                |
+| ------------ | ------------------------- | --------------------------- |
+| Focus        | Developer Experience (DX) | Production Performance (UX) |
+| Compilation  | On-demand (Lazy)          | Ahead-of-Time (AOT)         |
+| Minification | Disabled (for debugging)  | Enabled (Aggressive)        |
+| Caching      | Temporary                 | Persistent                  |
+
+---
+
+## 🛑 Stop and Think
+
+> If you see a `ƒ` (Dynamic) symbol for a page you expected to be `○` (Static), check your code for 'Dynamic Triggers.' Accessing `searchParams` or using a non-cached fetch will force Next.js to move that page from a simple CDN file to a server-side execution.
+
+---
