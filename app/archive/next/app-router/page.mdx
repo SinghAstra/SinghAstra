@@ -1,0 +1,81 @@
+---
+title: "The Anatomy of the App Router"
+date: "31-12-2025"
+excerpt: "Mastering file-based conventions. How Next.js uses specific filenames to handle layouts, loading states, and error boundaries automatically."
+---
+
+# The Anatomy of the App Router
+
+In the App Router, folders define the URL structure, but special files define the UI behavior. This convention over configuration approach allows Next.js to handle complex React features like Suspense and Error Boundaries automatically.
+
+---
+
+## File Based Conventions
+
+Each folder in our `app` directory represents a route segment. Within these segments, Next.js looks for specific filenames to build the component tree.
+
+### 1. `page.tsx`
+
+This is the only file that makes a route publicly accessible. It defines the unique UI for that specific path.
+
+- Role: The leaf of the route tree.
+- Context: Can be a Server or Client component.
+
+### 2. `layout.tsx`
+
+Used to share UI across multiple pages (e.g., Navbar, Sidebar).
+
+- Persistence: Layouts do not re-render when navigating between sibling pages. They preserve state (like search input text or scroll position).
+- Nesting: Layouts wrap the child segments automatically.
+
+### 3. `template.tsx`
+
+Similar to layouts, but with one key difference: Templates create a new instance for each child on navigation.
+
+- Use Case: CSS animations that need to re-trigger on every page change, or `useEffect` hooks that must run every time we switch pages.
+- Note: Use `layout.tsx` by default; only use `template.tsx` if you specifically need the "mount/unmount" behavior.
+
+### 4. `loading.tsx`
+
+Next.js uses this file to create an automatic React Suspense boundary around our `page.tsx`.
+
+- The Benefit: While our Server Component is fetching data, the user immediately sees the `loading.tsx` UI (like a skeleton screen) instead of a blank page.
+
+### 5. `error.tsx` & `not-found.tsx`
+
+- `error.tsx`: An Error Boundary that catches runtime exceptions in its segment. It must be a Client Component because it needs to provide a Try Again button.
+- `not-found.tsx`: Triggered when the `notFound()` function is called or when a route doesn't exist.
+
+---
+
+## 📝 File Hierarchy & Nesting
+
+When we visit a URL, Next.js assembles the components in a specific order. Imagine the folder structure: `/dashboard/settings`. The hierarchy looks like this:
+
+1. `layout.tsx` (Root)
+2. `layout.tsx` (Dashboard)
+3. `error.tsx` (Dashboard)
+4. `loading.tsx` (Dashboard)
+5. `page.tsx` (Settings)
+
+> Key Rule: A layout in a parent folder wraps the layouts and pages in its child folders.
+
+---
+
+## 🛑 Stop and Think
+
+> The beauty of `loading.tsx` and `error.tsx` is that they allow us to handle 'unhappy paths' declaratively. We don't need `if (loading)` or `try/catch` logic inside our components; the file system handles the switching for us.
+
+---
+
+## 📝 Summary: File Roles
+
+| File           | Purpose               | Re-renders on Nav? | Component Type   |
+| -------------- | --------------------- | ------------------ | ---------------- |
+| `page.tsx`     | Unique Route UI       | Yes                | Server/Client    |
+| `layout.tsx`   | Shared/Persistent UI  | No                 | Server (Default) |
+| `template.tsx` | Shared UI (Resetting) | Yes                | Server/Client    |
+| `loading.tsx`  | Suspense Fallback     | N/A                | Server/Client    |
+| `error.tsx`    | Error Recovery        | N/A                | Client Only      |
+
+---

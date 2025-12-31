@@ -191,6 +191,10 @@ export const archiveLinks: ArchiveSectionLink[] = [
         title: "Runtime Architecture",
         path: "/archive/next/runtime-architecture",
       },
+      {
+        title: "App Router",
+        path: "/archive/next/app-router",
+      },
     ],
   },
 ];
