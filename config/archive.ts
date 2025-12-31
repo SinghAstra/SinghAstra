@@ -187,6 +187,10 @@ export const archiveLinks: ArchiveSectionLink[] = [
         title: "Rendering Strategies",
         path: "/archive/next/rendering-strategies",
       },
+      {
+        title: "Runtime Architecture",
+        path: "/archive/next/runtime-architecture",
+      },
     ],
   },
 ];
