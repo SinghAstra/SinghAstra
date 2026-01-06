@@ -1,1 +1,1 @@
-Web : [singhastra](https://singhastra.vercel.app)
+[singhastra](https://singhastra.vercel.app)

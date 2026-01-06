@@ -62,7 +62,7 @@ When we visit `/dashboard/analytics`, Next.js essentially renders your app like 
 
 # Parallel Routes
 
-Parallel Routing allows you to simultaneously or conditionally render one or more pages within the same layout. This is essential for highly complex dashboards or social feeds where different sections of the page need independent navigation, loading states, or error handling.
+Parallel Routing allows us to simultaneously or conditionally render one or more pages within the same layout. This is essential for highly complex dashboards or social feeds where different sections of the page need independent navigation, loading states, or error handling.
 
 ---
 
@@ -102,9 +102,9 @@ export default function DashboardLayout({
 
 The power of Parallel Routes lies in their independence. Each slot is treated as a separate route segment:
 
-- Independent Loading: You can have a `loading.tsx` inside `@notifications` and a different one inside `@stats`. One section of your dashboard can be "Loading" while the other is fully interactive.
+- Independent Loading: We can have a `loading.tsx` inside `@notifications` and a different one inside `@stats`. One section of our dashboard can be Loading... while the other is fully interactive.
 - Independent Errors: If the `@stats` fetch fails, the `@notifications` section remains perfectly functional.
-- Independent Routing: You can navigate to a specific state in one slot (e.g., `@notifications/settings`) without affecting the state of the other slots.
+- Independent Routing: We can navigate to a specific state in one slot (e.g., `@notifications/settings`) without affecting the state of the other slots.
 
 ---
 
@@ -112,8 +112,8 @@ The power of Parallel Routes lies in their independence. Each slot is treated as
 
 When navigating, Next.js needs to know what to show in a slot if the current URL doesn't match a specific folder inside that slot.
 
-- The Problem: If you navigate to `/dashboard/settings`, but your `@notifications` slot only has a `page.tsx` for the root, Next.js won't know what to render in the notifications area.
-- The Solution: `default.tsx`: You provide this file as a fallback. If Next.js cannot match a slot to the current URL, it will render the `default.tsx` content to preserve the UI.
+- The Problem: If we navigate to `/dashboard/settings`, but our `@notifications` slot only has a `page.tsx` for the root, Next.js won't know what to render in the notifications area.
+- The Solution: `default.tsx`: We provide this file as a fallback. If Next.js cannot match a slot to the current URL, it will render the `default.tsx` content to preserve the UI.
 
 ---
 
@@ -149,6 +149,6 @@ export default function Layout({
 
 ## 🛑 Stop and Think
 
-> Think of Parallel Routes as Micro-Frontends within a single layout. They allow you to break down a massive, complex page into small, manageable, and independently-loading chunks without the 'all-or-nothing' rendering cost of a single large page.
+> Think of Parallel Routes as Micro-Frontends within a single layout. They allow us to break down a massive, complex page into small, manageable, and independently-loading chunks without the 'all-or-nothing' rendering cost of a single large page.
 
 ---
