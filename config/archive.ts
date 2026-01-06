@@ -203,6 +203,10 @@ export const archiveLinks: ArchiveSectionLink[] = [
         title: "Navigation",
         path: "/archive/next/navigation",
       },
+      {
+        title: "RSC Fetching",
+        path: "/archive/next/rsc-fetching",
+      },
     ],
   },
 ];

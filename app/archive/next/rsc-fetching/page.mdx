@@ -1,0 +1,151 @@
+---
+title: "The RSC Fetching Model"
+date: "06-01-2026"
+excerpt: "Moving beyond useEffect. Learning to fetch data directly in Server Components with zero bundle impact and simplified architecture."
+---
+
+# The RSC Fetching Model
+
+In traditional React, data fetching was a Client Side affair. We would mount a component, trigger a `useEffect`, show a loading spinner, and wait for an API response. In the Next.js App Router, we flip this script. Server Components are asynchronous by default, allowing us to fetch data directly where we need it.
+
+## 1. Direct Data Access (No API Layer Needed)
+
+Because Server Components run only on the server, we have direct access to our backend resources. We no longer need to create an intermediate API Route just to fetch data for our own UI.
+
+- The Old Way: Component `fetch('/api/users')` API Route Database.
+- The RSC Way: Component Database.
+
+We can use `async/await` directly in our component function. This eliminates the double hop latency and keeps our sensitive database queries off the client's browser.
+
+```tsx
+// app/users/page.tsx
+import { db } from "@/lib/db";
+
+export default async function UsersPage() {
+  // Direct database call!
+  // This code never reaches the browser.
+  const users = await db.user.findMany();
+
+  return (
+    <ul>
+      {users.map((user) => (
+        <li key={user.id}>{user.name}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+---
+
+## 2. Zero Bundle Impact
+
+When we use a library like `axios`, `zod`, or a heavy database SDK inside a Client Component, that code is downloaded by the user's browser.
+
+In a Server Component, these dependencies stay on the server. If we use a 500KB library to parse data inside an `async` component, the user receives 0KB of that library. They only receive the final, rendered HTML.
+
+---
+
+## 3. Fetching: Component vs. Page Level
+
+In the old Pages Router, we had to fetch all data at the top level (`getServerSideProps`) and drill it down to children. In the App Router, we follow the `Fetch where you consume` pattern.
+
+- Page-level: Fetching data that the entire layout needs.
+- Component-level: If a `UserAvatar` component needs the user's image, it fetches it itself.
+
+Why this is better: Next.js automatically deduplicates requests. If five different components on the same page all call `fetch('/api/me')`, Next.js only performs the network request once.
+
+---
+
+## 📝 The New Fetching Mental Model
+
+| Feature      | Client-Side Fetching (`useEffect`)     | Server-Side Fetching (RSC)            |
+| ------------ | -------------------------------------- | ------------------------------------- |
+| When it runs | After the component mounts in browser. | During the render on the server.      |
+| Bundle Size  | Includes fetch logic & libraries.      | Zero impact on browser bundle.        |
+| Security     | API keys/DB URLs are exposed.          | Secure (Private keys stay on server). |
+| UX           | Layout Shift as data pops in.          | Data is ready before HTML is sent.    |
+
+---
+
+## 🛑 Stop and Think
+
+> Fetching data in Server Components is our default tool. It is faster, more secure, and easier to write. We should only move back to client-side fetching (like TanStack Query) if we need the data to change dynamically without a route transition such as live search results or infinite scrolling.
+
+---
+
+# Request Deduplication & Caching
+
+Next.js introduces a sophisticated caching system that sits between our Server Components and our Data Source (API/DB). This system ensures that our app is as fast as possible by avoiding unnecessary network requests and reusing data across users.
+
+---
+
+## 1. Request Memoization (The Short-Term Memory)
+
+As discussed, Request Memoization is a feature that deduplicates identical `fetch` requests within a single render tree.
+
+- The Scope: It only lasts for the duration of a single server request.
+- The Mechanism: Next.js creates a temporary "Request Store." If `Component A` and `Component B` both call `fetch('api/data')`, the server performs the network call once and shares the result with both components.
+- Automatic: This is built into the native `fetch` API in Next.js. We don't have to enable it.
+
+---
+
+## 2. The Data Cache (The Long-Term Memory)
+
+While Memoization happens per request, the Data Cache is persistent. It stores the results of data fetches across multiple incoming requests and even different users.
+
+- How it works: When we call `fetch`, Next.js checks the Data Cache first. If a cached version exists and is "fresh," it is returned immediately.
+- Where it lives: This cache is stored on the server (disk or memory) and can be shared across a globally distributed network (if using a platform like Vercel).
+
+### The Three Cache Modes:
+
+1. Force Cache (Default): Next.js will cache the data indefinitely until it is manually revalidated.
+2. No Store: Next.js skips the cache entirely and fetches data on every single request. Use this for highly dynamic data (e.g., stock prices).
+3. Revalidate: Next.js caches the data but refreshes it after a specific time interval (the ISR model).
+
+```tsx
+// 1. Permanent Cache (Default)
+fetch("https://...", { cache: "force-cache" });
+
+// 2. No Cache (Dynamic)
+fetch("https://...", { cache: "no-store" });
+
+// 3. Time-based Revalidation (ISR)
+fetch("https://...", { next: { revalidate: 3600 } });
+```
+
+---
+
+## 3. The `cache()` Function (For Non-fetch Data)
+
+The automatic deduplication only works with the `fetch` API. If we are using a Database ORM (Prisma, Drizzle) or a GraphQL client, we must use React's `cache` function to achieve the same deduplication.
+
+```tsx
+import { cache } from "react";
+import { db } from "@/lib/db";
+
+// This function is now memoized for the duration of one request
+export const getUser = cache(async (id: string) => {
+  const user = await db.user.findUnique({ where: { id } });
+  return user;
+});
+```
+
+---
+
+## 📝 Comparison: Memoization vs. Data Cache
+
+| Feature        | Request Memoization         | Data Cache                |
+| -------------- | --------------------------- | ------------------------- |
+| Duration       | Single Page Load (Snapshot) | Persistent (Across users) |
+| Storage        | Server Memory               | Persistent Disk/Cloud     |
+| Deduplicates?  | Yes                         | Yes                       |
+| Manual Control | `cache()` function          | `revalidate` or `tags`    |
+
+---
+
+## 🛑 Stop and Think
+
+> Think of Request Memoization as a 'Filter' that prevents our components from bugging the server multiple times for the same thing during one visit. Think of the Data Cache as a 'Library' that keeps books ready so the server doesn't have to rewrite them every time a new visitor arrives.
+
+---
