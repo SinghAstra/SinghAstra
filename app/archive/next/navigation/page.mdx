@@ -1,0 +1,161 @@
+---
+title: "Navigation & Linking"
+date: "06-01-2026"
+excerpt: "Mastering the mechanics of movement. Understanding how Next.js uses prefetching and client-side transitions to create instant navigation."
+---
+
+# Navigation & Linking
+
+In a standard multipage application, clicking a link triggers a full browser refresh the screen goes white, the script reloads, and state is lost. Next.js uses a Client Side Router that intercepts these clicks, making transitions feel like a mobile app while maintaining the benefits of a multi page structure.
+
+---
+
+## The Link Component
+
+The `<Link>` component is the primary way to navigate in Next.js. It is an extension of the HTML `<a>` tag that provides Prefetching and Client-Side Navigation.
+
+### 1. Prefetching (The Secret to Speed)
+
+Prefetching is how Next.js makes pages feel like they load instantly. When a `<Link>` component enters the user's viewport (the visible part of the screen), Next.js automatically begins downloading the code and data for that route in the background.
+
+- Static Routes: The entire route is prefetched and cached.
+- Dynamic Routes: Only the shared layout and the loading state are prefetched.
+- The Benefit: By the time the user actually clicks the link, the necessary data is already in the browser's memory.
+
+### 2. Client Side Transitions
+
+When we click a `<Link>`, Next.js does not refresh the page. Instead:
+
+1. It updates the URL in the browser's address bar.
+2. It swaps out the Page component while keeping the Layout alive (State Preservation).
+3. It only downloads the the specific code/data that is different from the current page.
+
+### 3. Usage & Best Practices
+
+We should always use `<Link>` for internal navigation. Use standard `<a>` tags only for external links.
+
+```tsx
+import Link from "next/link";
+
+export default function Navbar() {
+  return (
+    <nav>
+      {/* Prefetching happens automatically when this enters view */}
+      <Link href="/dashboard" prefetch={true}>
+        Dashboard
+      </Link>
+
+      {/* We can disable prefetching for low-priority pages */}
+      <Link href="/settings" prefetch={false}>
+        Settings
+      </Link>
+    </nav>
+  );
+}
+```
+
+---
+
+## 📝 Navigation Mechanics Table
+
+| Feature            | Standard `<a>` Tag         | Next.js `<Link>` Component      |
+| ------------------ | -------------------------- | ------------------------------- |
+| Browser Refresh    | Full Refresh (White Flash) | No Refresh (Instant Swap)       |
+| State Preservation | Lost (App restarts)        | Maintained (Layouts stay alive) |
+| Data Fetching      | On Click                   | On Viewport (via Prefetching)   |
+| Bundle Impact      | Downloads entire page      | Downloads only the segment diff |
+
+---
+
+## 🛑 Stop and Think
+
+> Prefetching is the reason why Next.js apps feel 'faster' than regular React apps. However, be careful with huge lists of links; prefetching too many routes at once can consume unnecessary data for mobile users. If a route isn't vital, use `prefetch={false}`.
+
+---
+
+---
+
+## Programmatic Navigation
+
+Next.js provides two distinct ways to navigate via code: one for the Client and one for the Server.
+
+### 1. Client-Side: `useRouter()`
+
+When we are inside a Client Component (`'use client'`), we use the `useRouter` hook.
+
+- Role: Interactive navigation (e.g., clicking a custom button or search bar logic).
+- Methods: `.push()` (adds to history), `.replace()` (replaces current history), `.refresh()` (refreshes data without losing state).
+
+```tsx
+"use client";
+import { useRouter } from "next/navigation";
+
+export function SearchButton() {
+  const router = useRouter();
+
+  const handleSearch = () => {
+    // Logic here...
+    router.push("/results");
+  };
+
+  return <button onClick={handleSearch}>Search</button>;
+}
+```
+
+### 2. Server-Side: `redirect()`
+
+When we are in a Server Component or a Server Action, we cannot use hooks. Instead, we use the `redirect()` function.
+
+- Role: Logical redirection (e.g., unauthorized users or successful form submissions).
+- Mechanism: It throws a special internal error that Next.js catches to handle the transition.
+
+```tsx
+import { redirect } from "next/navigation";
+
+async function fetchUser(id: string) {
+  const user = await db.user.find(id);
+  if (!user) {
+    redirect("/404"); // Triggers immediately on the server
+  }
+}
+```
+
+---
+
+## The Router Cache
+
+Next.js has an invisible friend called the Router Cache (sometimes called the Client-side Cache). It is a temporary memory store that lives in the browser while the user is using our app.
+
+### 1. How it works
+
+When a user navigates to a new route, Next.js stores the Server Component Payload (the rendered UI) in this cache.
+
+- The Result: If the user clicks the Back button, Next.js doesn't go back to the server. It pulls the page directly from the browser's memory. This is why Back and Forward feel instant.
+- Static Routes: Cached for 5 minutes.
+- Dynamic Routes: Cached for 30 seconds.
+
+### 2. How to clear the cache
+
+Sometimes we want the cache to be destroyed (e.g., after a user deletes an item, the Back button shouldn't show that item anymore).
+
+- `router.refresh()`: Clears the cache for the current route and fetches fresh data from the server.
+- Server Actions: Using `revalidatePath()` or `revalidateTag()` automatically purges the router cache to ensure the UI stays in sync with the database.
+
+---
+
+## 📝 Navigation Summary Table
+
+| Tool                | Environment   | Best Use Case                               |
+| ------------------- | ------------- | ------------------------------------------- |
+| `<Link>`            | Client/Server | Standard UI navigation (SEO friendly).      |
+| `useRouter`         | Client Only   | Button clicks, search bar logic.            |
+| `redirect`          | Server Only   | Auth checks, form submission success.       |
+| `permanentRedirect` | Server Only   | Changing a URL structure permanently (301). |
+
+---
+
+## 🛑 Stop and Think
+
+> A common mistake is trying to use `useRouter` in a Server Component. Remember: Hooks are for the browser. If we are doing logic on the server (like checking a session), use `redirect`. If we are handling a user's click, use `useRouter` or `<Link>`.
+
+---

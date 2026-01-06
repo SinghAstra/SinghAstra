@@ -199,6 +199,10 @@ export const archiveLinks: ArchiveSectionLink[] = [
         title: "Layout Patterns",
         path: "/archive/next/layout-patterns",
       },
+      {
+        title: "Navigation",
+        path: "/archive/next/navigation",
+      },
     ],
   },
 ];
