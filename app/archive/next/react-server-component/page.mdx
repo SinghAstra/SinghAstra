@@ -1,43 +1,31 @@
-Your Unit 1 syllabus is a solid foundation, but based on our recent technical "deep dive," it needs to be updated to better reflect the structural and transport mechanics we uncovered (specifically the RSC Payload and the Hybrid Hydration logic).
+# React Server Components & The Payload
 
-I have rewritten Unit 1 into three specific parts to avoid overwhelming the document and to ensure we capture the "Iterative Deepening" detail you require.
+### The Hydration Problem: The JavaScript Tax
 
----
-
-# Unit 1: React Server Components (RSC) & The Payload
-
-## Part 1: The Hydration Problem & The RSC Solution
-
-### 1.1 The Hydration Problem: The "JavaScript Tax"
-
-In traditional Client-Side Rendering (CSR) and standard SSR, the browser is burdened by the Hydration Problem. Even if the server sends HTML, the browser must:
+In traditional Client-Side Rendering and standard SSR, the browser is burdened by the Hydration Problem. Even if the server sends HTML, the browser must:
 
 1. Download the entire JavaScript bundle.
 2. Parse and Execute the code to recreate the Virtual DOM.
 3. Hydrate the HTML (attaching event listeners).
 
-The Failure Point: As applications grow, the "Main Thread" of the browser becomes blocked by JavaScript execution. This results in high Total Blocking Time (TBT) and poor Interaction to Next Paint (INP). The user sees the UI but cannot interact with it.
+The Failure Point: As applications grow, the Main Thread of the browser becomes blocked by JavaScript execution. This results in high Total Blocking Time and poor Interaction to Next Paint. The user sees the UI but cannot interact with it.
 
-### 1.2 The RSC Solution: Zero Bundle Size
+### The RSC Solution: Zero Bundle Size
 
-React Server Components (RSC) shift the "work" from the browser to the server. By executing components on the server and sending only the Result, we achieve:
+React Server Components shift the work from the browser to the server. By executing components on the server and sending only the Result, we achieve:
 
 - Zero Client-Side JavaScript: Code used only on the server (e.g., Markdown parsers, database drivers) is never sent to the browser.
 - Dependency Isolation: If a Server Component uses a 1MB library, the browser download size increases by 0KB. The library remains a server-side environment detail.
 
----
+### Technical Anatomy of the RSC Payload
 
-## Part 2: The Transport Mechanics (The RSC Payload)
+The RSC Payload is the source of truth sent from the server to the client. It is a specialized, streamable text format (not standard JSON) designed to handle React's specific needs.
 
-### 1.3 Technical Anatomy of the RSC Payload
-
-The RSC Payload is the "source of truth" sent from the server to the client. It is a specialized, streamable text format (not standard JSON) designed to handle React's specific needs.
-
-Why not standard JSON?
+Why not standard JSON ?
 
 - Circular References: React trees often reference themselves; JSON cannot represent this.
-- Streaming Support: The payload is line-based, allowing the browser to render "Line 1" (the header) while the server is still calculating "Line 50" (the footer).
-- Promises: The payload can represent "pending data" (Promises) that resolve as the stream continues.
+- Streaming Support: The payload is line-based, allowing the browser to render Line 1 (the header) while the server is still calculating Line 50 (the footer).
+- Promises: The payload can represent pending data (Promises) that resolve as the stream continues.
 
 What is inside the Payload?
 
@@ -48,22 +36,20 @@ What is inside the Payload?
 
 ---
 
-## Part 3: Component Taxonomy & Hydration
-
-### 1.4 The Server Component (Default)
+### The Server Component
 
 Server Components are the default in the App Router.
 
 - Execution: 100% on the Server.
 - Output: Sent as a static result in the RSC Payload.
-- Hydration: None. Server components never "wake up" in the browser; they stay as static DOM nodes, saving CPU cycles.
+- Hydration: None. Server components never wake up in the browser; they stay as static DOM nodes, saving CPU cycles.
 
-### 1.5 The Client Component (`'use client'`)
+### The Client Component
 
 Client Components provide the interactivity layer.
 
 - Server Pre-rendering: Contrary to the name, Client Components are also rendered on the server to generate the initial HTML for SEO and instant visibility.
-- Browser Hydration: After the HTML arrives, the browser downloads the JS bundle for the Client Component and "hydrates" it, enabling `useState`, `useEffect`, and event listeners.
+- Browser Hydration: After the HTML arrives, the browser downloads the JS bundle for the Client Component and hydrates it, enabling `useState`, `useEffect`, and event listeners.
 
 | Feature        | Server Component | Client Component          |
 | -------------- | ---------------- | ------------------------- |
@@ -79,9 +65,3 @@ Client Components provide the interactivity layer.
 > The Architecture Pivot: In the old model, we sent the Source Code to the browser. In the RSC model, we send the Serialized Result. This allows us to use massive libraries and complex logic on the server while the user's browser remains lightweight and responsive.
 
 ---
-
-### Next Step: Unit 2 - Rendering Strategies
-
-Now that we understand the payload, we need to understand timing. When does the server generate this payload? At Build-time (Static) or Request-time (Dynamic)?
-
-Would you like me to generate the detailed notes for Unit 2 next?
