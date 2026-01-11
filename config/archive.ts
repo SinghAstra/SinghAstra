@@ -180,6 +180,10 @@ export const archiveLinks: ArchiveSectionLink[] = [
     title: "Next JS",
     links: [
       {
+        title: "Modern Rendering",
+        path: "/archive/next/modern-rendering",
+      },
+      {
         title: "React Server Components",
         path: "/archive/next/react-server-component",
       },

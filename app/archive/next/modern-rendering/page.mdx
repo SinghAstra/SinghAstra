@@ -1,0 +1,71 @@
+---
+title: "Foundations of Modern Rendering"
+date: "11-01-2026"
+excerpt: "Deconstructing the rendering pipeline. From JSX execution to the generation of the dual-output: HTML and the RSC Payload."
+---
+
+# Foundations of Modern Rendering
+
+## Defining Rendering: The Pipeline
+
+Rendering is two stage process of transforming component logic (JSX/TSX) into a Data Representation of UI (Virtual DOM or RSC Payload), which is then reconciled to produce final visual representation of UI (Actual DOM or HTML).
+
+1. Stage 1: Data Representation
+
+- In React JS: This is the Virtual DOM (an in-memory object tree).
+- In Next.js: This is the RSC Payload (a serialized string).
+
+2. Stage 2: The Implementation
+
+- In React JS: The browser builds Real DOM Nodes.
+- In Next.js: The server generates a Static HTML String.
+
+---
+
+## The Traditional React Model
+
+In a standard Client-Side Rendered app, the server is dumb. It sends an empty HTML file and a JavaScript bundle.
+
+### Initial Mount vs. Hydration
+
+- Initial Mount: Since the server sends an empty `div`, the browser must build the UI from zero. React creates the Virtual DOM and performs a Mount to generate every single DOM node.
+- The JavaScript Tax: This model forces the browser to download, parse, and execute every library and component before the user sees anything. This results in high Total Blocking Time (TBT) as the browser's CPU is occupied by the Construction phase.
+
+---
+
+## The Next.js Model
+
+In Next.js, the server is intelligent. It performs the construction phase before the data reaches the user.
+
+### The Server Side Handover
+
+The server executes the components and sends two artifacts to the browser simultaneously:
+
+1. Initial HTML: For immediate visual display (First Contentful Paint).
+2. RSC Payload: To provide information to react engine about UI.
+
+### Why send both?
+
+- HTML is Dead: It provides pixels but no logic. If we only send HTML, the page is static.
+- RSC Payload : When the small React JS bundle arrives, it uses the Payload to understand exactly which DOM nodes belong to which components. It performs Hydration attaching event listeners to the pre rendered HTML rather than building it from scratch.
+
+---
+
+## The RSC Payload Anatomy
+
+The RSC Payload is the primary currency of Next.js. It is a specialized, line based serialized format.
+
+### Technical Characteristics:
+
+- Serialization: It converts the component tree into a string that can cross the Network Boundary between Server and Client.
+- Line-Based Streaming: Unlike a JSON object which must be fully downloaded to be parsed, the RSC Payload is streamable. The browser can start filling in the UI as each line arrives from the server.
+- Circular References: Standard JSON breaks if a component references itself; RSC Payload uses unique IDs to handle deep nesting.
+- Promises: The payload can contain Placeholder IDs for data that hasn't finished fetching yet. As the promise resolves on the server, a new line is sent to the browser to resolve that part of the UI.
+
+---
+
+## 🛑 Stop and Think
+
+> The Universal Rule: In React JS, the browser handles the Calculation and the Display. In Next.js, the server handles the Calculation, and the browser handles the Display. By separating these, we ensure the user's device is never burdened by the Logic of the application, only the Interactivity.
+
+---
