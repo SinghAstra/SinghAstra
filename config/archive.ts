@@ -104,75 +104,75 @@ export const archiveLinks: ArchiveSectionLink[] = [
     links: [
       {
         title: "Architecture & Why",
-        path: "/archive/react/architecture-and-why",
+        path: "/archive/react-js/architecture-and-why",
       },
       {
         title: "Components Composition",
-        path: "/archive/react/components-composition",
+        path: "/archive/react-js/components-composition",
       },
       {
         title: "State & Data Flow",
-        path: "/archive/react/state-and-data-flow",
+        path: "/archive/react-js/state-and-data-flow",
       },
       {
         title: "Side Effects & LifeCycle",
-        path: "/archive/react/side-effects-and-lifecycle",
+        path: "/archive/react-js/side-effects-and-lifecycle",
       },
       {
         title: "Rendering Logic",
-        path: "/archive/react/rendering-logic",
+        path: "/archive/react-js/rendering-logic",
       },
       {
         title: "Context API & Props Drilling",
-        path: "/archive/react/context-api-and-props-drilling",
+        path: "/archive/react-js/context-api-and-props-drilling",
       },
       {
         title: "Anatomy of Render",
-        path: "/archive/react/anatomy-of-render",
+        path: "/archive/react-js/anatomy-of-render",
       },
       {
         title: "Fiber Engine",
-        path: "/archive/react/fiber-engine",
+        path: "/archive/react-js/fiber-engine",
       },
       {
         title: "DOM Bridge & Escape Hatches",
-        path: "/archive/react/dom-bridge-and-escape-hatches",
+        path: "/archive/react-js/dom-bridge-and-escape-hatches",
       },
       {
         title: "Memoization & Referential Equality",
-        path: "/archive/react/memoization-and-referential-equality",
+        path: "/archive/react-js/memoization-and-referential-equality",
       },
       {
         title: "Forms",
-        path: "/archive/react/forms",
+        path: "/archive/react-js/forms",
       },
       {
         title: "Custom Hooks & Logic Extraction",
-        path: "/archive/react/custom-hooks-and-logic-extraction",
+        path: "/archive/react-js/custom-hooks-and-logic-extraction",
       },
       {
         title: "Reducer Pattern",
-        path: "/archive/react/reducer-pattern",
+        path: "/archive/react-js/reducer-pattern",
       },
       {
         title: "Client Side Routing",
-        path: "/archive/react/client-side-routing",
+        path: "/archive/react-js/client-side-routing",
       },
       {
         title: "Server State & Tanstack Query",
-        path: "/archive/react/server-state-and-tanstack-query",
+        path: "/archive/react-js/server-state-and-tanstack-query",
       },
       {
         title: "Cache Mechanics & Invalidation",
-        path: "/archive/react/cache-mechanics-and-invalidation",
+        path: "/archive/react-js/cache-mechanics-and-invalidation",
       },
       {
         title: "Optimistic UI & Advanced Patterns",
-        path: "/archive/react/optimistic-ui-and-advanced-patterns",
+        path: "/archive/react-js/optimistic-ui-and-advanced-patterns",
       },
       {
         title: "Client State Architecture",
-        path: "/archive/react/client-state-architecture",
+        path: "/archive/react-js/client-state-architecture",
       },
     ],
   },
@@ -181,35 +181,35 @@ export const archiveLinks: ArchiveSectionLink[] = [
     links: [
       {
         title: "Modern Rendering",
-        path: "/archive/next/modern-rendering",
+        path: "/archive/next-js/modern-rendering",
       },
       {
         title: "Rendering Strategies",
-        path: "/archive/next/rendering-strategies",
+        path: "/archive/next-js-js/rendering-strategies",
       },
       {
         title: "React Server Components",
-        path: "/archive/next/react-server-component",
+        path: "/archive/next-js/react-server-component",
       },
       {
         title: "Runtime Architecture",
-        path: "/archive/next/runtime-architecture",
+        path: "/archive/next-js/runtime-architecture",
       },
       {
         title: "App Router",
-        path: "/archive/next/app-router",
+        path: "/archive/next-js/app-router",
       },
       {
         title: "Layout Patterns",
-        path: "/archive/next/layout-patterns",
+        path: "/archive/next-js/layout-patterns",
       },
       {
         title: "Navigation",
-        path: "/archive/next/navigation",
+        path: "/archive/next-js/navigation",
       },
       {
         title: "RSC Fetching",
-        path: "/archive/next/rsc-fetching",
+        path: "/archive/next-js/rsc-fetching",
       },
     ],
   },
