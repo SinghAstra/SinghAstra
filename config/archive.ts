@@ -184,12 +184,12 @@ export const archiveLinks: ArchiveSectionLink[] = [
         path: "/archive/next/modern-rendering",
       },
       {
-        title: "React Server Components",
-        path: "/archive/next/react-server-component",
-      },
-      {
         title: "Rendering Strategies",
         path: "/archive/next/rendering-strategies",
+      },
+      {
+        title: "React Server Components",
+        path: "/archive/next/react-server-component",
       },
       {
         title: "Runtime Architecture",
