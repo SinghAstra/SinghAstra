@@ -12,6 +12,7 @@ export const siteConfig: SiteConfig = {
     "Node JS",
     "Typescript",
     "Redis",
+    "Bull MQ",
   ],
   links: {
     twitter: "https://x.com/XSinghAstra",
