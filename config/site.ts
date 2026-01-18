@@ -11,6 +11,7 @@ export const siteConfig: SiteConfig = {
     "Typescript",
     "Next JS",
     "Node JS",
+    "Express JS"
     "Redis",
     "Bull MQ",
     "Tailwind CSS",
