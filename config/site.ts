@@ -6,9 +6,9 @@ export const siteConfig: SiteConfig = {
   url: "https://singhastra.vercel.app",
   keywords: [
     "Developer",
-    "React JS",
     "Javascript",
     "Typescript",
+    "React JS",
     "Next JS",
     "Node JS",
     "Express JS"
