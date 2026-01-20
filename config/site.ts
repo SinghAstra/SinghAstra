@@ -11,11 +11,11 @@ export const siteConfig: SiteConfig = {
     "React JS",
     "Next JS",
     "Node JS",
-    "Express JS"
+    "Express JS",
     "Redis",
     "Bull MQ",
     "Tailwind CSS",
-    "Python",
+    "Python"
   ],
   links: {
     twitter: "https://x.com/XSinghAstra",
