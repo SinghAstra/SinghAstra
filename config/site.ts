@@ -15,7 +15,6 @@ export const siteConfig: SiteConfig = {
     "Redis",
     "Bull MQ",
     "Tailwind CSS",
-    "Python"
   ],
   links: {
     twitter: "https://x.com/XSinghAstra",
