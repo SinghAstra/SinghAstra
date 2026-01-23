@@ -5,7 +5,7 @@ export const siteConfig: SiteConfig = {
   description: "Engineer in Making.",
   url: "https://singhastra.vercel.app",
   keywords: [
-    "Developer",
+    "Web Developer",
     "Javascript",
     "Typescript",
     "React JS",
