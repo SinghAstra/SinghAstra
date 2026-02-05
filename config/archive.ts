@@ -14,10 +14,6 @@ export const archiveLinks: ArchiveSectionLink[] = [
     title: "Javascript",
     links: [
       {
-        title: "Memory Architecture",
-        path: "/archive/javascript/memory-architecture",
-      },
-      {
         title: "Runtime Environment",
         path: "/archive/javascript/runtime-environment",
       },
