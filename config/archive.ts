@@ -14,6 +14,10 @@ export const archiveLinks: ArchiveSectionLink[] = [
     title: "Javascript",
     links: [
       {
+        title: "Introduction",
+        path: "/archive/javascript/introduction",
+      },
+      {
         title: "Runtime Environment",
         path: "/archive/javascript/runtime-environment",
       },
